@@ -20,5 +20,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # Defining the PdoService explicitly
+    App\Service\PdoService:
+        arguments:
+            $host: '%env(DATABASE_HOST)%'
+            $dbname: '%env(DATABASE_NAME)%'
+            $username: '%env(DATABASE_USER)%'
+            $password: '%env(DATABASE_PASSWORD)%'
