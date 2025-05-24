@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CarpoolingRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -40,6 +42,21 @@ class Carpooling
 
     #[ORM\Column]
     private ?bool $isEco = null;
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'carpooling')]
+    private Collection $user;
+
+    #[ORM\ManyToOne(inversedBy: 'carpoolings')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Car $car = null;
+
+    public function __construct()
+    {
+        $this->user = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -150,6 +167,42 @@ class Carpooling
     public function setIsEco(bool $isEco): static
     {
         $this->isEco = $isEco;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUser(): Collection
+    {
+        return $this->user;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->user->contains($user)) {
+            $this->user->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        $this->user->removeElement($user);
+
+        return $this;
+    }
+
+    public function getCar(): ?Car
+    {
+        return $this->car;
+    }
+
+    public function setCar(?Car $car): static
+    {
+        $this->car = $car;
 
         return $this;
     }

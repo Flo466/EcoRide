@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CarRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -28,6 +30,25 @@ class Car
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $firstRegistrationDate = null;
+
+    #[ORM\ManyToOne(inversedBy: 'cars')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'cars')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Brand $brand = null;
+
+    /**
+     * @var Collection<int, Carpooling>
+     */
+    #[ORM\OneToMany(targetEntity: Carpooling::class, mappedBy: 'car', orphanRemoval: true)]
+    private Collection $carpoolings;
+
+    public function __construct()
+    {
+        $this->carpoolings = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -90,6 +111,60 @@ class Car
     public function setFirstRegistrationDate(?\DateTime $firstRegistrationDate): static
     {
         $this->firstRegistrationDate = $firstRegistrationDate;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getBrand(): ?Brand
+    {
+        return $this->brand;
+    }
+
+    public function setBrand(?Brand $brand): static
+    {
+        $this->brand = $brand;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Carpooling>
+     */
+    public function getCarpoolings(): Collection
+    {
+        return $this->carpoolings;
+    }
+
+    public function addCarpooling(Carpooling $carpooling): static
+    {
+        if (!$this->carpoolings->contains($carpooling)) {
+            $this->carpoolings->add($carpooling);
+            $carpooling->setCar($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCarpooling(Carpooling $carpooling): static
+    {
+        if ($this->carpoolings->removeElement($carpooling)) {
+            // set the owning side to null (unless already changed)
+            if ($carpooling->getCar() === $this) {
+                $carpooling->setCar(null);
+            }
+        }
 
         return $this;
     }
