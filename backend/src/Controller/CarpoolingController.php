@@ -58,8 +58,8 @@ final class CarpoolingController extends AbstractController
         //Iplémenter logique puis flush
 
         $this->manager->flush();
+        return $this->redirectToRoute('app_api_carpooling_show', ['id' => $carpooling->getId()]);
 
-        return $this->redirectToRoute(route: 'app_api_carpooling_show', ['id' => $carpooling->getId()]);
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
