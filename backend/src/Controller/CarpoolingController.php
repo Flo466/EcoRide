@@ -40,7 +40,7 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->findOneBy(['id' => $id]);
 
         if (!$carpooling) {
-            throw $this->createNotFoundException("No capooling found for {$id} id");
+            throw $this->createNotFoundException("No carpooling found for {$id} id");
         }
 
         return $this->json(['message' => "A carpooling was found : {$carpooling->getId()}"]);
@@ -52,14 +52,13 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->findOneBy(['id' => $id]);
 
         if (!$carpooling) {
-            throw $this->createNotFoundException("No capooling found for {$id} id");
+            throw $this->createNotFoundException("No carpooling found for {$id} id");
         }
 
         //Iplémenter logique puis flush
 
         $this->manager->flush();
         return $this->redirectToRoute('app_api_carpooling_show', ['id' => $carpooling->getId()]);
-
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
@@ -68,7 +67,7 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->findOneBy(['id' => $id]);
 
         if (!$carpooling) {
-            throw $this->createNotFoundException("No capooling found for {$id} id");
+            throw $this->createNotFoundException("No carpooling found for {$id} id");
         }
 
         $this->manager->remove($carpooling);
