@@ -33,7 +33,7 @@ final class ReviewController extends AbstractController
         );
     }
 
-    #[Route('/{id}', '/show', name: 'show', methods: 'GET')]
+    #[Route('/{id}', name: 'show', methods: 'GET')]
     public function show(int $id): Response
     {
         $review = $this->repository->findOneBy(['id' => $id]);
@@ -45,7 +45,7 @@ final class ReviewController extends AbstractController
         return $this->json(['message' => "A review was found : {$review->getId()}"]);
     }
 
-    #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[Route('/{id}', name: 'edit', mnstallethods: 'PUT')]
     public function edit(int $id): Response
     {
         $review = $this->repository->findOneBy(['id' => $id]);

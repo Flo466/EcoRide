@@ -33,7 +33,7 @@ final class CarController extends AbstractController
         );
     }
 
-    #[Route('/{id}', '/show', name: 'show', methods: 'GET')]
+    #[Route('/{id}', name: 'show', methods: 'GET')]
     public function show(int $id): Response
     {
         $car = $this->repository->findOneBy(['id' => $id]);

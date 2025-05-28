@@ -34,7 +34,7 @@ final class CarpoolingController extends AbstractController
         );
     }
 
-    #[Route('/{id}', '/show', name: 'show', methods: 'GET')]
+    #[Route('/{id}', name: 'show', methods: 'GET')]
     public function show(int $id): Response
     {
         $carpooling = $this->repository->findOneBy(['id' => $id]);
