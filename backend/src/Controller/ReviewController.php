@@ -45,7 +45,7 @@ final class ReviewController extends AbstractController
         return $this->json(['message' => "A review was found : {$review->getId()}"]);
     }
 
-    #[Route('/{id}', name: 'edit', mnstallethods: 'PUT')]
+    #[Route('/{id}', name: 'edit', methods: 'PUT')]
     public function edit(int $id): Response
     {
         $review = $this->repository->findOneBy(['id' => $id]);
