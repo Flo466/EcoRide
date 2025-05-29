@@ -73,12 +73,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $configurations;
 
     /**
-     * @var Collection<int, Role>
-     */
-    #[ORM\ManyToMany(targetEntity: Role::class, mappedBy: 'user')]
-    private Collection $role;
-
-    /**
      * @var Collection<int, Review>
      */
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user', orphanRemoval: true)]
@@ -101,7 +95,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->apiToken = bin2hex(random_bytes(length:20));
         $this->configurations = new ArrayCollection();
-        $this->role = new ArrayCollection();
         $this->reviews = new ArrayCollection();
         $this->carpooling = new ArrayCollection();
         $this->cars = new ArrayCollection();
@@ -337,33 +330,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             if ($configuration->getUser() === $this) {
                 $configuration->setUser(null);
             }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Role>
-     */
-    public function getRole(): Collection
-    {
-        return $this->role;
-    }
-
-    public function addRole(Role $role): static
-    {
-        if (!$this->role->contains($role)) {
-            $this->role->add($role);
-            $role->addUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRole(Role $role): static
-    {
-        if ($this->role->removeElement($role)) {
-            $role->removeUser($this);
         }
 
         return $this;
