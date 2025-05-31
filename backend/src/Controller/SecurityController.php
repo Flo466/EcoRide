@@ -15,7 +15,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
-#[Route('/resgistration', name: 'app_api')]
+#[Route('/api', name: 'app_api_')]
 final class SecurityController extends AbstractController
 {
     public function __construct(
@@ -72,7 +72,7 @@ final class SecurityController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('account/me', name: 'me', methods: ['GET'])]
+    #[Route('/account/me', name: 'me', methods: ['GET'])]
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
@@ -85,7 +85,7 @@ final class SecurityController extends AbstractController
         );
     }
 
-    #[Route('account/edit', name: 'edit', methods: ['PUT'])]
+    #[Route('/account/edit', name: 'edit', methods: ['PUT'])]
     public function edit(#[CurrentUser] ?User $user, Request $request): JsonResponse
     {
         if (null === $user) {
