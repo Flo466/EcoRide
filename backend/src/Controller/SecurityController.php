@@ -48,6 +48,7 @@ final class SecurityController extends AbstractController
         status: Response::HTTP_CREATED);
     }
 
+    #[Route('/login', name: 'login', methods: ['POST'])]
     public function login(Request $request, UserPasswordHasherInterface $hasher):JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -71,7 +72,8 @@ final class SecurityController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    public function account(#[CurrentUser] ?User $user): JsonResponse
+    #[Route('account/me', name: 'me', methods: ['GET'])]
+    public function me(#[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
             return new JsonResponse(['message' => 'missing credentials'], Response::HTTP_UNAUTHORIZED);
@@ -83,6 +85,7 @@ final class SecurityController extends AbstractController
         );
     }
 
+    #[Route('account/edit', name: 'edit', methods: ['PUT'])]
     public function edit(#[CurrentUser] ?User $user, Request $request): JsonResponse
     {
         if (null === $user) {
