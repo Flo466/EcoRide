@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\TokenService;  // Importation du service TokenService
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,8 +21,9 @@ final class SecurityController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $manager,
-        private SerializerInterface $serializer
-        )
+        private SerializerInterface $serializer,
+        private TokenService $tokenService  // Injection du service TokenService
+    )
     {
     }
 
@@ -33,8 +35,12 @@ final class SecurityController extends AbstractController
             User::class,
             format: 'json'
         );
+
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+
         $user->setCreatedAt(new \DateTimeImmutable());
+
+        $this->tokenService->setApiToken($user);
 
         $this->manager->persist($user);
         $this->manager->flush();
@@ -44,25 +50,25 @@ final class SecurityController extends AbstractController
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
             'apiToken' => $user->getApiToken(),
-            'roles' => $user->getRoles()],
-        status: Response::HTTP_CREATED);
+            'roles' => $user->getRoles()
+        ], status: Response::HTTP_CREATED);
     }
 
     #[Route('/login', name: 'login', methods: ['POST'])]
-    public function login(Request $request, UserPasswordHasherInterface $hasher):JsonResponse
+    public function login(Request $request, UserPasswordHasherInterface $hasher): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
 
-         if (!$email || !$password) {
-            return new JsonResponse(['message' => 'Email and paswword required'], Response::HTTP_BAD_REQUEST);
+        if (!$email || !$password) {
+            return new JsonResponse(['message' => 'Email and password required'], Response::HTTP_BAD_REQUEST);
         }
 
-         $user = $this->manager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $user = $this->manager->getRepository(User::class)->findOneBy(['email' => $email]);
 
         if (!$user || !$hasher->isPasswordValid($user, $password)) {
-            return new JsonResponse(['message' => 'Incorect ID'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['message' => 'Incorrect credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
         return new JsonResponse([
@@ -76,9 +82,9 @@ final class SecurityController extends AbstractController
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
-            return new JsonResponse(['message' => 'missing credentials'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['message' => 'Missing credentials'], Response::HTTP_UNAUTHORIZED);
         }
-        
+
         return new JsonResponse(
             json_decode($this->serializer->serialize($user, 'json'), true),
             Response::HTTP_OK
@@ -89,7 +95,7 @@ final class SecurityController extends AbstractController
     public function edit(#[CurrentUser] ?User $user, Request $request): JsonResponse
     {
         if (null === $user) {
-            return new JsonResponse(['message' => 'missing credentials'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['message' => 'Missing credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
         $user = $this->serializer->deserialize(
@@ -100,6 +106,7 @@ final class SecurityController extends AbstractController
         );
 
         $user->setUpdatedAt(new DateTimeImmutable());
+
         $this->manager->flush();
 
         return new JsonResponse(

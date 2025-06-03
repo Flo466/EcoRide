@@ -93,7 +93,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @throws \Exception */
     public function __construct()
     {
-        $this->apiToken = bin2hex(random_bytes(length:20));
         $this->configurations = new ArrayCollection();
         $this->reviews = new ArrayCollection();
         $this->carpooling = new ArrayCollection();
