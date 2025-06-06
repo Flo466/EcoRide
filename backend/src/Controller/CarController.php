@@ -55,6 +55,7 @@ final class CarController extends AbstractController
             json: true
         );
     }
+    
     // Show function
     #[Route('/{id}', name: 'show', methods: 'GET')]
     public function show(int $id): JsonResponse
