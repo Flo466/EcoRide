@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Carpooling;
+use App\Enum\CarpoolingStatus;
+use OpenApi\Attributes as OA;
 use App\Repository\CarpoolingRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManager;
@@ -28,7 +30,79 @@ final class CarpoolingController extends AbstractController
         private UrlGeneratorInterface $urlGenerator)
     {
     }
+
+    // New carpooling Route / API doc
     #[Route(name: 'new', methods: 'POST')]
+    #[OA\Post(
+        path: "/api/carpooling",
+        summary: "Publish a new carpooling",
+        requestBody: new OA\RequestBody(
+            required: true,
+            description: "Datas required to post",
+            content: new OA\JsonContent(
+                type: "object",
+                properties: [
+                    new OA\Property(property: "departureDate", type: "string", format: "date", example: "2025-01-01"),
+                    new OA\Property(property: "departureTime", type: "string", format: "time", example: "12:00"),
+                    new OA\Property(property: "departurePlace", type: "string", example: "Melun"),
+                    new OA\Property(property: "arrivalDate", type: "string", format: "date", example: "2025-01-01"),
+                    new OA\Property(property: "arrivalTime", type: "string", format: "time", example: "12:45"),
+                    new OA\Property(property: "arrivalPlace", type: "string", example: "Paris"),
+                    new OA\Property(property: "seatCount", type: "integer", example: 2),
+                    new OA\Property(property: "pricePerPerson", type: "float", example: 5),
+                    new OA\Property(property: "isEco", type: "boolean", example: true),
+                    new OA\Property(property: "car", type: "integer", example: 1),
+
+                ],
+                required: [
+                    "departureDate", "departureTime", "departurePlace",
+                    "arrivalDate", "arrivalTime", "arrivalPlace", "seatCount",
+                    "pricePerPerson", "isEco"
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Carpooling successfully published",
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "departureDate", type: "string", format: "date", example: "2025-01-01"),
+                        new OA\Property(property: "departureTime", type: "string", format: "time", example: "12:00"),
+                        new OA\Property(property: "departurePlace", type: "string", example: "Melun"),
+                        new OA\Property(property: "arrivalDate", type: "string", format: "date", example: "2025-01-01"),
+                        new OA\Property(property: "arrivalTime", type: "string", format: "time", example: "12:45"),
+                        new OA\Property(property: "arrivalPlace", type: "string", example: "Paris"),
+                        new OA\Property(property: "seatCount", type: "integer", example: 2),
+                        new OA\Property(property: "pricePerPerson", type: "float", example: 5),
+                        new OA\Property(property: "isEco", type: "boolean", example: true),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Invalid data",
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Invalid data provided")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: "Unauthorized",
+                content: new OA\JsonContent(
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Unauthorized access")
+                    ]
+                )
+            )
+        ]
+    )]
+    // New carpooling function
     public function new(Request $request): JsonResponse
     {
         $carpooling = $this->serializer->deserialize(
@@ -37,7 +111,7 @@ final class CarpoolingController extends AbstractController
             format: 'json'
         );
         $carpooling->setCreatedAt(new DateTimeImmutable());
-        
+
         //Implémenter logique(formulaire)
 
         $this->manager->persist($carpooling);

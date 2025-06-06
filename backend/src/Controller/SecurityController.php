@@ -186,13 +186,7 @@ final class SecurityController extends AbstractController
         response: 401,
         description: "Unauthorized"
     )]
-    #[OA\Header(
-        header: "Authorization",
-        description: "Bearer token",
-        required: true,
-        schema: new OA\Schema(type: "string")
-    )]
-
+    
     // Me function
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
