@@ -42,7 +42,8 @@ final class CarController extends AbstractController
         $car = $this->serializer->deserialize(
             $request->getContent(),
             Car::class,
-            'json');
+            'json'
+        );
         $car->setCreatedAt(new DateTimeImmutable());
         $data = json_decode($request->getContent(), true);
         $brandId = $data['brand_id'] ?? null;
@@ -52,16 +53,10 @@ final class CarController extends AbstractController
             if ($brand) {
                 $car->setBrand($brand);
             } else {
-                return new JsonResponse(
-                    ['message' => 'Brand not found'],
-                    JsonResponse::HTTP_BAD_REQUEST
-                );
+                return new JsonResponse(['message' => 'Brand not found'], JsonResponse::HTTP_BAD_REQUEST);
             }
         } else {
-            return new JsonResponse(
-                ['message' => 'Brand ID is required'],
-                JsonResponse::HTTP_BAD_REQUEST
-            );
+            return new JsonResponse(['message' => 'Brand ID is required'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $car->setUser($user);
@@ -77,10 +72,7 @@ final class CarController extends AbstractController
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
-        return new JsonResponse(
-            $responseData,
-            Response::HTTP_CREATED, 
-            ['Location' => $location], true);
+        return new JsonResponse($responseData, Response::HTTP_CREATED, ['Location' => $location], true);
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'])]
@@ -89,10 +81,10 @@ final class CarController extends AbstractController
         $car = $this->repository->find($id);
 
         if (!$car) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => 'Car not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $responseData = $this->serializer->serialize($car, 'json');
+        $responseData = $this->serializer->serialize($car, 'json', ['groups' => ['car:read']]);
 
         return new JsonResponse($responseData, Response::HTTP_OK, [], true);
     }
@@ -103,7 +95,7 @@ final class CarController extends AbstractController
         $car = $this->repository->find($id);
 
         if (!$car) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => 'Car not found'], Response::HTTP_NOT_FOUND);
         }
 
         $this->serializer->deserialize(
@@ -116,7 +108,7 @@ final class CarController extends AbstractController
         $car->setUpdatedAt(new DateTimeImmutable());
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize($car, 'json');
+        $responseData = $this->serializer->serialize($car, 'json', ['groups' => ['car:read']]);
         $location = $this->urlGenerator->generate(
             'app_api_car_show',
             ['id' => $car->getId()],
@@ -132,7 +124,7 @@ final class CarController extends AbstractController
         $car = $this->repository->find($id);
 
         if (!$car) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => 'Car not found'], Response::HTTP_NOT_FOUND);
         }
 
         $this->manager->remove($car);
