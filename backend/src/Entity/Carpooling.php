@@ -6,6 +6,7 @@ use App\Repository\CarpoolingRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use App\Enum\CarpoolingStatus;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CarpoolingRepository::class)]
@@ -58,6 +59,9 @@ class Carpooling
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(type: 'string', enumType: CarpoolingStatus::class)]
+    private CarpoolingStatus $status = CarpoolingStatus::OPEN;
 
     public function __construct()
     {
@@ -236,4 +240,16 @@ class Carpooling
 
         return $this;
     }
+
+    public function getStatus(): CarpoolingStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(CarpoolingStatus $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
 }

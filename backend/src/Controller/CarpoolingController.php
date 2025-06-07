@@ -111,6 +111,8 @@ final class CarpoolingController extends AbstractController
             format: 'json'
         );
         $carpooling->setCreatedAt(new DateTimeImmutable());
+        $carpooling->setStatus(CarpoolingStatus::OPEN);
+
 
         //Implémenter logique(formulaire)
 
@@ -149,36 +151,38 @@ final class CarpoolingController extends AbstractController
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
     public function edit(int $id, Request $request): JsonResponse
     {
-        $carpooling = $this->repository->findOneBy(['id' => $id]);
+        $carpooling = $this->repository->find($id);
 
-        if ($carpooling) {
-            $carpooling = $this->serializer->deserialize(
-                $request->getContent(),
-                Carpooling::class,
-                'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $carpooling]
-            );
+        if (!$carpooling) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
 
-        //Iplémenter logique puis flush
+        $this->serializer->deserialize(
+            $request->getContent(),
+            Carpooling::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $carpooling]
+        );
 
         $carpooling->setUpdatedAt(new DateTimeImmutable());
+
         $this->manager->flush();
-        
-        $responseData = $this->serializer->serialize($carpooling, format:'json');
-            $location = $this->urlGenerator->generate(
-                name: 'app_api_carpooling_show',
-                parameters: ['id' => $carpooling->getId()],
-                referenceType: UrlGeneratorInterface::ABSOLUTE_URL
-            );
-            
-            return new JsonResponse(
-                data: $responseData,
-                status: Response::HTTP_OK,
-                headers: ["Location" => $location],
-                json: true
-            );
+
+        $responseData = $this->serializer->serialize($carpooling, 'json');
+        $location = $this->urlGenerator->generate(
+            'app_api_carpooling_show',
+            ['id' => $carpooling->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        return new JsonResponse(
+            data: $responseData,
+            status: Response::HTTP_OK,
+            headers: ['Location' => $location],
+            json: true
+        );
     }
+
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
     public function delete(int $id): JsonResponse
