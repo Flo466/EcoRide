@@ -3,10 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\CarRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: CarRepository::class)]
 class Car
@@ -17,26 +20,35 @@ class Car
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['car:read', 'car:write'])]
     private ?string $model = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['car:read', 'car:write'])]
     private ?string $color = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['car:read', 'car:write'])]
     private ?string $licencePlate = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['car:read', 'car:write'])]
     private ?string $energy = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTime $firstRegistrationDate = null;
+    #[ORM\Column(type: 'string', length: 10, nullable: true)]
+    #[Groups(['car:read', 'car:write'])]
+    private ?string $firstRegistrationDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
+    #[MaxDepth(1)]  // Limiter la profondeur de sérialisation
+    #[Groups(['car:read', 'car:write'])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
+    #[MaxDepth(1)]  // Limiter la profondeur de sérialisation
+    #[Groups(['car:read', 'car:write'])]
     private ?Brand $brand = null;
 
     /**
@@ -46,15 +58,19 @@ class Car
     private Collection $carpoolings;
 
     #[ORM\Column]
+    #[Groups(['car:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['car:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
         $this->carpoolings = new ArrayCollection();
     }
+
+    // Getters et setters...
 
     public function getId(): ?int
     {
@@ -109,12 +125,12 @@ class Car
         return $this;
     }
 
-    public function getFirstRegistrationDate(): ?\DateTime
+    public function getFirstRegistrationDate(): ?string
     {
         return $this->firstRegistrationDate;
     }
 
-    public function setFirstRegistrationDate(?\DateTime $firstRegistrationDate): static
+    public function setFirstRegistrationDate(?string $firstRegistrationDate): static
     {
         $this->firstRegistrationDate = $firstRegistrationDate;
 
@@ -199,3 +215,4 @@ class Car
         return $this;
     }
 }
+
