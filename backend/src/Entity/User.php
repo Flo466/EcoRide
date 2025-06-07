@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -19,77 +20,95 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Groups(['user_read', 'carpooling_read'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['user_read'])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(['user_read'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user_read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user_read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['user_read'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['user_read'])]
     private ?string $address = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user_read'])]
     private ?\DateTime $birthDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['user_read'])]
     private ?string $photo = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user_read'])]
     private ?string $userName = null;
 
     #[ORM\Column]
+    #[Groups(['user_read'])]
     private ?int $credits = null;
 
     #[ORM\Column]
+    #[Groups(['user_read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user_read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['user_read'])]
     private ?string $apiToken = null;
 
     /**
      * @var Collection<int, Configuration>
      */
     #[ORM\OneToMany(targetEntity: Configuration::class, mappedBy: 'user', orphanRemoval: true)]
+    #[Groups(['user_read'])]
     private Collection $configurations;
 
     /**
      * @var Collection<int, Review>
      */
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user', orphanRemoval: true)]
+    #[Groups(['user_read'])]
     private Collection $reviews;
 
     /**
      * @var Collection<int, Carpooling>
      */
     #[ORM\ManyToMany(targetEntity: Carpooling::class, mappedBy: 'user')]
+    #[Groups(['user_read'])]
     private Collection $carpooling;
 
     /**
      * @var Collection<int, Car>
      */
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
+    #[Groups(['user_read'])]
     private Collection $cars;
-    
+
     /** @throws \Exception */
     public function __construct()
     {

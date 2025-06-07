@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use App\Enum\CarpoolingStatus;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CarpoolingRepository::class)]
 class Carpooling
@@ -18,36 +19,46 @@ class Carpooling
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['carpooling_read'])]
     private ?\DateTime $departureDate = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[Groups(['carpooling_read'])]
     private ?\DateTime $departureTime = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['carpooling_read'])]
     private ?string $departurePlace = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['carpooling_read'])]
     private ?\DateTime $arrivalDate = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[Groups(['carpooling_read'])]
     private ?\DateTime $arrivalTime = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['carpooling_read'])]
     private ?string $arrivalPlace = null;
 
     #[ORM\Column]
+    #[Groups(['carpooling_read'])]
     private ?int $seatCount = null;
 
     #[ORM\Column]
+    #[Groups(['carpooling_read'])]
     private ?float $pricePerPerson = null;
 
     #[ORM\Column]
+    #[Groups(['carpooling_read'])]
     private ?bool $isEco = null;
 
     /**
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'carpooling')]
+    #[Groups(['carpooling_read'])]
     private Collection $user;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolings')]
@@ -55,12 +66,15 @@ class Carpooling
     private ?Car $car = null;
 
     #[ORM\Column]
+    #[Groups(['carpooling_read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['carpooling_read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(type: 'string', enumType: CarpoolingStatus::class)]
+    #[Groups(['carpooling_read'])]
     private CarpoolingStatus $status = CarpoolingStatus::OPEN;
 
     public function __construct()

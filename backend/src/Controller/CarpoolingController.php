@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Car;
 use App\Entity\Carpooling;
 use App\Enum\CarpoolingStatus;
 use OpenApi\Attributes as OA;
@@ -27,7 +28,8 @@ final class CarpoolingController extends AbstractController
         private EntityManagerInterface $manager,
         private CarpoolingRepository $repository,
         private SerializerInterface $serializer,
-        private UrlGeneratorInterface $urlGenerator)
+        private UrlGeneratorInterface $urlGenerator
+        )
     {
     }
 
@@ -105,11 +107,21 @@ final class CarpoolingController extends AbstractController
     // New carpooling function
     public function new(Request $request): JsonResponse
     {
+        $data = json_decode($request->getContent(), true);
+
+        $car = $this->manager->getRepository(Car::class)->find($data['car']);
+
+        if (!$car) {
+            return new JsonResponse(['message' => 'Car not found'], Response::HTTP_BAD_REQUEST);
+        }
+
         $carpooling = $this->serializer->deserialize(
             $request->getContent(),
-            type: Carpooling::class,
-            format: 'json'
+            Carpooling::class,
+            'json',
+            [AbstractNormalizer::IGNORED_ATTRIBUTES => ['car']]
         );
+        $carpooling->setCar($car);
         $carpooling->setCreatedAt(new DateTimeImmutable());
         $carpooling->setStatus(CarpoolingStatus::OPEN);
 
@@ -119,7 +131,7 @@ final class CarpoolingController extends AbstractController
         $this->manager->persist($carpooling);
         $this->manager->flush();
         
-        $responseData = $this->serializer->serialize($carpooling, format: 'json');
+        $responseData = $this->serializer->serialize($carpooling, 'json', ['groups' => 'carpooling_read']);
         $location = $this->urlGenerator->generate(
             name: 'app_api_carpooling_show',
             parameters: ['id' => $carpooling->getId()],
@@ -140,7 +152,7 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->findOneBy(['id' => $id]);
 
         if ($carpooling) {
-            $respondeData = $this->serializer->serialize($carpooling, format:'json');
+            $respondeData = $this->serializer->serialize($carpooling, 'json', ['groups' => 'carpooling_read']);
 
             return new JsonResponse($respondeData, status: Response::HTTP_OK);
         }
@@ -168,7 +180,7 @@ final class CarpoolingController extends AbstractController
 
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize($carpooling, 'json');
+        $responseData = $this->serializer->serialize($carpooling, 'json', ['groups' => 'carpooling_read']);
         $location = $this->urlGenerator->generate(
             'app_api_carpooling_show',
             ['id' => $carpooling->getId()],
