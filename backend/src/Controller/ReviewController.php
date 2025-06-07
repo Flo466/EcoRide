@@ -1,125 +1,96 @@
 <?php
 
+// src/Controller/ReviewController.php
+
 namespace App\Controller;
 
 use App\Entity\Review;
-use App\Repository\CarRepository;
-use DateTimeImmutable;
+use App\Enum\ReviewStatus;
+use App\Repository\ReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Core\Security;
+use DateTimeImmutable;
 
-#[Route('api/review', name: 'app_api_review_')]
+#[Route('/api/review', name: 'app_api_review_')]
 final class ReviewController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $manager,
-        private CarRepository $repository,
+        private EntityManagerInterface $em,
+        private ReviewRepository $repository,
         private SerializerInterface $serializer,
-        private UrlGeneratorInterface $urlGenerator
-        )
+        private Security $security
+    ) {}
+
+    #[Route('', name: 'new', methods: ['POST'])]
+    public function new(Request $request): JsonResponse
     {
+        $user = $this->security->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        /** @var Review $review */
+        $review = $this->serializer->deserialize($request->getContent(), Review::class, 'json');
+
+        $review->setUser($user);
+        $review->setStatus(ReviewStatus::PENDING);
+        $review->setCreatedAt(new DateTimeImmutable());
+
+        $this->em->persist($review);
+        $this->em->flush();
+
+       $responseData = $this->serializer->serialize($review, 'json', ['groups' => ['review:read']]);
+
+
+        return new JsonResponse($responseData, Response::HTTP_CREATED, [], true);
     }
 
-    #[Route(name: 'new', methods: 'POST')]
-    public function new(Request $request, ): JsonResponse
-    {
-        $review = $this->serializer->deserialize(
-            $request->getContent(),
-            type: Review::class,
-            format: 'json');
-            $review->setCreatedAt(new DateTimeImmutable());
-
-        //Implémenter logique(formulaire)
-
-        $review->setUser($review);
-
-        $this->manager->persist($review);
-        $this->manager->flush();
-        
-        $responseData = $this->serializer->serialize($review, format: 'json');
-        $location = $this->urlGenerator->generate(
-            name: 'app_api_review_show',
-            parameters: ['id' => $review->getId()],
-            referenceType: UrlGeneratorInterface::ABSOLUTE_URL
-        );
-
-        return new JsonResponse(
-            data: $responseData,
-            status: Response::HTTP_CREATED,
-            headers: ["Location" => $location],
-            json: true
-        );
-    }
-
-    // Show function
-    #[Route('/{id}', name: 'show', methods: 'GET')]
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        $review = $this->repository->findOneBy(['id' => $id]);
+        $review = $this->repository->find($id);
 
-        if ($review) {
-            $respondeData = $this->serializer->serialize($review, format:'json');
-
-            return new JsonResponse($respondeData, status: Response::HTTP_OK);
+        if (!$review) {
+            return new JsonResponse(['message' => 'Review not found'], Response::HTTP_NOT_FOUND);
         }
 
-         return new JsonResponse(data: null, status: Response::HTTP_NOT_FOUND);
+        $responseData = $this->serializer->serialize($review, 'json', ['groups' => ['review:read']]);
+
+        return new JsonResponse($responseData, Response::HTTP_OK, [], true);
     }
 
-    // Edit function
-    #[Route('/{id}', name: 'edit', methods: 'PUT')]
-    public function edit(int $id, Request $request): JsonResponse
+    #[Route('/{id}/status', name: 'update_status', methods: ['PATCH'])]
+    public function updateStatus(int $id, Request $request): JsonResponse
     {
-        $review = $this->repository->findOneBy(['id' => $id]);
+        $review = $this->repository->find($id);
 
-        if ($review) {
-            $review = $this->serializer->deserialize(
-                $request->getContent(),
-                Review::class,
-                'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $review]
-            );
+        if (!$review) {
+            return new JsonResponse(['message' => 'Review not found'], Response::HTTP_NOT_FOUND);
         }
 
-        //Iplémenter logique puis flush
+        $data = json_decode($request->getContent(), true);
+        $statusValue = $data['status'] ?? null;
 
-        $review->setUpdatedAt(new DateTimeImmutable());
-        $this->manager->flush();
-        
-        $responseData = $this->serializer->serialize($review, format:'json');
-            $location = $this->urlGenerator->generate(
-                name: 'app_api_review_show',
-                parameters: ['id' => $review->getId()],
-                referenceType: UrlGeneratorInterface::ABSOLUTE_URL
-            );
-            
-            return new JsonResponse(
-                data: $responseData,
-                status: Response::HTTP_OK,
-                headers: ["Location" => $location],
-                json: true
-            );
-    }
-
-    #[Route('/{id}', name: 'delete', methods: 'DELETE')]
-    public function delete(int $id): JsonResponse
-    {
-        $review = $this->repository->findOneBy(['id' => $id]);
-
-        if ($review) {
-            $this->manager->remove($review);
-            $this->manager->flush();
-
-            return new JsonResponse(null, status: Response::HTTP_NO_CONTENT);
+        if (!$statusValue) {
+            return new JsonResponse(['message' => 'Status is required'], Response::HTTP_BAD_REQUEST);
         }
 
-        return new JsonResponse(null, status: Response::HTTP_NOT_FOUND);
+        try {
+            $statusEnum = ReviewStatus::from($statusValue);
+        } catch (\ValueError $e) {
+            return new JsonResponse(['message' => 'Invalid status'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $review->setStatus($statusEnum);
+        $this->em->flush();
+
+        return new JsonResponse(['status' => $review->getStatus()->value], Response::HTTP_OK);
     }
 }

@@ -3,8 +3,11 @@
 namespace App\Entity;
 
 use App\Repository\ReviewRepository;
+use App\Enum\ReviewStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
 class Review
@@ -12,25 +15,33 @@ class Review
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['review:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['review:read', 'review:write'])]
     private ?string $comment = null;
 
     #[ORM\Column]
+    #[Groups(['review:read', 'review:write'])]
     private ?int $ratting = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $status = null;
+    #[ORM\Column(type: 'string', enumType: ReviewStatus::class)]
+    #[Groups(['review:read', 'review:write'])]
+    private ReviewStatus $status;
 
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['review:read'])]
+    #[MaxDepth(1)]
     private ?User $user = null;
 
     #[ORM\Column]
+    #[Groups(['review:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['review:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function getId(): ?int
@@ -62,12 +73,12 @@ class Review
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): ReviewStatus
     {
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(ReviewStatus $status): self
     {
         $this->status = $status;
 
