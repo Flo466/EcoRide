@@ -37,6 +37,8 @@ security:
          - { path: ^/api/car, roles :  IS_AUTHENTICATED_FULLY }
          - { path: ^/api/carpooling, roles: IS_AUTHENTICATED_FULLY, methods: [POST, PUT, DELETE] }
          - { path: ^/api/carpooling, roles: PUBLIC_ACCESS, methods: [GET] }
+         - { path: ^/api/review, roles: IS_AUTHENTICATED_FULLY, methods: [POST, PUT, DELETE] }
+         - { path: ^/api/review, roles: PUBLIC_ACCESS, methods: [GET] }
 
 when@test:
     security:

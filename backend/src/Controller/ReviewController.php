@@ -38,6 +38,8 @@ final class ReviewController extends AbstractController
 
         //Implémenter logique(formulaire)
 
+        $review->setUser($review);
+
         $this->manager->persist($review);
         $this->manager->flush();
         
