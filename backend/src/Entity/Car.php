@@ -35,7 +35,7 @@ class Car
     #[Groups(['car:read', 'car:write'])]
     private ?string $energy = null;
 
-    #[ORM\Column(type: 'string', length: 10, nullable: true)]
+    #[ORM\Column(type: 'string', length: 10, nullable: false)]
     #[Groups(['car:read', 'car:write'])]
     private ?string $firstRegistrationDate = null;
 
@@ -214,5 +214,17 @@ class Car
 
         return $this;
     }
+
+    public function isValidFirstRegistrationDate(): bool
+    {
+        if ($this->firstRegistrationDate === null) {
+            return false;
+        }
+
+        $date = \DateTime::createFromFormat('d/m/Y', $this->firstRegistrationDate);
+
+        return $date && $date->format('d/m/Y') === $this->firstRegistrationDate;
+    }
+
 }
 

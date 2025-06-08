@@ -44,7 +44,8 @@ final class CarController extends AbstractController
             Car::class,
             'json'
         );
-        $car->setCreatedAt(new DateTimeImmutable());
+        $car->setCreatedAt(new \DateTimeImmutable());
+
         $data = json_decode($request->getContent(), true);
         $brandId = $data['brand_id'] ?? null;
 
@@ -57,6 +58,13 @@ final class CarController extends AbstractController
             }
         } else {
             return new JsonResponse(['message' => 'Brand ID is required'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Validate the first registration date format
+        if (!$car->isValidFirstRegistrationDate()) {
+            return new JsonResponse([
+                'message' => 'Invalid first registration date format. Expected DD/MM/YYYY.'
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $car->setUser($user);
@@ -74,6 +82,7 @@ final class CarController extends AbstractController
 
         return new JsonResponse($responseData, Response::HTTP_CREATED, ['Location' => $location], true);
     }
+
 
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
