@@ -30,24 +30,17 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
 
         if (null === $apiToken) {
-            // This case will be handled by onAuthenticationFailure
             throw new CustomUserMessageAuthenticationException('No API token provided');
         }
 
         $user = $this->repository->findOneBy(['apiToken' => $apiToken]);
 
         if (null === $user) {
-            // IMPORTANT: Throw CustomUserMessageAuthenticationException here
-            // This ensures onAuthenticationFailure is called consistently
             throw new CustomUserMessageAuthenticationException('Invalid credentials.');
         }
 
         return new SelfValidatingPassport(
             new UserBadge($apiToken, function($token) {
-                // The user is already found above, so this function should ideally
-                // just return the user, or if needed, re-fetch it.
-                // For simplicity, we can assume the user is valid if we got this far.
-                // However, the security component expects to load the user via this callback.
                 return $this->repository->findOneBy(['apiToken' => $token]);
             })
         );
