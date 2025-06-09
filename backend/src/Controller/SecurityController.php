@@ -86,6 +86,8 @@ final class SecurityController extends AbstractController
         $this->manager->flush();
 
         return new JsonResponse([
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
             'user' => $user->getUserIdentifier(),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
@@ -154,7 +156,9 @@ final class SecurityController extends AbstractController
         }
 
         return new JsonResponse([
+            'id' => $user->getId(),
             'user' => $user->getUserIdentifier(),
+            'email' => $user->getEmail(),
             'apiToken' => $user->getApiToken(),
             'roles' => $user->getRoles(),
         ], Response::HTTP_OK);
@@ -194,10 +198,14 @@ final class SecurityController extends AbstractController
             return new JsonResponse(['message' => 'Missing credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        return new JsonResponse(
-            json_decode($this->serializer->serialize($user, 'json'), true),
-            Response::HTTP_OK
-        );
+         return new JsonResponse(
+        json_decode($this->serializer->serialize(
+            $user,
+            'json',
+            ['groups' => ['user_read']]),
+            true),
+        Response::HTTP_OK
+    );
     }
 
     // Account/edit route / API Doc
@@ -256,8 +264,12 @@ final class SecurityController extends AbstractController
         $this->manager->flush();
 
         return new JsonResponse(
-            json_decode($this->serializer->serialize($user, 'json'), true),
-            Response::HTTP_OK
-        );
+        json_decode($this->serializer->serialize(
+            $user,
+            'json',
+            ['groups' => ['user_read']]),
+            true),
+        Response::HTTP_OK
+    );
     }
 }

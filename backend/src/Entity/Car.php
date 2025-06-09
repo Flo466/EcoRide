@@ -17,6 +17,7 @@ class Car
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['car:read', 'car:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
@@ -39,15 +40,16 @@ class Car
     #[Groups(['car:read', 'car:write'])]
     private ?string $firstRegistrationDate = null;
 
-    #[ORM\ManyToOne(inversedBy: 'cars')]
+    #[ORM\ManyToOne(inversedBy: 'cars', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[MaxDepth(1)]  // Limiter la profondeur de sérialisation
+    #[MaxDepth(1)]
     #[Groups(['car:read', 'car:write'])]
     private ?User $user = null;
 
+
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
-    #[MaxDepth(1)]  // Limiter la profondeur de sérialisation
+    #[MaxDepth(1)]
     #[Groups(['car:read', 'car:write'])]
     private ?Brand $brand = null;
 

@@ -17,6 +17,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user_read', 'carpooling_read', 'car:read', 'car:write'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]

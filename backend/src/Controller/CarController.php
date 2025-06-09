@@ -30,7 +30,7 @@ final class CarController extends AbstractController
     ) {
     }
 
-    #[Route(name: 'new', methods: ['POST'])]
+    #[Route('/', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
         $user = $this->security->getUser();
