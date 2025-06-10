@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use App\Enum\CarpoolingStatus;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: CarpoolingRepository::class)]
 class Carpooling
@@ -16,6 +17,7 @@ class Carpooling
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['carpooling_read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
@@ -59,10 +61,13 @@ class Carpooling
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'carpooling')]
     #[Groups(['carpooling_read'])]
+    #[MaxDepth(1)]
     private Collection $user;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['carpooling_read'])]
+    #[MaxDepth(1)]
     private ?Car $car = null;
 
     #[ORM\Column]

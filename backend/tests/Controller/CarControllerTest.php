@@ -124,7 +124,7 @@ class CarControllerTest extends WebTestCase
             [],
             [
                 'CONTENT_TYPE' => 'application/json',
-                'HTTP_X-AUTH-TOKEN' => self::TEST_USER_API_TOKEN // Use API token for authentication
+                'HTTP_X-AUTH-TOKEN' => self::TEST_USER_API_TOKEN
             ],
             json_encode($data)
         );
@@ -135,9 +135,9 @@ class CarControllerTest extends WebTestCase
         $responseData = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('model', $responseData);
         $this->assertEquals('Test Model', $responseData['model']);
-        $this->assertArrayHasKey('licencePlate', $responseData); // Assert licencePlate as it's critical
+        $this->assertArrayHasKey('licencePlate', $responseData);
         $this->assertEquals('ABC1234', $responseData['licencePlate']);
-        $this->assertArrayHasKey('id', $responseData); // Ensure ID is part of the initial creation response
+        $this->assertArrayHasKey('id', $responseData);
 
         return $this->extractIdFromResponse();
     }
@@ -149,7 +149,7 @@ class CarControllerTest extends WebTestCase
     {
         $newCarId = $this->createCarThroughApiAndGetId();
 
-        $this->entityManager->clear(); // Clear entity manager to ensure fresh load from DB
+        $this->entityManager->clear();
         $createdCar = $this->entityManager->getRepository(Car::class)->find($newCarId);
 
         $this->assertNotNull($createdCar, 'The car should be found in the database after creation.');
@@ -166,7 +166,7 @@ class CarControllerTest extends WebTestCase
             self::TEST_API_ROUTE . $newCarId,
             [],
             [],
-            ['HTTP_X-AUTH-TOKEN' => self::TEST_USER_API_TOKEN] // Authenticate with token
+            ['HTTP_X-AUTH-TOKEN' => self::TEST_USER_API_TOKEN]
         );
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertJson($this->client->getResponse()->getContent());
@@ -184,20 +184,20 @@ class CarControllerTest extends WebTestCase
      */
     public function testShowCar(): void
     {
-        $newCarId = $this->createCarThroughApiAndGetId(); // Create and get ID for a fresh test
+        $newCarId = $this->createCarThroughApiAndGetId();
 
         $this->client->request(
             'GET',
             self::TEST_API_ROUTE . $newCarId,
             [],
             [],
-            ['HTTP_X-AUTH-TOKEN' => self::TEST_USER_API_TOKEN] // Authenticate with token
+            ['HTTP_X-AUTH-TOKEN' => self::TEST_USER_API_TOKEN]
         );
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
 
         $responseContent = $this->client->getResponse()->getContent();
         $this->assertNotEmpty($responseContent);
-        $this->assertJson($responseContent); // Ensure it's valid JSON
+        $this->assertJson($responseContent);
 
         $responseData = json_decode($responseContent, true);
         $this->assertArrayHasKey('id', $responseData);

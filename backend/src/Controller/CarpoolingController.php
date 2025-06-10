@@ -10,7 +10,6 @@ use App\Repository\CarpoolingRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Util\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +19,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
 
 #[Route('api/carpooling', name: 'app_api_carpooling_')]
 final class CarpoolingController extends AbstractController
@@ -28,13 +30,15 @@ final class CarpoolingController extends AbstractController
         private EntityManagerInterface $manager,
         private CarpoolingRepository $repository,
         private SerializerInterface $serializer,
-        private UrlGeneratorInterface $urlGenerator
+        private UrlGeneratorInterface $urlGenerator,
+        private NormalizerInterface $normalizer,
+        private Security $security
         )
     {
     }
 
     // New carpooling Route / API doc
-    #[Route(name: 'new', methods: 'POST')]
+    #[Route('/', name: 'new', methods: 'POST')]
     #[OA\Post(
         path: "/api/carpooling",
         summary: "Publish a new carpooling",
@@ -131,7 +135,8 @@ final class CarpoolingController extends AbstractController
         $this->manager->persist($carpooling);
         $this->manager->flush();
         
-        $responseData = $this->serializer->serialize($carpooling, 'json', ['groups' => 'carpooling_read']);
+        // CORRECTION ICI : Utilise normalize pour obtenir un tableau PHP, puis JsonResponse l'encode
+        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
         $location = $this->urlGenerator->generate(
             name: 'app_api_carpooling_show',
             parameters: ['id' => $carpooling->getId()],
@@ -139,10 +144,10 @@ final class CarpoolingController extends AbstractController
         );
 
         return new JsonResponse(
-            data: $responseData,
+            data: $responseData, // Passe le tableau PHP normalisé
             status: Response::HTTP_CREATED,
-            headers: ["Location" => $location],
-            json: true
+            headers: ["Location" => $location]
+            // Supprimez 'json: true' car JsonResponse détecte automatiquement que c'est un tableau PHP
         );
     }
 
@@ -152,12 +157,12 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->findOneBy(['id' => $id]);
 
         if ($carpooling) {
-            $respondeData = $this->serializer->serialize($carpooling, 'json', ['groups' => 'carpooling_read']);
-
-            return new JsonResponse($respondeData, status: Response::HTTP_OK);
+            // CORRECTION ICI : Utilise normalize pour obtenir un tableau PHP
+            $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
+            return new JsonResponse($responseData, status: Response::HTTP_OK);
         }
 
-         return new JsonResponse(data: null, status: Response::HTTP_NOT_FOUND);
+        return new JsonResponse(data: null, status: Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
@@ -180,7 +185,8 @@ final class CarpoolingController extends AbstractController
 
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize($carpooling, 'json', ['groups' => 'carpooling_read']);
+        // CORRECTION ICI : Utilise normalize pour obtenir un tableau PHP
+        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
         $location = $this->urlGenerator->generate(
             'app_api_carpooling_show',
             ['id' => $carpooling->getId()],
@@ -188,10 +194,10 @@ final class CarpoolingController extends AbstractController
         );
 
         return new JsonResponse(
-            data: $responseData,
+            data: $responseData, // Passe le tableau PHP normalisé
             status: Response::HTTP_OK,
-            headers: ['Location' => $location],
-            json: true
+            headers: ['Location' => $location]
+            // Supprimez 'json: true'
         );
     }
 
