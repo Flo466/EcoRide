@@ -30,22 +30,18 @@ class CarpoolingControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
 
-        // Ordre de nettoyage correct : Carpooling -> Car -> User
         $this->removeEntities(Carpooling::class);
         $this->removeEntities(Car::class);
         $this->removeEntities(User::class);
-        // Pas de nettoyage de Brand ici car tu la gères manuellement
 
         $this->setUpTestUserCarAndCarpooling();
     }
 
     protected function tearDown(): void
     {
-        // Nettoyage après chaque test pour assurer un état propre
         $this->removeEntities(Carpooling::class);
         $this->removeEntities(Car::class);
         $this->removeEntities(User::class);
-        // Pas de nettoyage de Brand ici non plus
 
         parent::tearDown();
         if ($this->entityManager) {
@@ -61,12 +57,11 @@ class CarpoolingControllerTest extends WebTestCase
             $this->entityManager->remove($entity);
         }
         $this->entityManager->flush();
-        $this->entityManager->clear(); // Clear l'entity manager après chaque flush
+        $this->entityManager->clear();
     }
 
     private function setUpTestUserCarAndCarpooling(): void
     {
-        // Création de l'utilisateur
         $this->user = (new User())
             ->setUsername('JD123')
             ->setEmail(self::TEST_USER_EMAIL)
@@ -77,23 +72,15 @@ class CarpoolingControllerTest extends WebTestCase
             ->setCredits(20)
             ->setCreatedAt(new DateTimeImmutable());
 
-        // Hacher le mot de passe via le service UserPasswordHasherInterface
         $passwordHasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         $hashedPassword = $passwordHasher->hashPassword($this->user, self::TEST_USER_PASSWORD);
         $this->user->setPassword($hashedPassword);
 
         $this->entityManager->persist($this->user);
-        $this->entityManager->flush(); // Flush l'utilisateur pour avoir son ID
+        $this->entityManager->flush();
 
-        // Récupération de la marque existante
         $this->brand = $this->entityManager->getRepository(Brand::class)->findOneBy([]);
-        if (!$this->brand) {
-            // Si aucune marque n'est trouvée, cela peut causer des problèmes pour la création de la voiture.
-            // Assure-toi d'avoir au moins une Brand en base de données de test.
-            throw new \Exception("Aucune entité Brand trouvée. Assurez-vous d'avoir des données de marque dans la base de test.");
-        }
 
-        // Création de la voiture
         $this->car = (new Car())
             ->setModel('Test Model Carpooling')
             ->setColor('Blue')
@@ -105,9 +92,8 @@ class CarpoolingControllerTest extends WebTestCase
             ->setCreatedAt(new DateTimeImmutable());
 
         $this->entityManager->persist($this->car);
-        $this->entityManager->flush(); // Flush la voiture pour avoir son ID
+        $this->entityManager->flush();
 
-        // Création du covoiturage
         $this->carpooling = (new Carpooling())
             ->setDepartureDate(new \DateTime('2025-01-01'))
             ->setDepartureTime(new \DateTime('10:00:00'))
@@ -124,12 +110,11 @@ class CarpoolingControllerTest extends WebTestCase
 
         $this->entityManager->persist($this->carpooling);
         $this->entityManager->flush();
-        $this->entityManager->clear(); // Vider l'entityManager après setUp
+        $this->entityManager->clear();
     }
 
     private function getCarpooling(): Carpooling
     {
-        // Recharge le covoiturage depuis la DB pour éviter les problèmes de cache de l'EM
         $this->entityManager->clear();
         return $this->entityManager->getRepository(Carpooling::class)->find($this->carpooling->getId());
     }
@@ -165,19 +150,19 @@ class CarpoolingControllerTest extends WebTestCase
         $this->assertEquals('Startville', $responseData['departurePlace']);
     }
 
-    // public function testNewCarpoolingWithoutAuthentication(): void
-    // {
-    //     $this->client->request(
-    //         'POST',
-    //         self::TEST_API_ROUTE,
-    //         [],
-    //         [],
-    //         ['CONTENT_TYPE' => 'application/json'],
-    //         json_encode(["car" => 1, "departurePlace" => "Placeholder"])
-    //     );
+    public function testNewCarpoolingWithoutAuthentication(): void
+    {
+        $this->client->request(
+            'POST',
+            self::TEST_API_ROUTE,
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(["car" => 1, "departurePlace" => "Placeholder"])
+        );
 
-    //     $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
-    // }
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
 
     public function testNewCarpoolingWithNonExistentCar(): void
     {
@@ -191,7 +176,7 @@ class CarpoolingControllerTest extends WebTestCase
             "seatCount" => 3,
             "pricePerPerson" => 15.50,
             "isEco" => true,
-            "car" => 99999, // ID de voiture inexistant
+            "car" => 99999,
         ];
 
         $this->client->request(
@@ -268,7 +253,6 @@ class CarpoolingControllerTest extends WebTestCase
         $this->assertArrayHasKey('departurePlace', $responseData, 'La réponse JSON devrait contenir une clé "departurePlace".');
         $this->assertEquals('New Place', $responseData['departurePlace']);
 
-        // Vérifie en base de données
         $this->entityManager->clear();
         $updatedCarpooling = $this->entityManager->getRepository(Carpooling::class)->find($carpooling->getId());
         $this->assertEquals('New Place', $updatedCarpooling->getDeparturePlace());
