@@ -15,7 +15,7 @@ class Review
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['review:read'])]
+    #[Groups(['review:read', 'review:write'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]

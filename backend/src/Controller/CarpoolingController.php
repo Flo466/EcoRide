@@ -26,6 +26,10 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 #[Route('api/carpooling', name: 'app_api_carpooling_')]
 final class CarpoolingController extends AbstractController
 {
+    /**
+     * @var NormalizerInterface
+     */
+
     public function __construct(
         private EntityManagerInterface $manager,
         private CarpoolingRepository $repository,
@@ -35,6 +39,10 @@ final class CarpoolingController extends AbstractController
         private Security $security
         )
     {
+        $this->repository = $repository;
+        $this->serializer = $serializer;
+        $this->security = $security;
+        $this->normalizer = $normalizer;
     }
 
     // New carpooling Route / API doc
@@ -135,7 +143,6 @@ final class CarpoolingController extends AbstractController
         $this->manager->persist($carpooling);
         $this->manager->flush();
         
-        // CORRECTION ICI : Utilise normalize pour obtenir un tableau PHP, puis JsonResponse l'encode
         $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
         $location = $this->urlGenerator->generate(
             name: 'app_api_carpooling_show',
@@ -144,10 +151,9 @@ final class CarpoolingController extends AbstractController
         );
 
         return new JsonResponse(
-            data: $responseData, // Passe le tableau PHP normalisé
+            data: $responseData,
             status: Response::HTTP_CREATED,
             headers: ["Location" => $location]
-            // Supprimez 'json: true' car JsonResponse détecte automatiquement que c'est un tableau PHP
         );
     }
 
@@ -157,7 +163,6 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->findOneBy(['id' => $id]);
 
         if ($carpooling) {
-            // CORRECTION ICI : Utilise normalize pour obtenir un tableau PHP
             $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
             return new JsonResponse($responseData, status: Response::HTTP_OK);
         }
@@ -185,7 +190,6 @@ final class CarpoolingController extends AbstractController
 
         $this->manager->flush();
 
-        // CORRECTION ICI : Utilise normalize pour obtenir un tableau PHP
         $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
         $location = $this->urlGenerator->generate(
             'app_api_carpooling_show',
@@ -194,10 +198,9 @@ final class CarpoolingController extends AbstractController
         );
 
         return new JsonResponse(
-            data: $responseData, // Passe le tableau PHP normalisé
+            data: $responseData,
             status: Response::HTTP_OK,
             headers: ['Location' => $location]
-            // Supprimez 'json: true'
         );
     }
 
