@@ -50,7 +50,7 @@ class ReviewControllerTest extends WebTestCase
             try {
                 $this->connection->rollBack();
             } catch (\Exception $e) {
-                // Gérer les erreurs de rollback si nécessaire, bien que rares en test
+                //
             }
         }
 
@@ -128,9 +128,9 @@ class ReviewControllerTest extends WebTestCase
             json_encode($data)
         );
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED,);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED, 'La création d\'une review devrait retourner 201 Created.');
         $responseContent = $this->client->getResponse()->getContent();
-        $this->assertJson($responseContent);
+        $this->assertJson($responseContent, 'La réponse de création de review devrait être du JSON valide.');
 
         $responseData = json_decode($responseContent, true);
         $this->assertArrayHasKey('comment', $responseData);
