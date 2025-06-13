@@ -11980,11 +11980,6 @@ body {
 
 h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   font-family: "Quicksand", sans-serif;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-top: 1em;
-  margin-bottom: 0.5em;
-  color: #373636;
 }
 
 .navbar-light {
@@ -12026,4 +12021,77 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   font-size: 15px;
   font-weight: 500;
   background-color: #FAF8ED;
+}
+
+.hero-scene {
+  position: relative;
+  margin-bottom: 15px;
+}
+.hero-scene::before {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-image: url(/assets/images/road.jpg);
+  background-size: cover;
+  background-position-y: 58%;
+}
+.hero-scene * {
+  position: relative;
+}
+.hero-scene .hero-scene-content {
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.border-switch {
+  border: none;
+  border-bottom: 1px solid #00ce0a;
+  border-radius: 0;
+  margin-bottom: 10px;
+}
+
+.b-s-t {
+  margin-top: 10px;
+}
+
+.btn-search {
+  background-color: #00ce0a;
+  height: 55px;
+}
+
+.search-form {
+  border-radius: 6%;
+}
+
+@media (min-width: 992px) {
+  .border-switch {
+    border-bottom: none;
+    border-right: 2px solid #00ce0a;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .search-form input:last-of-type {
+    border-right: none;
+  }
+  .search-form {
+    border-radius: 2rem;
+    margin: 0;
+    padding: 0;
+  }
+  .search-form .form-control,
+  .search-form .btn-search {
+    height: 100%;
+    border-radius: 0;
+  }
+  .btn-search {
+    border-top-right-radius: 2rem;
+    border-bottom-right-radius: 2rem;
+    white-space: nowrap;
+  }
 }/*# sourceMappingURL=main.css.map */
