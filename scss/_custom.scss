@@ -1,10 +1,21 @@
-// Custom.scss
-// Option A: Include all of Bootstrap
 
-// Include any default variable overrides here (though functions won't be available)
-// exemple:
-$primary: red;
+// Main colors
+$primary: #00ce0a;
+$light-brown: #E8C8A0;
+$lighter: #FAF8ED;
+$white: #FFFFFF;
+$light-black: #373636;
+
+// Fonts
+$font-family-base: 'Open Sans', sans-serif;
+$font-family-headings: 'Quicksand', sans-serif;
+
+// Navbar 
+$navbar-light-text-color: $primary;
+$navbar-light-link-hover-color: $primary;
+$navbar-light-link-hover-darkened: darken($navbar-light-link-hover-color, 15%);
+$navbar-light-active-color: darken($navbar-light-link-hover-darkened, 2%);
+$navbar-toggler-icon-light-theme: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%2319D922' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+
 
 @import "../node_modules/bootstrap/scss/bootstrap";
-
-// Then add additional custom code here

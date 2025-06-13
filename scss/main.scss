@@ -1,2 +1,75 @@
 @import url("/node_modules/bootstrap-icons/font/bootstrap-icons.css");
 @import 'custom';
+
+// Body text
+body {
+    font-family: $font-family-base;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: $light-black;
+}
+
+// Titles
+h1, h2, h3, h4, h5, h6 {
+    font-family: $font-family-headings;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    color: $light-black;
+}
+
+// NavBar style
+// -------------------------------------------------------------
+.navbar-light {
+    background-color: white;
+    border-bottom: 3px solid $light-brown;
+
+    .navbar-nav .nav-link {
+        color: $navbar-light-text-color;
+        font-family: $font-family-headings;
+        font-size: 1.3rem;
+        font-weight: 600;
+
+        &:hover {
+            color: $navbar-light-link-hover-darkened;
+        }
+
+        &.active {
+            color: $navbar-light-active-color;
+
+        }
+    }
+
+    .navbar-toggler {
+        border-color: $primary;
+
+        .navbar-toggler-icon {
+            background-image: $navbar-toggler-icon-light-theme;
+        }
+    }
+
+    .navbar-nav {
+        .nav-item {
+            margin-left: 1.5rem;
+            margin-inline: 0.75rem;
+        }
+
+        .nav-item:first-child {
+             margin-left: 0; 
+        }
+    }
+}
+
+// Footer
+// -------------------------------------------------------------
+.footer {
+    color: $primary;
+    padding: 15px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    font-size: 15px;
+    font-weight: 500;
+    background-color: $lighter;
+}
