@@ -10,12 +10,12 @@ export function createCarpoolingSearchComponent(targetElementId) {
     <div class="col-9 col-md-7 col-lg-9 col-xl-9">
       <form class="search-form shadow bg-white overflow-hidden">
         <div class="d-flex flex-column flex-lg-row align-items-stretch w-100">
-          <input type="text" class="form-control text-center border-switch b-s-t" id="depart" placeholder="Départ">
-          <input type="text" class="form-control text-center border-switch" id="destination" placeholder="Destination">
-          <input type="date" class="form-control text-center border-switch border-0" id="date">
-          <button type="submit" class="btn text-white fw-semibold w-100 w-lg-auto btn-search">
-            Rechercher un trajet
-          </button>
+            <input type="text" class="form-control text-center border-switch b-s-t" id="depart" placeholder="Départ">
+            <input type="text" class="form-control text-center border-switch" id="destination" placeholder="Destination">
+            <input type="date" class="form-control text-center border-switch border-0" id="date">
+            <button type="submit" class="btn text-white fw-semibold w-100 w-lg-auto btn-search">
+                Rechercher un trajet
+            </button>
         </div>
       </form>
     </div>

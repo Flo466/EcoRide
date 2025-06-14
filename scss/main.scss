@@ -1,6 +1,15 @@
 @import url("/node_modules/bootstrap-icons/font/bootstrap-icons.css");
 @import 'custom';
 
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+main {
+  margin-bottom: 150px;
+}
+
 // Body text
 body {
     font-family: $font-family-base;
@@ -56,9 +65,10 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+
 // Footer
 // -------------------------------------------------------------
-.footer {
+.footer.footer {
     color: $primary;
     padding: 15px;
     position: absolute;
@@ -91,7 +101,7 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     .hero-scene-content {
-        height: 200px;
+        height: 250px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -115,11 +125,33 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-search {
     background-color: $primary;
+    color: $white;
     height: 55px;
+
+     &:hover {
+        background-color: darken($primary, 10%);
+        color: white;
+    }
 }
 
 .search-form {
     border-radius: 6%;
+}
+
+#search-carpooling-container-home {
+  margin-top: -100px;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  z-index: 10;
+  position: relative;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: inherit !important; 
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 @media (min-width: 992px) {
@@ -151,6 +183,9 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom-right-radius: 2rem;
     white-space: nowrap;
   }
+
+  #search-carpooling-container-home {
+    margin-top: -75px;
+  }
+
 }
-
-
