@@ -12116,7 +12116,7 @@ select:focus {
   }
   .search-form .form-control,
   .search-form .btn-search {
-    height: 100%;
+    height: 1%;
     border-radius: 0;
   }
   .btn-search {
