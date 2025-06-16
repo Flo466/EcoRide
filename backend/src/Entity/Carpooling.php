@@ -268,7 +268,7 @@ class Carpooling
     public function setStatus(CarpoolingStatus $status): static
     {
         $this->status = $status;
+
         return $this;
     }
-
 }
