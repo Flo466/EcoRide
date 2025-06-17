@@ -16,28 +16,33 @@ class CarpoolingRepository extends ServiceEntityRepository
         parent::__construct($registry, Carpooling::class);
     }
 
-    //    /**
-    //     * @return Carpooling[] Returns an array of Carpooling objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+     /**
+     * Search carpoolings by departure, destination and date
+     */
+    public function findBySearchCriteria(?string $departurePlace, ?string $arrivalPlace, ?\DateTime $departureDate): array
+    {
+        $qb = $this->createQueryBuilder('c');
 
-    //    public function findOneBySomeField($value): ?Carpooling
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($departurePlace) {
+            $qb->andWhere('c.departurePlace LIKE :departurePlace')
+            ->setParameter('departurePlace', '%' . $departurePlace . '%');
+        }
+
+        if ($arrivalPlace) {
+            $qb->andWhere('c.arrivalPlace LIKE :arrivalPlace')
+            ->setParameter('arrivalPlace', '%' . $arrivalPlace . '%');
+        }
+
+        if ($departureDate) {
+            $startOfDay = $departureDate->setTime(0, 0, 0);
+            $endOfDay = $departureDate->setTime(23, 59, 59);
+
+            $qb->andWhere('c.departureDate BETWEEN :startOfDay AND :endOfDay')
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('endOfDay', $endOfDay);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
 }
