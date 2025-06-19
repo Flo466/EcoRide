@@ -157,7 +157,7 @@ final class CarpoolingController extends AbstractController
         );
     }
 
-    #[Route('/{id}', name: 'show', methods: 'GET')]
+    #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
         $carpooling = $this->repository->findOneBy(['id' => $id]);
@@ -170,7 +170,7 @@ final class CarpoolingController extends AbstractController
         return new JsonResponse(data: null, status: Response::HTTP_NOT_FOUND);
     }
 
-    #[Route('/search', name: 'app_carpooling_search', methods: ['GET'])]
+    #[Route('/search', name: 'app_carpooling_search', methods: ['GET'],  options: ['trailing_slash_on_root' => false])]
     public function search(Request $request, CarpoolingRepository $repository): JsonResponse
     {
         $departurePlace = $request->query->get('departurePlace');
@@ -182,9 +182,7 @@ final class CarpoolingController extends AbstractController
         return $this->json($results, 200, [], ['groups' => 'carpooling_read']);
     }
 
-
-
-    #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[Route('/{id}', name: 'edit', requirements: ['id' => '\d+'], methods: ['PUT'])]
     public function edit(int $id, Request $request): JsonResponse
     {
         $carpooling = $this->repository->find($id);
@@ -200,7 +198,7 @@ final class CarpoolingController extends AbstractController
             [AbstractNormalizer::OBJECT_TO_POPULATE => $carpooling]
         );
 
-        $carpooling->setUpdatedAt(new DateTimeImmutable());
+        $carpooling->setUpdatedAt(new \DateTimeImmutable());
 
         $this->manager->flush();
 
@@ -218,8 +216,7 @@ final class CarpoolingController extends AbstractController
         );
     }
 
-
-    #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+   #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $carpooling = $this->repository->findOneBy(['id' => $id]);
@@ -228,9 +225,10 @@ final class CarpoolingController extends AbstractController
             $this->manager->remove($carpooling);
             $this->manager->flush();
 
-            return new JsonResponse(null, status: Response::HTTP_NO_CONTENT);
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
 
-        return new JsonResponse(null, status: Response::HTTP_NOT_FOUND);
+        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
+
 }

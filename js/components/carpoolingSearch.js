@@ -1,4 +1,6 @@
 import { fetchApi } from '../api/fetch.js';
+import { API_BASE_URL } from '../config.js';
+
 
 export function createCarpoolingSearchComponent(targetElementId) {
     const targetElement = document.getElementById(targetElementId);
@@ -43,7 +45,8 @@ export function createCarpoolingSearchComponent(targetElementId) {
         if (arrivalPlace) params.append('arrivalPlace', arrivalPlace);
         if (departureDate) params.append('departureDate', departureDate);
 
-        const url = `/api/carpoolings/search?${params.toString()}`;
+        const url = `${API_BASE_URL}/api/carpooling/search?${params.toString()}`;
+
 
         try {
             const result = await fetchApi(url);
