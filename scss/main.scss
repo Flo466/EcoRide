@@ -141,7 +141,6 @@ h1, h2, h3, h4, h5, h6 {
 #search-carpooling-container-home {
   margin-top: -100px;
   padding: 2rem;
-  border-radius: 1.5rem;
   z-index: 10;
   position: relative;
 }
@@ -188,4 +187,20 @@ select:focus {
     margin-top: -75px;
   }
 
+}
+
+#search-page-carpooling-container {
+  padding: 2rem;
+  z-index: 10;
+  position: relative;
+}
+
+.search-h1 {
+  margin: 10px;
+}
+
+@media (min-width: 992px) {
+  .search-h1 {
+    display: none;
+  }
 }

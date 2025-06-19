@@ -12086,7 +12086,6 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
 #search-carpooling-container-home {
   margin-top: -100px;
   padding: 2rem;
-  border-radius: 1.5rem;
   z-index: 10;
   position: relative;
 }
@@ -12116,7 +12115,7 @@ select:focus {
   }
   .search-form .form-control,
   .search-form .btn-search {
-    height: 1%;
+    height: 100%;
     border-radius: 0;
   }
   .btn-search {
@@ -12126,5 +12125,20 @@ select:focus {
   }
   #search-carpooling-container-home {
     margin-top: -75px;
+  }
+}
+#search-page-carpooling-container {
+  padding: 2rem;
+  z-index: 10;
+  position: relative;
+}
+
+.search-h1 {
+  margin: 10px;
+}
+
+@media (min-width: 992px) {
+  .search-h1 {
+    display: none;
   }
 }/*# sourceMappingURL=main.css.map */

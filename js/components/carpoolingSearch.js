@@ -1,5 +1,6 @@
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
+import { displaySearchResults } from './displayResults.js';
 
 
 export function createCarpoolingSearchComponent(targetElementId) {
@@ -11,8 +12,8 @@ export function createCarpoolingSearchComponent(targetElementId) {
 
     const htmlContent = `
     <div class="row justify-content-center">
-      <div class="col-9 col-md-7 col-lg-9 col-xl-9">
-        <form class="search-form shadow bg-white overflow-hidden">
+      <div class="col-9 col-md-7 col-lg-10 col-xl-12"> 
+        <form class="search-form shadow-lg bg-white overflow-hidden">
           <div class="d-flex flex-column flex-lg-row align-items-stretch w-100">
               <input type="text" class="form-control text-center border-switch b-s-t" id="departurePlace" placeholder="Départ">
               <input type="text" class="form-control text-center border-switch" id="arrivalPlace" placeholder="Destination">
@@ -51,7 +52,7 @@ export function createCarpoolingSearchComponent(targetElementId) {
         try {
             const result = await fetchApi(url);
             console.log('Search results:', result);
-            // Here to display results
+            displaySearchResults(result);
         } catch (error) {
             alert('Error searching carpooling : ' + error.message);
         }
