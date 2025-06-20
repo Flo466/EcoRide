@@ -12141,4 +12141,58 @@ select:focus {
   .search-h1 {
     display: none;
   }
+}
+.carpool-card {
+  background-color: #FFFFFF;
+  border-radius: 2rem;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.route-image {
+  width: 30px;
+  height: 65px;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+
+.currency-icon {
+  font-size: 1.8rem;
+  margin-left: 10px;
+  display: inline-flex; /* Utilisation d'inline-flex pour aligner horizontalement */
+  align-items: center; /* Aligne verticalement au centre */
+  justify-content: center; /* Centre l'élément horizontalement */
+  vertical-align: middle; /* Aligne sur la même ligne de base que l'élément voisin */
+}
+
+.fs-3 {
+  display: inline-flex; /* Utilisation de inline-flex pour aligner le prix */
+  align-items: center; /* Aligne verticalement au centre */
+  justify-content: center; /* Centre le prix horizontalement */
+  vertical-align: middle; /* Aligne sur la même ligne de base que l'icône */
+}
+
+.eco-icon {
+  color: #00ce0a;
+  font-size: 1.5rem;
+}
+
+.driver-section {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #E8C8A0;
+  background-color: #FFFFFF;
+}
+
+.driver-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #00ce0a;
+  margin-right: 0.75rem;
+  -o-object-fit: cover;
+     object-fit: cover;
 }/*# sourceMappingURL=main.css.map */

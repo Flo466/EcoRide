@@ -15,27 +15,59 @@ export class Carpooling {
     this.status = data.status;
   }
 
+  // Extract hours
+  formatTime(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  }
+
   toCardElement() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mb-4 w-100 px-2';
+
     const card = document.createElement('div');
-    card.className = 'card mb-3 shadow-sm';
+    card.className = 'carpool-card card shadow w-100';
 
     card.innerHTML = `
-      <div class="card-body">
-        <h5 class="card-title">${this.departurePlace} → ${this.arrivalPlace}</h5>
-        <p class="card-text mb-1">
-          <strong>Date :</strong> ${this.departureDate} à ${this.departureTime}
-        </p>
-        <p class="card-text mb-1">
-          <strong>Prix :</strong> ${this.pricePerPerson.toFixed(2)} €
-        </p>
-        <p class="card-text mb-1">
-          <strong>Places :</strong> ${this.seatCount}
-        </p>
-        ${this.isEco ? `<span class="badge bg-success">Trajet éco</span>` : ''}
-        <p class="card-text mt-2"><small class="text-muted">Statut : ${this.status}</small></p>
+    <div class="card-body d-flex justify-content-between">
+      <div class="d-flex">
+        <div class="mt-1">
+          <img src="assets/images/Arrow 6.png" alt="Trajet" class="route-image me-2">
+        </div>
+        <div>
+          <p class="fw-bold">${this.departurePlace} - ${this.formatTime(this.departureTime)}</p>
+          <p class="fw-bold mt-4">${this.arrivalPlace} - ${this.formatTime(this.arrivalTime)}</p>
+        </div>
       </div>
-    `;
+      <div class="d-flex justify-content-end align-items-center">
+        <div class="fs-3">${this.pricePerPerson.toFixed(2)}</div>
+        <div class="currency-icon price"><i class="bi bi-coin"></i></div>
+      </div>
+    </div>
 
-    return card;
+    <div class="mb-2">
+      <p class="text-muted ms-4">${this.seatCount} place${this.seatCount > 1 ? 's' : ''} restante${this.seatCount > 1 ? 's' : ''}</p>
+    </div>
+
+    <div class="d-flex justify-content-end pe-3">
+      ${this.isEco ? `<div class="eco-icon">🍃</div>` : ''}
+    </div>
+
+    <div class="driver-section">
+      <img src="assets/images/profil.jpg" alt="Julie" class="driver-img">
+      <div>
+        <div class="fw-bold">Julie</div>
+        <div>☆ 5</div>
+      </div>
+    </div>
+  `;
+
+
+    wrapper.appendChild(card);
+    return wrapper;
   }
 }
