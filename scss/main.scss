@@ -218,7 +218,6 @@ select:focus {
   margin: 0;
 }
 
-
 .route-image {
   width: 30px;
   height: 65px;
@@ -226,26 +225,24 @@ select:focus {
 }
 
 .currency-icon {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   margin-left: 10px;
-  display: inline-flex;      /* Utilisation d'inline-flex pour aligner horizontalement */
-  align-items: center;      /* Aligne verticalement au centre */
-  justify-content: center;  /* Centre l'élément horizontalement */
-  vertical-align: middle;   /* Aligne sur la même ligne de base que l'élément voisin */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
-.fs-3 {
-  display: inline-flex;     /* Utilisation de inline-flex pour aligner le prix */
-  align-items: center;      /* Aligne verticalement au centre */
-  justify-content: center;  /* Centre le prix horizontalement */
-  vertical-align: middle;   /* Aligne sur la même ligne de base que l'icône */
+.price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  font-size: x-large;
 }
-
-
 
 .eco-icon {
-  color: $primary;
-  font-size: 1.5rem;
+  font-size: xx-large;
 }
 
 .driver-section {

@@ -44,18 +44,16 @@ export class Carpooling {
         </div>
       </div>
       <div class="d-flex justify-content-end align-items-center">
-        <div class="fs-3">${this.pricePerPerson.toFixed(2)}</div>
-        <div class="currency-icon price"><i class="bi bi-coin"></i></div>
+        <div class="price">${this.pricePerPerson.toFixed(2)}</div>
+        <div class="currency-icon"><i class="bi bi-coin"></i></div>
       </div>
     </div>
 
-    <div class="mb-2">
-      <p class="text-muted ms-4">${this.seatCount} place${this.seatCount > 1 ? 's' : ''} restante${this.seatCount > 1 ? 's' : ''}</p>
-    </div>
-
-    <div class="d-flex justify-content-end pe-3">
+    <div class="d-flex justify-content-between align-items-center px-4">
+      <p class="text-muted mb-0">${this.seatCount} place${this.seatCount > 1 ? 's' : ''} restante${this.seatCount > 1 ? 's' : ''}</p>
       ${this.isEco ? `<div class="eco-icon">🍃</div>` : ''}
     </div>
+
 
     <div class="driver-section">
       <img src="assets/images/profil.jpg" alt="Julie" class="driver-img">
@@ -65,7 +63,6 @@ export class Carpooling {
       </div>
     </div>
   `;
-
 
     wrapper.appendChild(card);
     return wrapper;
