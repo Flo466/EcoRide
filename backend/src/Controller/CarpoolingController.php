@@ -170,17 +170,27 @@ final class CarpoolingController extends AbstractController
         return new JsonResponse(data: null, status: Response::HTTP_NOT_FOUND);
     }
 
-    #[Route('/search', name: 'app_carpooling_search', methods: ['GET'],  options: ['trailing_slash_on_root' => false])]
+   #[Route('/search', name: 'app_carpooling_search', methods: ['GET'])]
     public function search(Request $request, CarpoolingRepository $repository): JsonResponse
     {
         $departurePlace = $request->query->get('departurePlace');
         $arrivalPlace = $request->query->get('arrivalPlace');
-        $departureDate = $request->query->get('departureDate');
+        $departureDateString = $request->query->get('departureDate');
+        $departureDate = null;
+
+        if ($departureDateString) {
+            try {
+                $departureDate = new \DateTimeImmutable($departureDateString);
+            } catch (\Exception $e) {
+                return new JsonResponse(['error' => 'Invalid departureDate format'], 400);
+            }
+        }
 
         $results = $repository->findBySearchCriteria($departurePlace, $arrivalPlace, $departureDate);
 
         return $this->json($results, 200, [], ['groups' => 'carpooling_read']);
     }
+
 
     #[Route('/{id}', name: 'edit', requirements: ['id' => '\d+'], methods: ['PUT'])]
     public function edit(int $id, Request $request): JsonResponse

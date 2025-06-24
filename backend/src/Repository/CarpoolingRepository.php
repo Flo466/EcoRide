@@ -19,7 +19,7 @@ class CarpoolingRepository extends ServiceEntityRepository
      /**
      * Search carpoolings by departure, destination and date
      */
-    public function findBySearchCriteria(?string $departurePlace, ?string $arrivalPlace, ?\DateTime $departureDate): array
+    public function findBySearchCriteria(?string $departurePlace, ?string $arrivalPlace, ?\DateTimeInterface $departureDate): array
     {
         $qb = $this->createQueryBuilder('c');
 

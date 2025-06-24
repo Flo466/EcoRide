@@ -12083,7 +12083,7 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   border-radius: 6%;
 }
 
-#search-carpooling-container-home {
+#carpooling-container-home {
   margin-top: -100px;
   padding: 2rem;
   z-index: 10;
@@ -12123,11 +12123,11 @@ select:focus {
     border-bottom-right-radius: 2rem;
     white-space: nowrap;
   }
-  #search-carpooling-container-home {
+  #carpooling-container-home {
     margin-top: -75px;
   }
 }
-#search-page-carpooling-container {
+#carpooling-container {
   padding: 2rem;
   z-index: 10;
   position: relative;
