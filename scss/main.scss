@@ -199,6 +199,11 @@ select:focus {
   margin: 10px;
 }
 
+#form-messages {
+  color: rgb(226, 14, 71);
+  height: 10px;
+}
+
 @media (min-width: 992px) {
   .search-h1 {
     display: none;
