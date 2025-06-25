@@ -2,6 +2,7 @@ import { fetchApi } from './api/fetch.js';
 import { API_BASE_URL } from './config.js'; 
 import { displaySearchResults } from './components/displayResults.js'; 
 import { sanitizeInput } from '../js/utils/sanitizer.js';
+import { clearMessages, displayMessage } from '../js/utils/alert.js';
 
 
 (async () => {
@@ -11,28 +12,17 @@ import { sanitizeInput } from '../js/utils/sanitizer.js';
     const departureDateInput = document.getElementById('departureDate');
     const formMessagesContainer = document.getElementById('form-messages');
 
-    function displayMessage(message, type = 'error') {
-        if (formMessagesContainer) {
-            formMessagesContainer.innerHTML = `<p>${message}</p>`;
-        }
-    }
-
-    function clearMessages() {
-        if (formMessagesContainer) {
-            formMessagesContainer.innerHTML = '';
-        }
-    }
-
     if (!form) return;
 
     async function executeSearch(depart, arrivee, date) {
         const searchParams = new URLSearchParams();
+
         if (depart) searchParams.append('departurePlace', depart);
         if (arrivee) searchParams.append('arrivalPlace', arrivee);
         if (date) searchParams.append('departureDate', date);
 
         if (!depart && !arrivee) {
-            displayMessage("Veuillez entrer au moins un point de départ et une destination.");
+            displayMessage(formMessagesContainer, "Veuillez entrer au moins un point de départ et une destination.");
             return;
         }
 
@@ -40,7 +30,7 @@ import { sanitizeInput } from '../js/utils/sanitizer.js';
 
         try {
             const result = await fetchApi(apiUrl);
-            displaySearchResults(result, 'carpooling-results'); 
+            displaySearchResults(result, 'carpooling-results');
 
             const currentUrlParams = new URLSearchParams(window.location.search);
             currentUrlParams.set('page', 'carpooling');
@@ -50,14 +40,15 @@ import { sanitizeInput } from '../js/utils/sanitizer.js';
 
             window.history.pushState(null, '', `?${currentUrlParams.toString()}`);
         } catch {
-            displayMessage('Désolé une erreur est survenue')
+            displayMessage(formMessagesContainer, 'Désolé une erreur est survenue');
         }
     }
 
+    // Sanitize values from URL
     const paramsFromUrl = new URLSearchParams(window.location.search);
-    const initialDeparturePlace = paramsFromUrl.get('departurePlace');
-    const initialArrivalPlace = paramsFromUrl.get('arrivalPlace');
-    const initialDepartureDate = paramsFromUrl.get('departureDate');
+    const initialDeparturePlace = sanitizeInput(paramsFromUrl.get('departurePlace'));
+    const initialArrivalPlace = sanitizeInput(paramsFromUrl.get('arrivalPlace'));
+    const initialDepartureDate = sanitizeInput(paramsFromUrl.get('departureDate'));
 
     if (departurePlaceInput && initialDeparturePlace) departurePlaceInput.value = initialDeparturePlace;
     if (arrivalPlaceInput && initialArrivalPlace) arrivalPlaceInput.value = initialArrivalPlace;
@@ -65,16 +56,17 @@ import { sanitizeInput } from '../js/utils/sanitizer.js';
 
     if (initialDeparturePlace || initialArrivalPlace || initialDepartureDate) {
         await executeSearch(initialDeparturePlace, initialArrivalPlace, initialDepartureDate);
-    } else {
-        // Display a message if no initial search parameters are provided
     }
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        clearMessages();
-        const newDeparturePlace = departurePlaceInput.value;
-        const newArrivalPlace = arrivalPlaceInput.value;
-        const newDepartureDate = departureDateInput.value;
+        clearMessages(formMessagesContainer);
+
+        // Sanitize form inputs
+        const newDeparturePlace = sanitizeInput(departurePlaceInput.value);
+        const newArrivalPlace = sanitizeInput(arrivalPlaceInput.value);
+        const newDepartureDate = sanitizeInput(departureDateInput.value);
+
         await executeSearch(newDeparturePlace, newArrivalPlace, newDepartureDate);
     });
 })();

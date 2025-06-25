@@ -1,34 +1,24 @@
 // home.js
 import { sanitizeInput } from '../js/utils/sanitizer.js';
+import { clearMessages, displayMessage } from '../js/utils/alert.js';
 
 (async () => {
     const homeForm = document.querySelector('.search-form'); 
     const formMessagesContainer = document.getElementById('form-messages');
 
-    function displayMessage(message, type = 'error') {
-        if (formMessagesContainer) {
-            formMessagesContainer.innerHTML = `<p>${message}</p>`;
-        }
-    }
-
-    function clearMessages() {
-        if (formMessagesContainer) {
-            formMessagesContainer.innerHTML = '';
-        }
-    }
-
     if (homeForm) {
         homeForm.addEventListener('submit', (event) => {
             event.preventDefault();
 
-            clearMessages();
+            clearMessages(formMessagesContainer);
 
             const departurePlace = sanitizeInput(document.getElementById('departurePlace').value);
             const arrivalPlace = sanitizeInput(document.getElementById('arrivalPlace').value);
-            const departureDate = document.getElementById('departureDate').value; 
+            const departureDate = sanitizeInput(document.getElementById('departureDate').value);
+
 
             if (!departurePlace && !arrivalPlace) {
-                displayMessage("Veuillez entrer au moins un point de départ et une destination.");
+                displayMessage(formMessagesContainer, "Veuillez entrer au moins un point de départ et une destination.");
                 return;
             }
 
