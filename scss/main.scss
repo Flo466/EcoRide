@@ -211,7 +211,7 @@ select:focus {
 }
 
 
-// Card
+// Carpooling card and carpooling detail card
 // -------------------------------------------------------------
 
 .carpool-card {
@@ -265,4 +265,63 @@ select:focus {
   border: 2px solid $primary;
   margin-right: 0.75rem;
   object-fit: cover;
+}
+
+// Carpooling detail card
+// -------------------------------------------------------------
+
+.detail-card {
+  background-color: $white;
+  border-radius: 2rem;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.detail-route-image {
+  width: 30px;
+  height: 65px;
+  object-fit: contain;
+}
+
+.detail-currency-icon {
+  font-size: 1.5rem;
+  margin-left: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.detail-price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  font-size: x-large;
+}
+
+.detail-eco-icon {
+  font-size: xx-large;
+}
+
+.bi-arrow-left {
+  color: $primary;
+  font-size: xx-large;
+}
+
+.detail-text {
+  font-size: smaller;
+}
+
+.date {
+  font-size: x-large;
+  font-weight: 400;
+}
+
+@media (min-width: 768px) {
+  .w-md-60 {
+    width: 60% !important;
+  }
 }

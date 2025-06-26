@@ -15,7 +15,6 @@ export class Carpooling {
     this.status = data.status;
   }
 
-  // Extract hours
   formatTime(isoString) {
     const date = new Date(isoString);
     return date.toLocaleTimeString('fr-FR', {
@@ -25,12 +24,32 @@ export class Carpooling {
     });
   }
 
+  formatDateToFrench(dateInput) {
+    const date = new Date(dateInput);
+    const formattedDate = date.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    });
+
+    const [weekday, day, month] = formattedDate.split(' '); 
+    const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+
+    return [capitalizedWeekday, day, month].join(' ');
+  }
+
+
   toCardElement() {
     const wrapper = document.createElement('div');
     wrapper.className = 'mb-4 w-100 px-2';
 
     const card = document.createElement('div');
     card.className = 'carpool-card card shadow w-100';
+
+    wrapper.dataset.id = this.id;
+    wrapper.addEventListener('click', () => {
+    window.location.href = `detail-carpooling?id=${this.id}`;
+    });
 
     card.innerHTML = `
     <div class="card-body d-flex justify-content-between">
@@ -67,4 +86,47 @@ export class Carpooling {
     wrapper.appendChild(card);
     return wrapper;
   }
+
+  toDetailCarpooling() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mb-4 w-100 px-2 ms-0 w-md-60';
+
+    const card = document.createElement('div');
+    card.className = 'detail-card card shadow w-100';
+
+    card.innerHTML = `
+      <div class="card-body">
+        <div class="mb-3 text-start">
+          <p class="mb-0 ms-2 date">${this.formatDateToFrench(this.departureDate)}</p>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+          <div class="d-flex">
+            <div class="mt-1">
+              <img src="assets/images/Arrow 6.png" alt="Trajet" class="detail-route-image me-2">
+            </div>
+            <div>
+              <p class="fw-bold">${this.departurePlace} - ${this.formatTime(this.departureTime)}</p>
+              <p class="fw-bold mt-4">${this.arrivalPlace} - ${this.formatTime(this.arrivalTime)}</p>
+            </div>
+          </div>
+          <div class="d-flex justify-content-end align-items-center">
+            <div class="detail-price">${this.pricePerPerson.toFixed(2)}</div>
+            <div class="detail-currency-icon"><i class="bi bi-coin"></i></div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center mb-3">
+          ${this.isEco ? `<div class="detail-eco-icon">🍃</div><span class="ms-3 detail-text">En choisissant ce trajet, 
+            vous contribuez à une planète plus verte</span>` : 
+            "Ce trajet ne profite pas d'une empreinte carbone réduite. Prenez le temps de les comparer :)"}
+        </div>
+      </div>
+    `;
+
+
+    wrapper.appendChild(card);
+      return wrapper;
+  } 
+
 }
