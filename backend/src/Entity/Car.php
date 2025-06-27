@@ -21,7 +21,7 @@ class Car
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['car:read', 'car:write'])]
+    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
     private ?string $model = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -50,7 +50,7 @@ class Car
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     #[MaxDepth(1)]
-    #[Groups(['car:read', 'car:write'])]
+    #[Groups(['car:read', 'car:write', 'carpooling-read'])]
     private ?Brand $brand = null;
 
     /**

@@ -56,14 +56,6 @@ class Carpooling
     #[Groups(['carpooling_read'])]
     private ?bool $isEco = null;
 
-    /**
-     * @var Collection<int, User>
-     */
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'carpooling')]
-    #[Groups(['carpooling_read'])]
-    #[MaxDepth(1)]
-    private Collection $user;
-
     #[ORM\ManyToOne(inversedBy: 'carpoolings')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['carpooling_read'])]
@@ -82,9 +74,16 @@ class Carpooling
     #[Groups(['carpooling_read'])]
     private CarpoolingStatus $status = CarpoolingStatus::OPEN;
 
+    /**
+     * @var Collection<int, CarpoolingUser>
+     */
+    #[ORM\OneToMany(targetEntity: CarpoolingUser::class, mappedBy: 'carpooling')]
+    #[Groups(['carpooling_read'])]
+    private Collection $carpoolingUsers;
+
     public function __construct()
     {
-        $this->user = new ArrayCollection();
+        $this->carpoolingUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -100,7 +99,6 @@ class Carpooling
     public function setDepartureDate(\DateTime $departureDate): static
     {
         $this->departureDate = $departureDate;
-
         return $this;
     }
 
@@ -112,7 +110,6 @@ class Carpooling
     public function setDepartureTime(\DateTime $departureTime): static
     {
         $this->departureTime = $departureTime;
-
         return $this;
     }
 
@@ -124,7 +121,6 @@ class Carpooling
     public function setDeparturePlace(string $departurePlace): static
     {
         $this->departurePlace = $departurePlace;
-
         return $this;
     }
 
@@ -136,7 +132,6 @@ class Carpooling
     public function setArrivalDate(\DateTime $arrivalDate): static
     {
         $this->arrivalDate = $arrivalDate;
-
         return $this;
     }
 
@@ -148,7 +143,6 @@ class Carpooling
     public function setArrivalTime(\DateTime $arrivalTime): static
     {
         $this->arrivalTime = $arrivalTime;
-
         return $this;
     }
 
@@ -160,7 +154,6 @@ class Carpooling
     public function setArrivalPlace(string $arrivalPlace): static
     {
         $this->arrivalPlace = $arrivalPlace;
-
         return $this;
     }
 
@@ -172,7 +165,6 @@ class Carpooling
     public function setSeatCount(int $seatCount): static
     {
         $this->seatCount = $seatCount;
-
         return $this;
     }
 
@@ -184,7 +176,6 @@ class Carpooling
     public function setPricePerPerson(float $pricePerPerson): static
     {
         $this->pricePerPerson = $pricePerPerson;
-
         return $this;
     }
 
@@ -196,31 +187,6 @@ class Carpooling
     public function setIsEco(bool $isEco): static
     {
         $this->isEco = $isEco;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUser(): Collection
-    {
-        return $this->user;
-    }
-
-    public function addUser(User $user): static
-    {
-        if (!$this->user->contains($user)) {
-            $this->user->add($user);
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): static
-    {
-        $this->user->removeElement($user);
-
         return $this;
     }
 
@@ -232,7 +198,6 @@ class Carpooling
     public function setCar(?Car $car): static
     {
         $this->car = $car;
-
         return $this;
     }
 
@@ -244,7 +209,6 @@ class Carpooling
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -256,7 +220,6 @@ class Carpooling
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
         return $this;
     }
 
@@ -268,7 +231,65 @@ class Carpooling
     public function setStatus(CarpoolingStatus $status): static
     {
         $this->status = $status;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CarpoolingUser>
+     */
+    public function getCarpoolingUsers(): Collection
+    {
+        return $this->carpoolingUsers;
+    }
+
+    public function addCarpoolingUser(CarpoolingUser $carpoolingUser): static
+    {
+        if (!$this->carpoolingUsers->contains($carpoolingUser)) {
+            $this->carpoolingUsers->add($carpoolingUser);
+            $carpoolingUser->setCarpooling($this);
+        }
 
         return $this;
     }
+
+    public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
+    {
+        if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
+            // set the owning side to null (unless already changed)
+            if ($carpoolingUser->getCarpooling() === $this) {
+                $carpoolingUser->setCarpooling(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function addDriver(User $user): static
+    {
+        foreach ($this->carpoolingUsers as $cu) {
+            if ($cu->getUser() === $user && $cu->isDriver()) {
+                return $this;
+            }
+        }
+
+        $carpoolingUser = new CarpoolingUser();
+        $carpoolingUser->setUser($user);
+        $carpoolingUser->setCarpooling($this);
+        $carpoolingUser->setIsDriver(true);
+
+        $this->addCarpoolingUser($carpoolingUser);
+
+        return $this;
+    }
+
+     public function getDriver(): ?User
+    {
+        foreach ($this->carpoolingUsers as $carpoolingUser) {
+            if ($carpoolingUser->isDriver()) {
+                return $carpoolingUser->getUser();
+            }
+        }
+        return null;
+    }
+
 }

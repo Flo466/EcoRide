@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth; // N'oublie pas d'importer MaxDepth
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -39,11 +40,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user_read'])]
+    #[Groups(['carpooling_read', 'user_read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user_read'])]
+    #[Groups(['carpooling_read', 'user_read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -59,11 +60,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTime $birthDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user_read', 'carpooling_read'])] // Ajout de 'carpooling_read' pour la photo du driver
     private ?string $photo = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user_read'])]
+    #[Groups(['user_read', 'carpooling_read'])] // Ajout de 'carpooling_read' pour le userName du driver
     private ?string $userName = null;
 
     #[ORM\Column]
@@ -97,26 +98,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $reviews;
 
     /**
-     * @var Collection<int, Carpooling>
-     */
-    #[ORM\ManyToMany(targetEntity: Carpooling::class, mappedBy: 'user')]
-    #[Groups(['user_read'])]
-    private Collection $carpooling;
-
-    /**
      * @var Collection<int, Car>
      */
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
     #[Groups(['user_read'])]
     private Collection $cars;
 
+    // --- NOUVELLES PROPRIÉTÉS ET RELATIONS ---
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Car::class, cascade: ['persist', 'remove'])]
+    #[Groups(['carpooling_read'])] // Ajout de ce groupe pour sérialiser la voiture principale du user
+    #[MaxDepth(1)] // Pour éviter les boucles infinies User <-> Car
+    private ?Car $carUsed = null;
+
+    /**
+     * @var Collection<int, CarpoolingUser>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class)]
+    private Collection $carpoolingUsers; // Ajout de cette relation inverse
+
+    // --- FIN NOUVELLES PROPRIÉTÉS ET RELATIONS ---
+
     /** @throws \Exception */
     public function __construct()
     {
         $this->configurations = new ArrayCollection();
         $this->reviews = new ArrayCollection();
-        $this->carpooling = new ArrayCollection();
         $this->cars = new ArrayCollection();
+        $this->carpoolingUsers = new ArrayCollection(); // Initialisation de la nouvelle collection
     }
 
     public function getId(): ?int
@@ -345,7 +354,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeConfiguration(Configuration $configuration): static
     {
         if ($this->configurations->removeElement($configuration)) {
-            // set the owning side to null (unless already changed)
             if ($configuration->getUser() === $this) {
                 $configuration->setUser(null);
             }
@@ -375,37 +383,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeReview(Review $review): static
     {
         if ($this->reviews->removeElement($review)) {
-            // set the owning side to null (unless already changed)
             if ($review->getUser() === $this) {
                 $review->setUser(null);
             }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Carpooling>
-     */
-    public function getCarpooling(): Collection
-    {
-        return $this->carpooling;
-    }
-
-    public function addCarpooling(Carpooling $carpooling): static
-    {
-        if (!$this->carpooling->contains($carpooling)) {
-            $this->carpooling->add($carpooling);
-            $carpooling->addUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCarpooling(Carpooling $carpooling): static
-    {
-        if ($this->carpooling->removeElement($carpooling)) {
-            $carpooling->removeUser($this);
         }
 
         return $this;
@@ -432,9 +412,57 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCar(Car $car): static
     {
         if ($this->cars->removeElement($car)) {
-            // set the owning side to null (unless already changed)
             if ($car->getUser() === $this) {
                 $car->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    // --- NOUVEAUX GETTERS/SETTERS POUR LES RELATIONS AJOUTÉES ---
+
+    public function getCarUsed(): ?Car
+    {
+        return $this->carUsed;
+    }
+
+    public function setCarUsed(?Car $carUsed): static
+    {
+        // set the owning side of the relation if necessary
+        if ($carUsed && $carUsed->getUser() !== $this) {
+            $carUsed->setUser($this);
+        }
+
+        $this->carUsed = $carUsed;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CarpoolingUser>
+     */
+    public function getCarpoolingUsers(): Collection
+    {
+        return $this->carpoolingUsers;
+    }
+
+    public function addCarpoolingUser(CarpoolingUser $carpoolingUser): static
+    {
+        if (!$this->carpoolingUsers->contains($carpoolingUser)) {
+            $this->carpoolingUsers->add($carpoolingUser);
+            $carpoolingUser->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
+    {
+        if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
+            // set the owning side to null (unless already changed)
+            if ($carpoolingUser->getUser() === $this) {
+                $carpoolingUser->setUser(null);
             }
         }
 

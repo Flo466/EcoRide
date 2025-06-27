@@ -211,7 +211,7 @@ select:focus {
 }
 
 
-// Carpooling card and carpooling detail card
+// Carpooling card
 // -------------------------------------------------------------
 
 .carpool-card {
@@ -317,11 +317,26 @@ select:focus {
 
 .date {
   font-size: x-large;
-  font-weight: 400;
 }
 
 @media (min-width: 768px) {
   .w-md-60 {
     width: 60% !important;
   }
+}
+
+// User detail card
+// -------------------------------------------------------------
+
+.user-card-title {
+  font-size: x-large;
+}
+
+.driver-img-detail {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid $primary;
+  margin-right: 0.75rem;
+  object-fit: cover;
 }

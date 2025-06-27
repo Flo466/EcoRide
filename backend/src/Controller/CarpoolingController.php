@@ -4,20 +4,19 @@ namespace App\Controller;
 
 use App\Entity\Car;
 use App\Entity\Carpooling;
+use App\Entity\CarpoolingUser;
 use App\Enum\CarpoolingStatus;
 use OpenApi\Attributes as OA;
 use App\Repository\CarpoolingRepository;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route as AnnotationRoute;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -26,10 +25,6 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 #[Route('api/carpooling', name: 'app_api_carpooling_')]
 final class CarpoolingController extends AbstractController
 {
-    /**
-     * @var NormalizerInterface
-     */
-
     public function __construct(
         private EntityManagerInterface $manager,
         private CarpoolingRepository $repository,
@@ -45,78 +40,7 @@ final class CarpoolingController extends AbstractController
         $this->normalizer = $normalizer;
     }
 
-    // New carpooling Route / API doc
     #[Route('/', name: 'new', methods: 'POST')]
-    #[OA\Post(
-        path: "/api/carpooling",
-        summary: "Publish a new carpooling",
-        requestBody: new OA\RequestBody(
-            required: true,
-            description: "Datas required to post",
-            content: new OA\JsonContent(
-                type: "object",
-                properties: [
-                    new OA\Property(property: "departureDate", type: "string", format: "date", example: "2025-01-01"),
-                    new OA\Property(property: "departureTime", type: "string", format: "time", example: "12:00"),
-                    new OA\Property(property: "departurePlace", type: "string", example: "Melun"),
-                    new OA\Property(property: "arrivalDate", type: "string", format: "date", example: "2025-01-01"),
-                    new OA\Property(property: "arrivalTime", type: "string", format: "time", example: "12:45"),
-                    new OA\Property(property: "arrivalPlace", type: "string", example: "Paris"),
-                    new OA\Property(property: "seatCount", type: "integer", example: 2),
-                    new OA\Property(property: "pricePerPerson", type: "float", example: 5),
-                    new OA\Property(property: "isEco", type: "boolean", example: true),
-                    new OA\Property(property: "car", type: "integer", example: 1),
-
-                ],
-                required: [
-                    "departureDate", "departureTime", "departurePlace",
-                    "arrivalDate", "arrivalTime", "arrivalPlace", "seatCount",
-                    "pricePerPerson", "isEco"
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(
-                response: 201,
-                description: "Carpooling successfully published",
-                content: new OA\JsonContent(
-                    type: "object",
-                    properties: [
-                        new OA\Property(property: "departureDate", type: "string", format: "date", example: "2025-01-01"),
-                        new OA\Property(property: "departureTime", type: "string", format: "time", example: "12:00"),
-                        new OA\Property(property: "departurePlace", type: "string", example: "Melun"),
-                        new OA\Property(property: "arrivalDate", type: "string", format: "date", example: "2025-01-01"),
-                        new OA\Property(property: "arrivalTime", type: "string", format: "time", example: "12:45"),
-                        new OA\Property(property: "arrivalPlace", type: "string", example: "Paris"),
-                        new OA\Property(property: "seatCount", type: "integer", example: 2),
-                        new OA\Property(property: "pricePerPerson", type: "float", example: 5),
-                        new OA\Property(property: "isEco", type: "boolean", example: true),
-                    ]
-                )
-            ),
-            new OA\Response(
-                response: 400,
-                description: "Invalid data",
-                content: new OA\JsonContent(
-                    type: "object",
-                    properties: [
-                        new OA\Property(property: "message", type: "string", example: "Invalid data provided")
-                    ]
-                )
-            ),
-            new OA\Response(
-                response: 401,
-                description: "Unauthorized",
-                content: new OA\JsonContent(
-                    type: "object",
-                    properties: [
-                        new OA\Property(property: "message", type: "string", example: "Unauthorized access")
-                    ]
-                )
-            )
-        ]
-    )]
-    // New carpooling function
     public function new(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -137,10 +61,18 @@ final class CarpoolingController extends AbstractController
         $carpooling->setCreatedAt(new DateTimeImmutable());
         $carpooling->setStatus(CarpoolingStatus::OPEN);
 
+        $user = $this->security->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+        }
 
-        //Implémenter logique(formulaire)
+        $carpoolingUser = new CarpoolingUser();
+        $carpoolingUser->setUser($user);
+        $carpoolingUser->setCarpooling($carpooling);
+        $carpoolingUser->setIsDriver(true);
 
         $this->manager->persist($carpooling);
+        $this->manager->persist($carpoolingUser);
         $this->manager->flush();
         
         $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
@@ -240,5 +172,4 @@ final class CarpoolingController extends AbstractController
 
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
-
 }

@@ -12250,11 +12250,23 @@ select:focus {
 
 .date {
   font-size: x-large;
-  font-weight: 400;
 }
 
 @media (min-width: 768px) {
   .w-md-60 {
     width: 60% !important;
   }
+}
+.user-card-title {
+  font-size: x-large;
+}
+
+.driver-img-detail {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #00ce0a;
+  margin-right: 0.75rem;
+  -o-object-fit: cover;
+     object-fit: cover;
 }/*# sourceMappingURL=main.css.map */
