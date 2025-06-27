@@ -12269,4 +12269,9 @@ select:focus {
   margin-right: 0.75rem;
   -o-object-fit: cover;
      object-fit: cover;
+}
+
+.bi-car-front-fill {
+  color: #00ce0a;
+  font-size: x-large;
 }/*# sourceMappingURL=main.css.map */

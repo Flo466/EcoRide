@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\BrandRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -13,9 +14,11 @@ class Brand
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['brand_read', 'car_read', 'carpooling_read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['brand_read', 'car_read', 'carpooling_read'])]
     private ?string $label = null;
 
     /**

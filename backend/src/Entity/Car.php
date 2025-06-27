@@ -17,7 +17,7 @@ class Car
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['car:read', 'car:list'])]
+    #[Groups(['car:read', 'car:list',  'carpooling_read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
@@ -25,15 +25,15 @@ class Car
     private ?string $model = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['car:read', 'car:write'])]
+    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
     private ?string $color = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['car:read', 'car:write'])]
+    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
     private ?string $licencePlate = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['car:read', 'car:write'])]
+    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
     private ?string $energy = null;
 
     #[ORM\Column(type: 'string', length: 10, nullable: false)]
@@ -50,7 +50,7 @@ class Car
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     #[MaxDepth(1)]
-    #[Groups(['car:read', 'car:write', 'carpooling-read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
     private ?Brand $brand = null;
 
     /**

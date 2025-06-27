@@ -92,10 +92,17 @@ final class CarpoolingController extends AbstractController
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        $carpooling = $this->repository->findOneBy(['id' => $id]);
+        $carpooling = $this->repository->find($id);
 
         if ($carpooling) {
-            $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
+            $responseData = $this->serializer->normalize($carpooling, 'json', [
+                'groups' => [
+                    'carpooling_read',
+                    'car_read',
+                    'brand_read',
+                    'user_read'
+                ]
+            ]);
             return new JsonResponse($responseData, status: Response::HTTP_OK);
         }
 

@@ -162,15 +162,21 @@ toDriverCardElement() {
     const driverCard = document.createElement('div');
     driverCard.className = 'detail-card card shadow w-100';
 
+    const carBrandLabel = this.car && this.car.brand ? this.car.brand.label : "Non renseignée";
+    const carModel = this.car ? this.car.model : "";    
+
     driverCard.innerHTML = `
         <div class="card-body pb-0"> 
           <h2 class="mb-3 text-start user-card-title ">Trajet proposé par</h2>
           <div class="d-flex align-items-center mb-3">
               <img class="driver-img-detail" src="${this.driver.photo || 'assets/images/profil.jpg'}" alt="${this.driver.userName || 'Conducteur'}">
-              <div>
-                  <p class="mb-0 fs-5">${this.driver.userName}</p>
-                  <p class="mb-0">Note: ☆ 5</p> </div>
+              <p class="mb-0 fs-5">${this.driver.userName}</p>
           </div>
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-car-front-fill ms-2 me-2"></i>
+            <p class="mb-0 car-label">${carBrandLabel} ${carModel}</p>
+          </div>
+           <p class="mb-2 ms-2"><span class="fs-5">☆</span></p>
        </div>   
     `;
 
