@@ -11987,7 +11987,17 @@ body {
   color: #373636;
 }
 
-h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+h1, .h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
   font-family: "Quicksand", sans-serif;
 }
 
@@ -12098,7 +12108,7 @@ select:focus {
   outline: none !important;
 }
 
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .border-switch {
     border-bottom: none;
     border-right: 2px solid #00ce0a;
@@ -12253,8 +12263,8 @@ select:focus {
 }
 
 @media (min-width: 768px) {
-  .w-md-60 {
-    width: 60% !important;
+  .w-md-70 {
+    width: 70% !important;
   }
 }
 .user-card-title {
@@ -12262,8 +12272,8 @@ select:focus {
 }
 
 .driver-img-detail {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   border: 2px solid #00ce0a;
   margin-right: 0.75rem;
@@ -12274,4 +12284,32 @@ select:focus {
 .bi-car-front-fill {
   color: #00ce0a;
   font-size: x-large;
+}
+
+.driver-name-rating {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .driver-name-rating {
+    flex-direction: row;
+    align-items: center;
+  }
+  .driver-rating {
+    margin-left: 40px;
+  }
+  .driver-car-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .driver-car-model {
+    margin-bottom: 0 !important;
+  }
+  .driver-car-energy {
+    margin-bottom: 0 !important;
+    margin-left: 40px !important;
+  }
 }/*# sourceMappingURL=main.css.map */
