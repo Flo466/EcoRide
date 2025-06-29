@@ -1,5 +1,3 @@
-// src/templates/carpoolingCardContent.js
-
 const DEFAULT_PROFILE_IMAGE = 'assets/images/profil.jpg';
 const FALLBACK_DRIVER_NAME = 'Conducteur';
 

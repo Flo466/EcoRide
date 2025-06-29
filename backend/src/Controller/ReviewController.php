@@ -3,9 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Review;
-use App\Entity\User;
+use App\Entity\User; // Assure-toi que User est bien importé
 use App\Enum\ReviewStatus;
 use App\Repository\ReviewRepository;
+use App\Repository\UserRepository; // Importe le UserRepository pour trouver l'utilisateur cible
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +27,8 @@ final class ReviewController extends AbstractController
         private ReviewRepository $repository,
         private SerializerInterface $serializer,
         private Security $security,
-        private NormalizerInterface $normalizer
+        private NormalizerInterface $normalizer,
+        private UserRepository $userRepository // Injecte le UserRepository
     ) {}
 
     #[Route('/', name: 'new', methods: ['POST'])]
@@ -65,6 +67,22 @@ final class ReviewController extends AbstractController
 
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
+
+    #[Route('/user/{userId}', name: 'get_by_user', methods: ['GET'])]
+    public function getReviewsByUser(int $userId): JsonResponse
+    {
+        $targetUser = $this->userRepository->find($userId);
+
+        if (!$targetUser) {
+            return new JsonResponse(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $reviews = $this->repository->findBy(['user' => $targetUser, 'status' => ReviewStatus::APPROVED]);
+        $responseData = $this->normalizer->normalize($reviews, 'json', ['groups' => ['review:read', 'user:read']]);
+
+        return new JsonResponse($responseData, Response::HTTP_OK);
+    }
+
 
     #[Route('/{id}', name: 'edit', methods: ['PUT'])]
     public function edit(int $id, Request $request): JsonResponse
@@ -116,7 +134,7 @@ final class ReviewController extends AbstractController
         }
 
         if ($review->getUser()->getId() !== $user->getId() && !$this->isGranted('ROLE_ADMIN')) {
-             return new JsonResponse(['message' => 'Unauthorized to update status of this review'], Response::HTTP_FORBIDDEN);
+            return new JsonResponse(['message' => 'Unauthorized to update status of this review'], Response::HTTP_FORBIDDEN);
         }
 
         $data = json_decode($request->getContent(), true);

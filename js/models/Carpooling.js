@@ -2,15 +2,16 @@ import { User } from './User.js';
 import { createCarpoolCardElement } from '../templates/carpoolingCardContent.js';
 import { createCarpoolDetailCardElement } from '../templates/carpoolingDetailCardContent.js';
 import { createCarpoolDriverCardElement } from '../templates/carpoolingDriverCardContent.js';
+import { formatTime, formatDateToFrench } from '../utils/formatters.js';
 
 export class Carpooling {
   constructor(data) {
     this.id = data.id;
-    this.departureDate = data.departureDate
-    this.departureTime = data.departureTime
+    this.departureDate = data.departureDate;
+    this.departureTime = data.departureTime;
     this.departurePlace = data.departurePlace;
-    this.arrivalDate = data.arrivalDate
-    this.arrivalTime = data.arrivalTime
+    this.arrivalDate = data.arrivalDate;
+    this.arrivalTime = data.arrivalTime;
     this.arrivalPlace = data.arrivalPlace;
     this.seatCount = data.seatCount;
     this.pricePerPerson = data.pricePerPerson;
@@ -29,35 +30,12 @@ export class Carpooling {
     }
   }
 
-  static formatTime(isoString) {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  }
-
-  static formatDateToFrench(dateInput) {
-    const date = new Date(dateInput);
-    const formattedDate = date.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    });
-
-    const [weekday, day, month] = formattedDate.split(' ');
-    const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-
-    return [capitalizedWeekday, day, month].join(' ');
-  }
-
   toCardElement() {
-    return createCarpoolCardElement(this, Carpooling.formatTime);
+    return createCarpoolCardElement(this, formatTime);
   }
 
   toDetailCarpooling() {
-    return createCarpoolDetailCardElement(this, Carpooling.formatDateToFrench, Carpooling.formatTime);
+    return createCarpoolDetailCardElement(this, formatDateToFrench, formatTime);
   }
 
   toDriverCardElement() {

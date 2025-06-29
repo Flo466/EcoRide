@@ -1,16 +1,8 @@
-import { fetchApi } from './api/fetch.js'; 
-import { API_BASE_URL } from './config.js'; 
-import { displaySearchResults } from './components/display-results.js'; 
+import { fetchApi } from './api/fetch.js';
+import { API_BASE_URL } from './config.js';
+import { displaySearchResults } from './components/display-results.js';
 import { sanitizeInput } from '../js/utils/sanitizer.js';
 import { clearMessages, displayMessage } from '../js/utils/alert.js';
-
-function goBack() {
-  if (document.referrer) {
-    window.history.back();
-  } else {
-    window.location.href = '/';
-  }
-}
 
 (async () => {
     const form = document.querySelector('.search-form');
