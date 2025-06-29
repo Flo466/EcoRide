@@ -12108,7 +12108,7 @@ select:focus {
   outline: none !important;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .border-switch {
     border-bottom: none;
     border-right: 2px solid #00ce0a;
@@ -12262,7 +12262,7 @@ select:focus {
   font-size: x-large;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .w-md-70 {
     width: 70% !important;
   }
@@ -12292,7 +12292,7 @@ select:focus {
   justify-content: center;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .driver-name-rating {
     flex-direction: row;
     align-items: center;
