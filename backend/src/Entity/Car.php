@@ -227,6 +227,4 @@ class Car
 
         return $date && $date->format('d/m/Y') === $this->firstRegistrationDate;
     }
-
 }
-

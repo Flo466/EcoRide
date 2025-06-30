@@ -62,14 +62,16 @@ import { Review } from './models/Review.js';
             const driverReviewsList = document.getElementById('driver-reviews-list');
 
             try {
-                const reviewsApiUrl = `${API_BASE_URL}/api/review/user/${carpooling.driver.id}`;
+                // C'EST CETTE LIGNE QU'IL FAUT CHANGER :
+                const reviewsApiUrl = `${API_BASE_URL}/api/review/user/${carpooling.driver.id}/target`;
                 const reviewsResult = await fetchApi(reviewsApiUrl);
                 console.log('Reviews JSON', reviewsResult);
 
                 if (reviewsResult && reviewsResult.length > 0) {
                     let hasApprovedReviews = false;
                     reviewsResult.forEach(reviewData => {
-                        if (reviewData.status === 'APPROVED') {
+                        // Garde la vérification du statut en minuscules comme on avait vu
+                        if (reviewData.status.toLowerCase() === 'approved') {
                             const review = new Review(reviewData);
                             driverReviewsList.appendChild(review.toReviewCardElement());
                             hasApprovedReviews = true;

@@ -3,13 +3,14 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth; // N'oublie pas d'importer MaxDepth
+use Symfony\Component\Serializer\Annotation\MaxDepth; // Assure-toi que MaxDepth est importé
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -40,11 +41,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['carpooling_read', 'user_read'])]
+    #[Groups(['carpooling_read', 'user_read', 'review:read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['carpooling_read', 'user_read'])]
+    #[Groups(['carpooling_read', 'user_read', 'review:read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -60,11 +61,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTime $birthDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user_read', 'carpooling_read'])] // Ajout de 'carpooling_read' pour la photo du driver
+    #[Groups(['user_read', 'carpooling_read'])]
     private ?string $photo = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user_read', 'carpooling_read'])] // Ajout de 'carpooling_read' pour le userName du driver
+    #[Groups(['user_read', 'carpooling_read', 'review:read'])]
     private ?string $userName = null;
 
     #[ORM\Column]
@@ -104,20 +105,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user_read'])]
     private Collection $cars;
 
-    // --- NOUVELLES PROPRIÉTÉS ET RELATIONS ---
-
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Car::class, cascade: ['persist', 'remove'])]
-    #[Groups(['carpooling_read'])] // Ajout de ce groupe pour sérialiser la voiture principale du user
-    #[MaxDepth(1)] // Pour éviter les boucles infinies User <-> Car
-    private ?Car $carUsed = null;
-
     /**
      * @var Collection<int, CarpoolingUser>
      */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class)]
-    private Collection $carpoolingUsers; // Ajout de cette relation inverse
+    private Collection $carpoolingUsers;
 
-    // --- FIN NOUVELLES PROPRIÉTÉS ET RELATIONS ---
+    // --- NOUVELLE PROPRIÉTÉ POUR LA VOITURE UTILISÉE ---
+    #[ORM\ManyToOne(targetEntity: Car::class)] // C'est une ManyToOne
+    #[ORM\JoinColumn(nullable: true)] // Peut être null si aucune voiture n'est spécifiée comme utilisée
+    #[Groups(['user_read', 'carpooling_read'])] // Si tu veux sérialiser cette voiture avec l'utilisateur
+    #[MaxDepth(1)] // Pour éviter les boucles infinies User -> Car
+    private ?Car $usedCar = null;
 
     /** @throws \Exception */
     public function __construct()
@@ -125,7 +124,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->configurations = new ArrayCollection();
         $this->reviews = new ArrayCollection();
         $this->cars = new ArrayCollection();
-        $this->carpoolingUsers = new ArrayCollection(); // Initialisation de la nouvelle collection
+        $this->carpoolingUsers = new ArrayCollection();
+        // Pas besoin d'initialiser usedCar car ce n'est pas une collection
+        $this->createdAt = new DateTimeImmutable(); // Initialisation de createdAt
+        $this->credits = 0; // Valeur par défaut pour credits si nécessaire
+        $this->roles = ['ROLE_USER']; // Rôle par défaut
     }
 
     public function getId(): ?int
@@ -420,25 +423,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // --- NOUVEAUX GETTERS/SETTERS POUR LES RELATIONS AJOUTÉES ---
-
-    public function getCarUsed(): ?Car
-    {
-        return $this->carUsed;
-    }
-
-    public function setCarUsed(?Car $carUsed): static
-    {
-        // set the owning side of the relation if necessary
-        if ($carUsed && $carUsed->getUser() !== $this) {
-            $carUsed->setUser($this);
-        }
-
-        $this->carUsed = $carUsed;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, CarpoolingUser>
      */
@@ -465,6 +449,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $carpoolingUser->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUsedCar(): ?Car
+    {
+        return $this->usedCar;
+    }
+
+    public function setUsedCar(?Car $usedCar): static
+    {
+        $this->usedCar = $usedCar;
 
         return $this;
     }

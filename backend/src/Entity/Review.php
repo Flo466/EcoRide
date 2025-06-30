@@ -7,7 +7,7 @@ use App\Enum\ReviewStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Annotation\MaxDepth; // Garde si utilisé pour d'autres relations
 
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
 class Review
@@ -24,17 +24,25 @@ class Review
 
     #[ORM\Column]
     #[Groups(['review:read', 'review:write'])]
-    private ?int $ratting = null;
+    private ?int $ratting = null; // Note: 'ratting' avec deux 't' comme dans tes données
 
     #[ORM\Column(type: 'string', enumType: ReviewStatus::class)]
     #[Groups(['review:read', 'review:write'])]
     private ReviewStatus $status;
 
-    #[ORM\ManyToOne(inversedBy: 'reviews')]
+    // Utilisateur qui a laissé le commentaire (l'auteur)
+    #[ORM\ManyToOne(inversedBy: 'reviews')] // Assure-toi que l'entité User a bien une propriété 'reviews' qui fait référence à ces avis
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['review:read'])]
-    #[MaxDepth(1)]
-    private ?User $user = null;
+    #[MaxDepth(1)] // Pour éviter les boucles de sérialisation si User a des relations circulaires
+    private ?User $user = null; // Reste 'user' comme tu l'as demandé
+
+    // Utilisateur qui reçoit le commentaire (la cible, ex: le conducteur)
+    #[ORM\ManyToOne(targetEntity: User::class)] // Fais référence à l'entité User
+    #[ORM\JoinColumn(name: "reviewed_user_id", referencedColumnName: "id", nullable: false)] // Nouvelle colonne dans la base de données
+    #[Groups(['review:read', 'review:write'])] // Ajout des groupes de sérialisation
+    #[MaxDepth(1)] // Pour éviter les boucles de sérialisation
+    private ?User $reviewedUser = null; // Nouvelle propriété
 
     #[ORM\Column]
     #[Groups(['review:read'])]
@@ -57,7 +65,6 @@ class Review
     public function setComment(string $comment): static
     {
         $this->comment = $comment;
-
         return $this;
     }
 
@@ -69,7 +76,6 @@ class Review
     public function setRatting(int $ratting): static
     {
         $this->ratting = $ratting;
-
         return $this;
     }
 
@@ -81,7 +87,6 @@ class Review
     public function setStatus(ReviewStatus $status): self
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -93,7 +98,18 @@ class Review
     public function setUser(?User $user): static
     {
         $this->user = $user;
+        return $this;
+    }
 
+    // Nouveaux Getters et Setters pour 'reviewedUser'
+    public function getReviewedUser(): ?User
+    {
+        return $this->reviewedUser;
+    }
+
+    public function setReviewedUser(?User $reviewedUser): static
+    {
+        $this->reviewedUser = $reviewedUser;
         return $this;
     }
 
@@ -105,7 +121,6 @@ class Review
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -117,7 +132,6 @@ class Review
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
         return $this;
     }
 }

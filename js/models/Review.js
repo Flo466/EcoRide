@@ -11,7 +11,7 @@ export class Review {
     constructor(data) {
         this.id = data.id || null;
         this.comment = data.comment || '';
-        this.rating = data.rating || 0;
+        this.rating = data.ratting || 0;
         this.status = data.status || ReviewStatus.PENDING;
 
         this.user = (data.user instanceof User) ? data.user : (data.user ? new User(data.user) : null);

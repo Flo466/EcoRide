@@ -1,9 +1,7 @@
-const FALLBACK_USER_NAME = 'Utilisateur anonyme';
-
 export function createReviewContent(data) {
-    const userName = data.user && data.user.firstName && data.user.lastName ? `${data.user.firstName} ${data.user.lastName}` : (data.user && data.user.userName ? data.user.userName : FALLBACK_USER_NAME);
+    const userName = data.user && data.user.userName
     const comment = data.comment || 'Aucun commentaire fourni.';
-    const rating = data.rating || 0;
+    const rating = data.ratting || 0;
 
     const stars = '⭐'.repeat(Math.round(rating));
 
@@ -15,7 +13,8 @@ export function createReviewContent(data) {
                     <span class="text-muted ms-1">(${rating}/5)</span>
                 </div>
                 <p class="card-text">${comment}</p>
-                ${data.createdAt ? `<p class="card-subtitle text-muted text-end"><small>Le: ${new Date(data.createdAt).toLocaleDateString('fr-FR')}</small></p>` : ''}
+                ${data.createdAt ? `<p class="card-subtitle text-muted text-end"><small>Le: 
+                    ${new Date(data.createdAt).toLocaleDateString('fr-FR')}</small></p>` : ''}
             </div>
         </div>
     `;
