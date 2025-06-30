@@ -325,12 +325,6 @@ select:focus {
   font-size: x-large;
 }
 
-@media (min-width: 992px) {
-  .w-md-70 {
-    width: 70% !important;
-  }
-}
-
 // User detail card
 // -------------------------------------------------------------
 
@@ -388,3 +382,31 @@ select:focus {
 
 // Review
 // -------------------------------------------------------------
+.review-list {
+  border-bottom: 1px solid $primary;
+}
+
+/* Review section - pour le conteneur des avis scrollable */
+#driver-reviews-list {
+  max-height: 450px;
+  overflow-y: auto;
+  padding-right: 15px;
+}
+
+#driver-reviews-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+#driver-reviews-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#driver-reviews-list::-webkit-scrollbar-thumb {
+  background: $primary;
+  border-radius: 10px;
+}
+
+#driver-reviews-list::-webkit-scrollbar-thumb:hover {
+  background: darken($color: $primary, $amount: 8);
+}

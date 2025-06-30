@@ -9,7 +9,7 @@ export function createCarpoolDriverCardElement(data) {
     }
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'mb-4 w-100 px-2 ms-0 w-md-70';
+    wrapper.className = 'mb-4 w-100 px-2 ms-0 w-md-60';
 
     const driverCard = document.createElement('div');
     driverCard.className = 'detail-card card shadow w-100';

@@ -6,7 +6,10 @@ import { Carpooling } from './models/Carpooling.js';
 import { Review } from './models/Review.js';
 
 (async () => {
-    const container = document.getElementById('detail-carpooling-container');
+    const carpoolingContainer = document.getElementById('detail-carpooling-container');
+    const userContainer = document.getElementById('detail-user-container');
+    const reviewContainer = document.getElementById('detail-review-container');
+
     const backButton = document.getElementById('back-button');
 
     if (backButton) {
@@ -20,8 +23,8 @@ import { Review } from './models/Review.js';
         });
     }
 
-    if (!container) {
-        console.error('Container not found!');
+    if (!carpoolingContainer || !userContainer || !reviewContainer) {
+        console.error('Un ou plusieurs conteneurs (carpooling, user, review) non trouvés!');
         return;
     }
 
@@ -29,7 +32,7 @@ import { Review } from './models/Review.js';
     const id = urlParams.get('id');
 
     if (!id) {
-        container.innerHTML = '<p class="text-danger">Aucun covoiturage sélectionné.</p>';
+        carpoolingContainer.innerHTML = '<p class="text-danger">Aucun covoiturage sélectionné.</p>';
         return;
     }
 
@@ -41,28 +44,18 @@ import { Review } from './models/Review.js';
 
         const carpooling = new Carpooling(result);
 
-        container.innerHTML = '';
+        carpoolingContainer.innerHTML = '';
+        userContainer.innerHTML = '';
+        reviewContainer.innerHTML = '';
 
-        container.appendChild(carpooling.toDetailCarpooling());
+        carpoolingContainer.appendChild(carpooling.toDetailCarpooling());
 
         if (carpooling.driver) {
-            const driverCard = carpooling.toDriverCardElement();
-            container.appendChild(driverCard);
-
-            const reviewsSection = document.createElement('div');
-            reviewsSection.className = 'row justify-content-center mt-4';
-            reviewsSection.innerHTML = `
-                <div class="col-12 col-md-8">
-                    <h4 class="mb-3">Avis</h4>
-                    <div id="driver-reviews-list"></div>
-                </div>
-            `;
-            container.appendChild(reviewsSection);
+            userContainer.appendChild(carpooling.toDriverCardElement());
+            reviewContainer.innerHTML = `<h4 class="ms-3 mb-3">Avis</h4><div id="driver-reviews-list"></div>`;
 
             const driverReviewsList = document.getElementById('driver-reviews-list');
-
             try {
-                // C'EST CETTE LIGNE QU'IL FAUT CHANGER :
                 const reviewsApiUrl = `${API_BASE_URL}/api/review/user/${carpooling.driver.id}/target`;
                 const reviewsResult = await fetchApi(reviewsApiUrl);
                 console.log('Reviews JSON', reviewsResult);
@@ -70,7 +63,6 @@ import { Review } from './models/Review.js';
                 if (reviewsResult && reviewsResult.length > 0) {
                     let hasApprovedReviews = false;
                     reviewsResult.forEach(reviewData => {
-                        // Garde la vérification du statut en minuscules comme on avait vu
                         if (reviewData.status.toLowerCase() === 'approved') {
                             const review = new Review(reviewData);
                             driverReviewsList.appendChild(review.toReviewCardElement());
@@ -99,10 +91,8 @@ import { Review } from './models/Review.js';
             }
 
         } else {
-            const noDriverInfo = document.createElement('div');
-            noDriverInfo.className = 'col-12 col-md-8 mx-auto mt-4';
-            noDriverInfo.innerHTML = '<div class="p-4"><p class="text-danger mb-0">Aucune information sur le conducteur disponible.</p></div>';
-            container.appendChild(noDriverInfo);
+            userContainer.innerHTML = '<div class="p-4"><p class="text-danger mb-0">Aucune information sur le conducteur disponible.</p></div>';
+            reviewContainer.innerHTML = '<div class="p-4"><p class="text-info mb-0">Aucun avis à afficher car pas de conducteur.</p></div>';
         }
 
         const currentUrlParams = new URLSearchParams(window.location.search);
@@ -111,6 +101,6 @@ import { Review } from './models/Review.js';
 
     } catch (error) {
         console.error(error);
-        container.innerHTML = '<p class="text-danger">Erreur lors du chargement du covoiturage.</p>';
+        carpoolingContainer.innerHTML = '<p class="text-danger">Erreur lors du chargement du covoiturage.</p>';
     }
 })();

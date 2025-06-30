@@ -111,11 +111,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class)]
     private Collection $carpoolingUsers;
 
-    // --- NOUVELLE PROPRIÉTÉ POUR LA VOITURE UTILISÉE ---
-    #[ORM\ManyToOne(targetEntity: Car::class)] // C'est une ManyToOne
-    #[ORM\JoinColumn(nullable: true)] // Peut être null si aucune voiture n'est spécifiée comme utilisée
-    #[Groups(['user_read', 'carpooling_read'])] // Si tu veux sérialiser cette voiture avec l'utilisateur
-    #[MaxDepth(1)] // Pour éviter les boucles infinies User -> Car
+    #[ORM\ManyToOne(targetEntity: Car::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['user_read', 'carpooling_read'])]
+    #[MaxDepth(1)]
     private ?Car $usedCar = null;
 
     /** @throws \Exception */
@@ -125,10 +124,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->reviews = new ArrayCollection();
         $this->cars = new ArrayCollection();
         $this->carpoolingUsers = new ArrayCollection();
-        // Pas besoin d'initialiser usedCar car ce n'est pas une collection
-        $this->createdAt = new DateTimeImmutable(); // Initialisation de createdAt
-        $this->credits = 0; // Valeur par défaut pour credits si nécessaire
-        $this->roles = ['ROLE_USER']; // Rôle par défaut
+        $this->createdAt = new DateTimeImmutable();
+        $this->credits = 0;
+        $this->roles = ['ROLE_USER'];
     }
 
     public function getId(): ?int

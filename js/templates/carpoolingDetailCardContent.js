@@ -2,7 +2,7 @@
 
 export function createCarpoolDetailCardElement(data, formatDateToFrench, formatTime) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'mb-4 w-100 px-2 ms-0 w-md-70';
+    wrapper.className = 'mb-4 w-100 px-2 ms-0 w-md-60';
 
     const card = document.createElement('div');
     card.className = 'detail-card card shadow w-100';

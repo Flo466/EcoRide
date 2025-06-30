@@ -12262,11 +12262,6 @@ select:focus {
   font-size: x-large;
 }
 
-@media (min-width: 992px) {
-  .w-md-70 {
-    width: 70% !important;
-  }
-}
 .user-card-title {
   font-size: x-large;
 }
@@ -12312,4 +12307,32 @@ select:focus {
     margin-bottom: 0 !important;
     margin-left: 40px !important;
   }
+}
+.review-list {
+  border-bottom: 1px solid #00ce0a;
+}
+
+/* Review section - pour le conteneur des avis scrollable */
+#driver-reviews-list {
+  max-height: 450px;
+  overflow-y: auto;
+  padding-right: 15px;
+}
+
+#driver-reviews-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+#driver-reviews-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#driver-reviews-list::-webkit-scrollbar-thumb {
+  background: #00ce0a;
+  border-radius: 10px;
+}
+
+#driver-reviews-list::-webkit-scrollbar-thumb:hover {
+  background: #00a508;
 }/*# sourceMappingURL=main.css.map */
