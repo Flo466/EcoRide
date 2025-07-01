@@ -1,6 +1,26 @@
 {
   "dependencies": {
     "bootstrap": "^5.3.5",
-    "bootstrap-icons": "^1.11.3"
-  }
+    "bootstrap-icons": "^1.11.3",
+    "csv-parser": "^3.2.0"
+  },
+  "name": "ecoride",
+  "version": "1.0.0",
+  "description": "<!-- Init -->",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Flo466/EcoRide.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Flo466/EcoRide/issues"
+  },
+  "homepage": "https://github.com/Flo466/EcoRide#readme"
 }

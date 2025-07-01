@@ -1,0 +1,896 @@
+[
+  {
+    "nom": "BOURG EN BRESSE",
+    "code_postal": "1000",
+    "latitude": 46.2051520382,
+    "longitude": 5.24602125501
+  },
+  {
+    "nom": "OYONNAX",
+    "code_postal": "1100",
+    "latitude": 46.2605435859,
+    "longitude": 5.65344320923
+  },
+  {
+    "nom": "CASTRES",
+    "code_postal": "2680",
+    "latitude": 49.8013894137,
+    "longitude": 3.25325245088
+  },
+  {
+    "nom": "MOULINS",
+    "code_postal": "2160",
+    "latitude": 49.4198471298,
+    "longitude": 3.67884923026
+  },
+  {
+    "nom": "ST QUENTIN",
+    "code_postal": "2100",
+    "latitude": 49.8472336321,
+    "longitude": 3.27769499462
+  },
+  {
+    "nom": "SOISSONS",
+    "code_postal": "2200",
+    "latitude": 49.3791742979,
+    "longitude": 3.32471758491
+  },
+  {
+    "nom": "MONTLUCON",
+    "code_postal": "3100",
+    "latitude": 46.3385883496,
+    "longitude": 2.60390499777
+  },
+  {
+    "nom": "VICHY",
+    "code_postal": "3200",
+    "latitude": 46.1300051383,
+    "longitude": 3.42442081174
+  },
+  {
+    "nom": "SISTERON",
+    "code_postal": "4200",
+    "latitude": 44.2001925067,
+    "longitude": 5.93083716039
+  },
+  {
+    "nom": "BRIANCON",
+    "code_postal": "5100",
+    "latitude": 44.8994986041,
+    "longitude": 6.64947524018
+  },
+  {
+    "nom": "GAP",
+    "code_postal": "5000",
+    "latitude": 44.5798600596,
+    "longitude": 6.06486052138
+  },
+  {
+    "nom": "ANTIBES",
+    "code_postal": "6160",
+    "latitude": 43.587465146,
+    "longitude": 7.10635418256
+  },
+  {
+    "nom": "CANNES",
+    "code_postal": "6150",
+    "latitude": 43.5526202843,
+    "longitude": 7.00427592728
+  },
+  {
+    "nom": "MENTON",
+    "code_postal": "6500",
+    "latitude": 43.7908233727,
+    "longitude": 7.49365612374
+  },
+  {
+    "nom": "NICE",
+    "code_postal": "6000",
+    "latitude": 43.7119992661,
+    "longitude": 7.23826889465
+  },
+  {
+    "nom": "AUBENAS",
+    "code_postal": "7200",
+    "latitude": 44.6102127084,
+    "longitude": 4.39638981424
+  },
+  {
+    "nom": "PRIVAS",
+    "code_postal": "7000",
+    "latitude": 44.7225391147,
+    "longitude": 4.59449538667
+  },
+  {
+    "nom": "CHARLEVILLE MEZIERES",
+    "code_postal": "8000",
+    "latitude": 49.7752965803,
+    "longitude": 4.71724655966
+  },
+  {
+    "nom": "SEDAN",
+    "code_postal": "8200",
+    "latitude": 49.697058875,
+    "longitude": 4.9298505244
+  },
+  {
+    "nom": "VERDUN",
+    "code_postal": "9310",
+    "latitude": 42.8060735388,
+    "longitude": 1.69239160264
+  },
+  {
+    "nom": "TROYES",
+    "code_postal": "10000",
+    "latitude": 48.2967099637,
+    "longitude": 4.07827967525
+  },
+  {
+    "nom": "CARCASSONNE",
+    "code_postal": "11000",
+    "latitude": 43.2093798444,
+    "longitude": 2.34398855385
+  },
+  {
+    "nom": "NARBONNE",
+    "code_postal": "11100",
+    "latitude": 43.1652399898,
+    "longitude": 3.02023868739
+  },
+  {
+    "nom": "DECAZEVILLE",
+    "code_postal": "12300",
+    "latitude": 44.567273002,
+    "longitude": 2.25243853064
+  },
+  {
+    "nom": "MILLAU",
+    "code_postal": "12100",
+    "latitude": 44.0976252203,
+    "longitude": 3.11705384129
+  },
+  {
+    "nom": "RODEZ",
+    "code_postal": "12000",
+    "latitude": 44.3582426254,
+    "longitude": 2.5672793892
+  },
+  {
+    "nom": "AIX EN PROVENCE",
+    "code_postal": "13080",
+    "latitude": 43.5360708378,
+    "longitude": 5.39857444582
+  },
+  {
+    "nom": "ARLES",
+    "code_postal": "13104",
+    "latitude": 43.5468692378,
+    "longitude": 4.66215642574
+  },
+  {
+    "nom": "CAEN",
+    "code_postal": "14000",
+    "latitude": 49.1847936737,
+    "longitude": -0.369801713036
+  },
+  {
+    "nom": "LISIEUX",
+    "code_postal": "14100",
+    "latitude": 49.1466628463,
+    "longitude": 0.238274840452
+  },
+  {
+    "nom": "AURILLAC",
+    "code_postal": "15000",
+    "latitude": 44.9245233686,
+    "longitude": 2.44162453828
+  },
+  {
+    "nom": "ANGOULEME",
+    "code_postal": "16000",
+    "latitude": 45.6472585146,
+    "longitude": 0.14514490683
+  },
+  {
+    "nom": "ROCHEFORT",
+    "code_postal": "17300",
+    "latitude": 45.9432344536,
+    "longitude": -0.972356445692
+  },
+  {
+    "nom": "LA ROCHELLE",
+    "code_postal": "17000",
+    "latitude": 46.1620643972,
+    "longitude": -1.17465702836
+  },
+  {
+    "nom": "ROYAN",
+    "code_postal": "17200",
+    "latitude": 45.6346574238,
+    "longitude": -1.01791403375
+  },
+  {
+    "nom": "SAINTES",
+    "code_postal": "17100",
+    "latitude": 45.7422300162,
+    "longitude": -0.649623035643
+  },
+  {
+    "nom": "BOURGES",
+    "code_postal": "18000",
+    "latitude": 47.0749572013,
+    "longitude": 2.40417137557
+  },
+  {
+    "nom": "CHAUMONT",
+    "code_postal": "18350",
+    "latitude": 46.8416938785,
+    "longitude": 2.75008563898
+  },
+  {
+    "nom": "TULLE",
+    "code_postal": "19000",
+    "latitude": 45.2731516999,
+    "longitude": 1.76313875655
+  },
+  {
+    "nom": "DIJON",
+    "code_postal": "21000",
+    "latitude": 47.3229437965,
+    "longitude": 5.03788805877
+  },
+  {
+    "nom": "MONTBARD",
+    "code_postal": "21500",
+    "latitude": 47.6576730148,
+    "longitude": 4.35039569753
+  },
+  {
+    "nom": "DINAN",
+    "code_postal": "22100",
+    "latitude": 48.4557709953,
+    "longitude": -2.04816149693
+  },
+  {
+    "nom": "LANNION",
+    "code_postal": "22300",
+    "latitude": 48.7433496707,
+    "longitude": -3.46159799691
+  },
+  {
+    "nom": "ST BRIEUC",
+    "code_postal": "22000",
+    "latitude": 48.5149806053,
+    "longitude": -2.76154552773
+  },
+  {
+    "nom": "GUERET",
+    "code_postal": "23000",
+    "latitude": 46.1632121428,
+    "longitude": 1.87078672735
+  },
+  {
+    "nom": "BERGERAC",
+    "code_postal": "24100",
+    "latitude": 44.8543751872,
+    "longitude": 0.486529423457
+  },
+  {
+    "nom": "PERIGUEUX",
+    "code_postal": "24000",
+    "latitude": 45.1918704873,
+    "longitude": 0.711825549847
+  },
+  {
+    "nom": "BESANCON",
+    "code_postal": "25000",
+    "latitude": 47.2553872249,
+    "longitude": 6.01948696494
+  },
+  {
+    "nom": "MONTBELIARD",
+    "code_postal": "25200",
+    "latitude": 47.5155169816,
+    "longitude": 6.79148147353
+  },
+  {
+    "nom": "LE PUY",
+    "code_postal": "25640",
+    "latitude": 47.3456027875,
+    "longitude": 6.23053427438
+  },
+  {
+    "nom": "MONTELIMAR",
+    "code_postal": "26200",
+    "latitude": 44.5540845734,
+    "longitude": 4.74869387765
+  },
+  {
+    "nom": "EVREUX",
+    "code_postal": "27000",
+    "latitude": 49.02015421,
+    "longitude": 1.14164412464
+  },
+  {
+    "nom": "CHARTRES",
+    "code_postal": "28000",
+    "latitude": 48.4471464884,
+    "longitude": 1.50570610616
+  },
+  {
+    "nom": "DREUX",
+    "code_postal": "28100",
+    "latitude": 48.7485203213,
+    "longitude": 1.35931854112
+  },
+  {
+    "nom": "BREST",
+    "code_postal": "29200",
+    "latitude": 48.4004997828,
+    "longitude": -4.5027907853
+  },
+  {
+    "nom": "MORLAIX",
+    "code_postal": "29600",
+    "latitude": 48.5996746612,
+    "longitude": -3.82052019963
+  },
+  {
+    "nom": "QUIMPER",
+    "code_postal": "29000",
+    "latitude": 47.9971425162,
+    "longitude": -4.09111944455
+  },
+  {
+    "nom": "ST NAZAIRE",
+    "code_postal": "30200",
+    "latitude": 44.2000873648,
+    "longitude": 4.62191805958
+  },
+  {
+    "nom": "AUCH",
+    "code_postal": "32000",
+    "latitude": 43.6534300414,
+    "longitude": 0.575190250459
+  },
+  {
+    "nom": "ARCACHON",
+    "code_postal": "33120",
+    "latitude": 44.6529002838,
+    "longitude": -1.17429790933
+  },
+  {
+    "nom": "BORDEAUX",
+    "code_postal": "33000",
+    "latitude": 44.8572445351,
+    "longitude": -0.57369678116
+  },
+  {
+    "nom": "BEZIERS",
+    "code_postal": "34500",
+    "latitude": 43.3475883319,
+    "longitude": 3.23076754164
+  },
+  {
+    "nom": "SETE",
+    "code_postal": "34200",
+    "latitude": 43.3917705831,
+    "longitude": 3.64705148296
+  },
+  {
+    "nom": "FOUGERES",
+    "code_postal": "35300",
+    "latitude": 48.3524697115,
+    "longitude": -1.19431177241
+  },
+  {
+    "nom": "RENNES",
+    "code_postal": "35000",
+    "latitude": 48.1119791219,
+    "longitude": -1.68186449144
+  },
+  {
+    "nom": "ST MALO",
+    "code_postal": "35400",
+    "latitude": 48.6400443482,
+    "longitude": -1.98060627256
+  },
+  {
+    "nom": "CHATEAUROUX",
+    "code_postal": "36000",
+    "latitude": 46.8029617828,
+    "longitude": 1.69399812001
+  },
+  {
+    "nom": "TOURS",
+    "code_postal": "37000",
+    "latitude": 47.3986382281,
+    "longitude": 0.696526376417
+  },
+  {
+    "nom": "GRENOBLE",
+    "code_postal": "38000",
+    "latitude": 45.1821215167,
+    "longitude": 5.72133051752
+  },
+  {
+    "nom": "LAVAL",
+    "code_postal": "38190",
+    "latitude": 45.2359002175,
+    "longitude": 5.98150477487
+  },
+  {
+    "nom": "VOIRON",
+    "code_postal": "38500",
+    "latitude": 45.3791720843,
+    "longitude": 5.58240310671
+  },
+  {
+    "nom": "DOLE",
+    "code_postal": "39100",
+    "latitude": 47.0755452538,
+    "longitude": 5.50062446099
+  },
+  {
+    "nom": "LONS LE SAUNIER",
+    "code_postal": "39000",
+    "latitude": 46.6744796278,
+    "longitude": 5.55733212947
+  },
+  {
+    "nom": "DAX",
+    "code_postal": "40100",
+    "latitude": 43.7006746973,
+    "longitude": -1.06014429759
+  },
+  {
+    "nom": "MONT DE MARSAN",
+    "code_postal": "40000",
+    "latitude": 43.899361404,
+    "longitude": -0.490722577455
+  },
+  {
+    "nom": "BLOIS",
+    "code_postal": "41000",
+    "latitude": 47.5817013938,
+    "longitude": 1.30625551583
+  },
+  {
+    "nom": "ROANNE",
+    "code_postal": "42300",
+    "latitude": 46.0449112487,
+    "longitude": 4.0797045647
+  },
+  {
+    "nom": "BRIOUDE",
+    "code_postal": "43100",
+    "latitude": 45.2964378846,
+    "longitude": 3.38526303303
+  },
+  {
+    "nom": "NANTES",
+    "code_postal": "44000",
+    "latitude": 47.2316356767,
+    "longitude": -1.54831008605
+  },
+  {
+    "nom": "MONTARGIS",
+    "code_postal": "45200",
+    "latitude": 47.9988427684,
+    "longitude": 2.73588922015
+  },
+  {
+    "nom": "ORLEANS",
+    "code_postal": "45000",
+    "latitude": 47.8828634214,
+    "longitude": 1.91610357477
+  },
+  {
+    "nom": "CAHORS",
+    "code_postal": "46000",
+    "latitude": 44.4507370916,
+    "longitude": 1.44075837848
+  },
+  {
+    "nom": "MENDE",
+    "code_postal": "48000",
+    "latitude": 44.5294508592,
+    "longitude": 3.48086881176
+  },
+  {
+    "nom": "ANGERS",
+    "code_postal": "49000",
+    "latitude": 47.476837416,
+    "longitude": -0.556125995444
+  },
+  {
+    "nom": "ST LO",
+    "code_postal": "50000",
+    "latitude": 49.1099624249,
+    "longitude": -1.07755642702
+  },
+  {
+    "nom": "CHALONS EN CHAMPAGNE",
+    "code_postal": "51000",
+    "latitude": 48.9640892125,
+    "longitude": 4.37883539725
+  },
+  {
+    "nom": "EPERNAY",
+    "code_postal": "51200",
+    "latitude": 49.037000689,
+    "longitude": 3.93144626202
+  },
+  {
+    "nom": "REIMS",
+    "code_postal": "51100",
+    "latitude": 49.2514906066,
+    "longitude": 4.0402302322
+  },
+  {
+    "nom": "LANGRES",
+    "code_postal": "52200",
+    "latitude": 47.8591544821,
+    "longitude": 5.33880466821
+  },
+  {
+    "nom": "NANCY",
+    "code_postal": "54000",
+    "latitude": 48.6901995499,
+    "longitude": 6.17588254434
+  },
+  {
+    "nom": "LORIENT",
+    "code_postal": "56100",
+    "latitude": 47.7500486947,
+    "longitude": -3.37823200917
+  },
+  {
+    "nom": "VANNES",
+    "code_postal": "56000",
+    "latitude": 47.6597493766,
+    "longitude": -2.75714329498
+  },
+  {
+    "nom": "FORBACH",
+    "code_postal": "57600",
+    "latitude": 49.1912650369,
+    "longitude": 6.89275798526
+  },
+  {
+    "nom": "METZ",
+    "code_postal": "57000",
+    "latitude": 49.1081133279,
+    "longitude": 6.1955245421
+  },
+  {
+    "nom": "THIONVILLE",
+    "code_postal": "57100",
+    "latitude": 49.3759716201,
+    "longitude": 6.12928314217
+  },
+  {
+    "nom": "CAMBRAI",
+    "code_postal": "59400",
+    "latitude": 50.1702775977,
+    "longitude": 3.24221021072
+  },
+  {
+    "nom": "DOUAI",
+    "code_postal": "59500",
+    "latitude": 50.3823195335,
+    "longitude": 3.09145683114
+  },
+  {
+    "nom": "DUNKERQUE",
+    "code_postal": "59140",
+    "latitude": 51.0307229078,
+    "longitude": 2.33752414095
+  },
+  {
+    "nom": "LILLE",
+    "code_postal": "59000",
+    "latitude": 50.6317183168,
+    "longitude": 3.04783272312
+  },
+  {
+    "nom": "MAUBEUGE",
+    "code_postal": "59600",
+    "latitude": 50.283630719,
+    "longitude": 3.96328053037
+  },
+  {
+    "nom": "VALENCIENNES",
+    "code_postal": "59300",
+    "latitude": 50.3588666163,
+    "longitude": 3.51567664819
+  },
+  {
+    "nom": "BEAUVAIS",
+    "code_postal": "60000",
+    "latitude": 49.4365523321,
+    "longitude": 2.08616123661
+  },
+  {
+    "nom": "COMPIEGNE",
+    "code_postal": "60200",
+    "latitude": 49.3990601478,
+    "longitude": 2.85317249363
+  },
+  {
+    "nom": "ALENCON",
+    "code_postal": "61000",
+    "latitude": 48.4318193082,
+    "longitude": 0.0915406916107
+  },
+  {
+    "nom": "ARRAS",
+    "code_postal": "62000",
+    "latitude": 50.2898964997,
+    "longitude": 2.76587316711
+  },
+  {
+    "nom": "BOULOGNE SUR MER",
+    "code_postal": "62200",
+    "latitude": 50.7271332663,
+    "longitude": 1.60756334802
+  },
+  {
+    "nom": "LENS",
+    "code_postal": "62300",
+    "latitude": 50.4374264148,
+    "longitude": 2.82105851259
+  },
+  {
+    "nom": "CLERMONT FERRAND",
+    "code_postal": "63000",
+    "latitude": 45.7856492991,
+    "longitude": 3.11554542903
+  },
+  {
+    "nom": "THIERS",
+    "code_postal": "63300",
+    "latitude": 45.8620554106,
+    "longitude": 3.53945258847
+  },
+  {
+    "nom": "BAYONNE",
+    "code_postal": "64100",
+    "latitude": 43.4922254016,
+    "longitude": -1.46607674358
+  },
+  {
+    "nom": "PAU",
+    "code_postal": "64000",
+    "latitude": 43.3200189773,
+    "longitude": -0.350337918181
+  },
+  {
+    "nom": "TARBES",
+    "code_postal": "65000",
+    "latitude": 43.2347859635,
+    "longitude": 0.0660093937851
+  },
+  {
+    "nom": "STRASBOURG",
+    "code_postal": "67000",
+    "latitude": 48.5712679849,
+    "longitude": 7.76752679517
+  },
+  {
+    "nom": "COLMAR",
+    "code_postal": "68000",
+    "latitude": 48.1099405789,
+    "longitude": 7.38468690323
+  },
+  {
+    "nom": "MULHOUSE",
+    "code_postal": "68100",
+    "latitude": 47.749163303,
+    "longitude": 7.32570047509
+  },
+  {
+    "nom": "VESOUL",
+    "code_postal": "70000",
+    "latitude": 47.6320408648,
+    "longitude": 6.1548458149
+  },
+  {
+    "nom": "CHALON SUR SAONE",
+    "code_postal": "71100",
+    "latitude": 46.7900288793,
+    "longitude": 4.85191555008
+  },
+  {
+    "nom": "LE CREUSOT",
+    "code_postal": "71200",
+    "latitude": 46.8068539189,
+    "longitude": 4.42642301163
+  },
+  {
+    "nom": "MACON",
+    "code_postal": "71000",
+    "latitude": 46.3205511756,
+    "longitude": 4.81842529639
+  },
+  {
+    "nom": "MONTCEAU LES MINES",
+    "code_postal": "71300",
+    "latitude": 46.6762539128,
+    "longitude": 4.3540960404
+  },
+  {
+    "nom": "LE MANS",
+    "code_postal": "72000",
+    "latitude": 47.9885256718,
+    "longitude": 0.200030493539
+  },
+  {
+    "nom": "ALBERTVILLE",
+    "code_postal": "73200",
+    "latitude": 45.6683987277,
+    "longitude": 6.40460338643
+  },
+  {
+    "nom": "CHAMBERY",
+    "code_postal": "73000",
+    "latitude": 45.583182552,
+    "longitude": 5.90903392417
+  },
+  {
+    "nom": "ANNECY",
+    "code_postal": "74000",
+    "latitude": 45.8906432566,
+    "longitude": 6.12551773598
+  },
+  {
+    "nom": "ANNEMASSE",
+    "code_postal": "74100",
+    "latitude": 46.1909730986,
+    "longitude": 6.24250704322
+  },
+  {
+    "nom": "MEGEVE",
+    "code_postal": "74120",
+    "latitude": 45.8401573581,
+    "longitude": 6.62348394015
+  },
+  {
+    "nom": "THONON LES BAINS",
+    "code_postal": "74200",
+    "latitude": 46.3704258049,
+    "longitude": 6.48194336071
+  },
+  {
+    "nom": "DIEPPE",
+    "code_postal": "76200",
+    "latitude": 49.9222503951,
+    "longitude": 1.08681168449
+  },
+  {
+    "nom": "LE HAVRE",
+    "code_postal": "76600",
+    "latitude": 49.498452502,
+    "longitude": 0.140153719153
+  },
+  {
+    "nom": "ROUEN",
+    "code_postal": "76000",
+    "latitude": 49.4413460103,
+    "longitude": 1.09256784278
+  },
+  {
+    "nom": "MEAUX",
+    "code_postal": "77100",
+    "latitude": 48.9570625667,
+    "longitude": 2.90003097245
+  },
+  {
+    "nom": "MELUN",
+    "code_postal": "77000",
+    "latitude": 48.5444723553,
+    "longitude": 2.65795821917
+  },
+  {
+    "nom": "NIORT",
+    "code_postal": "79000",
+    "latitude": 46.328260242,
+    "longitude": -0.465353019369
+  },
+  {
+    "nom": "ABBEVILLE",
+    "code_postal": "80100",
+    "latitude": 50.1083582944,
+    "longitude": 1.83209170207
+  },
+  {
+    "nom": "AMIENS",
+    "code_postal": "80000",
+    "latitude": 49.9009532186,
+    "longitude": 2.29007445539
+  },
+  {
+    "nom": "ALBI",
+    "code_postal": "81000",
+    "latitude": 43.9258213622,
+    "longitude": 2.14686328555
+  },
+  {
+    "nom": "DRAGUIGNAN",
+    "code_postal": "83300",
+    "latitude": 43.5357513285,
+    "longitude": 6.45436569191
+  },
+  {
+    "nom": "FREJUS",
+    "code_postal": "83370",
+    "latitude": 43.4719558114,
+    "longitude": 6.76361597424
+  },
+  {
+    "nom": "TOULON",
+    "code_postal": "83000",
+    "latitude": 43.1361589728,
+    "longitude": 5.93239634249
+  },
+  {
+    "nom": "AVIGNON",
+    "code_postal": "84000",
+    "latitude": 43.9352448339,
+    "longitude": 4.84071572505
+  },
+  {
+    "nom": "ORANGE",
+    "code_postal": "84100",
+    "latitude": 44.128913537,
+    "longitude": 4.8098792403
+  },
+  {
+    "nom": "LES SABLES D OLONNE",
+    "code_postal": "85100",
+    "latitude": 46.5007612799,
+    "longitude": -1.79255128677
+  },
+  {
+    "nom": "ST GILLES CROIX DE VIE",
+    "code_postal": "85800",
+    "latitude": 46.6904708814,
+    "longitude": -1.91946363327
+  },
+  {
+    "nom": "CHATELLERAULT",
+    "code_postal": "86100",
+    "latitude": 46.8156700185,
+    "longitude": 0.552598976936
+  },
+  {
+    "nom": "POITIERS",
+    "code_postal": "86000",
+    "latitude": 46.5839207726,
+    "longitude": 0.359947653003
+  },
+  {
+    "nom": "LIMOGES",
+    "code_postal": "87000",
+    "latitude": 45.8542549589,
+    "longitude": 1.2487579024
+  },
+  {
+    "nom": "AUXERRE",
+    "code_postal": "89000",
+    "latitude": 47.793488225,
+    "longitude": 3.58168281761
+  },
+  {
+    "nom": "SENS",
+    "code_postal": "89100",
+    "latitude": 48.1956727015,
+    "longitude": 3.29793332552
+  },
+  {
+    "nom": "BELFORT",
+    "code_postal": "90000",
+    "latitude": 47.6471539414,
+    "longitude": 6.84541206237
+  }
+]
