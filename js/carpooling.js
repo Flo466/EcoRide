@@ -3,6 +3,7 @@ import { API_BASE_URL } from './config.js';
 import { displaySearchResults } from './components/display-results.js';
 import { sanitizeInput } from '../js/utils/sanitizer.js';
 import { clearMessages, displayMessage } from '../js/utils/alert.js';
+import { setupAutocomplete } from './utils/autocomplete.js';
 
 (async () => {
     const form = document.querySelector('.search-form');
@@ -10,6 +11,17 @@ import { clearMessages, displayMessage } from '../js/utils/alert.js';
     const arrivalPlaceInput = document.getElementById('arrivalPlace');
     const departureDateInput = document.getElementById('departureDate');
     const formMessagesContainer = document.getElementById('form-messages');
+
+    let villes = [];
+
+    // Chargement des données des villes depuis le fichier JSON
+    try {
+        const response = await fetch('/js/cities.json');
+        villes = await response.json();
+        villes.sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
+    } catch (error) {
+        console.error("Erreur lors du chargement des villes :", error);
+    }
 
     if (!form) return;
 
@@ -41,6 +53,12 @@ import { clearMessages, displayMessage } from '../js/utils/alert.js';
         } catch {
             displayMessage(formMessagesContainer, 'Désolé une erreur est survenue');
         }
+    }
+
+    // Fonction d'autocomplétion pour départ et destination
+    if (departurePlaceInput && arrivalPlaceInput) {
+        setupAutocomplete(departurePlaceInput, villes);
+        setupAutocomplete(arrivalPlaceInput, villes);
     }
 
     // Sanitize values from URL

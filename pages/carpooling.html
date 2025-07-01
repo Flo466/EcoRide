@@ -1,24 +1,29 @@
 <h1 class="search-h1">Où souhaitez-vous aller ?</h1>
 <div class="container">
     <div class="container">
-    <div id="carpooling-container">
-        <div class="row justify-content-center">
-            <div class="col-9 col-md-7 col-lg-10 col-xl-12"> 
-                <form class="search-form shadow-lg bg-white overflow-hidden">
-                    <div class="d-flex flex-column flex-lg-row align-items-stretch w-100">
-                        <input type="text" class="form-control text-center border-switch b-s-t" id="departurePlace" placeholder="Départ">
-                        <input type="text" class="form-control text-center border-switch" id="arrivalPlace" placeholder="Destination">
-                        <input type="date" class="form-control text-center border-switch border-0" id="departureDate">
-                        <button type="submit" class="btn text-white fw-semibold w-100 w-lg-auto btn-search">
-                            Rechercher un trajet
-                        </button>
-                    </div>
-                </form>
-                <div id="form-messages" class="mt-3 text-center "></div>
+        <div id="carpooling-container">
+            <div class="row justify-content-center">
+                <div class="col-9 col-md-7 col-lg-10 col-xl-12">
+                    <form class="search-form shadow-lg bg-white overflow-hidden">
+                        <div class="d-flex flex-column flex-lg-row align-items-stretch w-100">
+                            <input type="text" class="form-control text-center border-switch b-s-t" id="departurePlace"
+                                placeholder="Départ">
+                            <div id="departureSuggestions"></div> <!-- Suggestions container -->
+                            <input type="text" class="form-control text-center border-switch" id="arrivalPlace"
+                                placeholder="Destination">
+                            <div id="arrivalSuggestions"></div> <!-- Suggestions container -->
+                            <input type="date" class="form-control text-center border-switch border-0"
+                                id="departureDate">
+                            <button type="submit" class="btn text-white fw-semibold w-100 w-lg-auto btn-search">
+                                Rechercher un trajet
+                            </button>
+                        </div>
+                    </form>
+                    <div id="form-messages" class="mt-3 text-center "></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 <div id="carpooling-results" class="container-fluid px-2 px-sm-4 px-md-5">
     <!-- CARDS are dynamically displayed here -->

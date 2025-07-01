@@ -12229,6 +12229,37 @@ select:focus {
     display: none;
   }
 }
+.autocomplete-items {
+  position: absolute;
+  width: 100%;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  color: #333;
+  padding: 5px 0;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.autocomplete-items div:hover {
+  background-color: #f1f1f1;
+}
+
+.autocomplete-items div:focus {
+  outline: none;
+  background-color: #e0e0e0;
+}
+
 .carpool-card {
   background-color: #FFFFFF;
   border-radius: 2rem;
