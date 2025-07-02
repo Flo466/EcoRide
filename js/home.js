@@ -11,7 +11,7 @@ import { setupAutocomplete } from './utils/autocomplete.js';
     let villes = [];
 
     try {
-        const response = await fetch('/js/cities.json');
+        const response = await fetch('/js/cities/cities.json');
         villes = await response.json();
 
         // Trie les villes par nom (ordre alphabétique)

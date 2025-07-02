@@ -16,7 +16,7 @@ import { setupAutocomplete } from './utils/autocomplete.js';
 
     // Chargement des données des villes depuis le fichier JSON
     try {
-        const response = await fetch('/js/cities.json');
+        const response = await fetch('/js/cities/cities.json');
         villes = await response.json();
         villes.sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
     } catch (error) {
