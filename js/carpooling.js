@@ -14,7 +14,6 @@ import { setupAutocomplete } from './utils/autocomplete.js';
 
     let villes = [];
 
-    // Chargement des données des villes depuis le fichier JSON
     try {
         const response = await fetch('/js/cities/cities.json');
         villes = await response.json();
@@ -55,7 +54,6 @@ import { setupAutocomplete } from './utils/autocomplete.js';
         }
     }
 
-    // Fonction d'autocomplétion pour départ et destination
     if (departurePlaceInput && arrivalPlaceInput) {
         setupAutocomplete(departurePlaceInput, villes);
         setupAutocomplete(arrivalPlaceInput, villes);
@@ -85,5 +83,25 @@ import { setupAutocomplete } from './utils/autocomplete.js';
         const newDepartureDate = sanitizeInput(departureDateInput.value);
 
         await executeSearch(newDeparturePlace, newArrivalPlace, newDepartureDate);
+    });
+
+    let currentPath = window.location.pathname;
+    if (currentPath.endsWith('/') && currentPath.length > 1) {
+        currentPath = currentPath.slice(0, -1);
+    }
+
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+    navLinks.forEach(link => {
+        let linkPath = link.getAttribute('href');
+        if (linkPath === '/') {
+            if (currentPath === '/' || currentPath === '') {
+                link.classList.add('active');
+                link.setAttribute('aria-current', 'page');
+            }
+        } else if (currentPath.includes(linkPath) && linkPath !== '/') {
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
+        }
     });
 })();

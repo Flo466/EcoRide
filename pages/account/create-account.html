@@ -1,9 +1,28 @@
 <div class="container">
     <h2 class="mt-3">Créer mon compte EcoRide</h2>
-    <form class="needs-validation" novalidate>
+    <form id="registrationForm" class="needs-validation" novalidate>
+        <!-- Prénom -->
         <div class="mb-3 mt-3">
-            <label for="pseudo" class="form-label">Pseudo</label>
-            <input type="text" class="form-control" id="pseudo" required minlength="3">
+            <label for="firstName" class="form-label">Prénom</label>
+            <input type="text" class="form-control form-account" id="firstName" required autocomplete="given-name">
+            <div class="invalid-feedback">
+                Veuillez entrer votre prénom.
+            </div>
+        </div>
+
+        <!-- Nom de famille -->
+        <div class="mb-3">
+            <label for="lastName" class="form-label">Nom de famille</label>
+            <input type="text" class="form-control form-account" id="lastName" required autocomplete="family-name">
+            <div class="invalid-feedback">
+                Veuillez entrer votre nom de famille.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="userName" class="form-label">Pseudo</label>
+            <input type="text" class="form-control form-account" id="userName" required minlength="3"
+                autocomplete="username">
             <div class="invalid-feedback">
                 Veuillez choisir un pseudo (minimum 3 caractères).
             </div>
@@ -11,7 +30,7 @@
 
         <div class="mb-3">
             <label for="email" class="form-label">Adresse e-mail</label>
-            <input type="email" class="form-control" id="email" required>
+            <input type="email" class="form-control form-account" id="email" required autocomplete="off">
             <div class="invalid-feedback">
                 Veuillez entrer une adresse e-mail valide.
             </div>
@@ -19,7 +38,8 @@
 
         <div class="mb-3">
             <label for="confirmEmail" class="form-label">Confirmer l'adresse e-mail</label>
-            <input type="email" class="form-control" id="confirmEmail" required onpaste="return false;">
+            <input type="email" class="form-control form-account" id="confirmEmail" required onpaste="return false;"
+                autocomplete="off">
             <div class="invalid-feedback">
                 Les adresses e-mail ne correspondent pas.
             </div>
@@ -27,7 +47,7 @@
 
         <div class="mb-3">
             <label for="password" class="form-label">Mot de passe</label>
-            <input type="password" class="form-control" id="password" required>
+            <input type="password" class="form-control form-account" id="password" required autocomplete="off">
             <div class="form-text">
                 Doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère
                 spécial.
@@ -39,13 +59,17 @@
 
         <div class="mb-3">
             <label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
-            <input type="password" class="form-control" id="confirmPassword" required onpaste="return false;">
+            <input type="password" class="form-control form-account" id="confirmPassword" required
+                onpaste="return false;" autocomplete="off">
             <div class="invalid-feedback">
                 Les mots de passe ne correspondent pas.
             </div>
         </div>
+
+        <div id="apiMessage" class="mt-3"></div>
+
         <div class="text-center mt-4">
-            <button type="submit" class="btn btn-primary btn-perso text-white rounded-pill">Créer mon compte</button>
+            <button type="submit" class="btn btn-ecoride btn-responsive-width">Créer mon compte</button>
         </div>
     </form>
 </div>

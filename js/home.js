@@ -14,11 +14,10 @@ import { setupAutocomplete } from './utils/autocomplete.js';
         const response = await fetch('/js/cities/cities.json');
         villes = await response.json();
 
-        // Trie les villes par nom (ordre alphabétique)
         villes.sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
 
-        setupAutocomplete(departureInput, villes);  // Initialisation de l'autocomplétion pour le départ
-        setupAutocomplete(arrivalInput, villes);  // Initialisation de l'autocomplétion pour l'arrivée
+        setupAutocomplete(departureInput, villes);
+        setupAutocomplete(arrivalInput, villes);
     } catch (error) {
         console.error("Erreur lors du chargement des villes :", error);
     }
@@ -52,4 +51,24 @@ import { setupAutocomplete } from './utils/autocomplete.js';
     } else {
         console.error("Formulaire de recherche non trouvé dans home.html. Le script ne peut pas s'attacher.");
     }
+
+    let currentPath = window.location.pathname;
+    if (currentPath.endsWith('/') && currentPath.length > 1) {
+        currentPath = currentPath.slice(0, -1);
+    }
+
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+    navLinks.forEach(link => {
+        let linkPath = link.getAttribute('href');
+        if (linkPath === '/') {
+            if (currentPath === '/' || currentPath === '') {
+                link.classList.add('active');
+                link.setAttribute('aria-current', 'page');
+            }
+        } else if (currentPath.includes(linkPath) && linkPath !== '/') {
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
+        }
+    });
 })();
