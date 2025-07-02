@@ -12415,7 +12415,6 @@ select:focus {
   border-bottom: 1px solid #00ce0a;
 }
 
-/* Review section - pour le conteneur des avis scrollable */
 #driver-reviews-list {
   max-height: 450px;
   overflow-y: auto;
@@ -12438,4 +12437,21 @@ select:focus {
 
 #driver-reviews-list::-webkit-scrollbar-thumb:hover {
   background: #00a508;
+}
+
+.form-control {
+  border-color: #00ce0a;
+  border-style: solid;
+  border-width: 1.5px;
+  border-radius: 20px;
+}
+
+.btn-perso {
+  width: 50%;
+}
+
+@media (min-width: 768px) {
+  .btn-perso {
+    width: 25%;
+  }
 }/*# sourceMappingURL=main.css.map */
