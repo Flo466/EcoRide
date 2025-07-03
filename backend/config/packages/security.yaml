@@ -36,6 +36,10 @@ security:
         # -------------------------------------------------------------
         # Place specific PUBLIC_ACCESS rules first
         # -------------------------------------------------------------
+        # Routes pour le live check du pseudo et de l'email
+        - { path: ^/api/check-userName, roles: PUBLIC_ACCESS }
+        - { path: ^/api/check-email, roles: PUBLIC_ACCESS }
+
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }

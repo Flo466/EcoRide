@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use OpenApi\Attributes as OA;
 use App\Service\TokenService;  // Importation du service TokenService
 use DateTimeImmutable;
@@ -23,10 +24,9 @@ final class SecurityController extends AbstractController
     public function __construct(
         private EntityManagerInterface $manager,
         private SerializerInterface $serializer,
-        private TokenService $tokenService  // Injection du service TokenService
-    )
-    {
-    }
+        private TokenService $tokenService,
+        private UserRepository $userRepository
+    ) {}
 
     // Registration Route / API doc
     #[Route('/registration', name: 'registration', methods: ['POST'])]
@@ -190,7 +190,7 @@ final class SecurityController extends AbstractController
         response: 401,
         description: "Unauthorized"
     )]
-    
+
     // Me function
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
@@ -198,14 +198,17 @@ final class SecurityController extends AbstractController
             return new JsonResponse(['message' => 'Missing credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-         return new JsonResponse(
-        json_decode($this->serializer->serialize(
-            $user,
-            'json',
-            ['groups' => ['user_read']]),
-            true),
-        Response::HTTP_OK
-    );
+        return new JsonResponse(
+            json_decode(
+                $this->serializer->serialize(
+                    $user,
+                    'json',
+                    ['groups' => ['user_read']]
+                ),
+                true
+            ),
+            Response::HTTP_OK
+        );
     }
 
     // Account/edit route / API Doc
@@ -264,12 +267,51 @@ final class SecurityController extends AbstractController
         $this->manager->flush();
 
         return new JsonResponse(
-        json_decode($this->serializer->serialize(
-            $user,
-            'json',
-            ['groups' => ['user_read']]),
-            true),
-        Response::HTTP_OK
-    );
+            json_decode(
+                $this->serializer->serialize(
+                    $user,
+                    'json',
+                    ['groups' => ['user_read']]
+                ),
+                true
+            ),
+            Response::HTTP_OK
+        );
+    }
+
+    #[Route('/check-userName', name: 'app_check_userName', methods: ['POST'])]
+    public function checkUserName(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $userName = $data['userName'] ?? null;
+
+        if (null === $userName) {
+            return new JsonResponse(['message' => 'Missing user name'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $existingUser = $this->userRepository->findOneBy(['userName' => $userName]);
+
+        if ($existingUser) {
+            return new JsonResponse(['isAvailable' => false]);
+        }
+        return new JsonResponse(['isAvailable' => true]);
+    }
+
+    #[Route('/check-email', name: 'app_check_email', methods: ['POST'])]
+    public function checkEmail(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? null;
+
+        if (null === $email) {
+            return new JsonResponse(['message' => 'Missing email.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $existingUser = $this->userRepository->findOneBy(['email' => $email]);
+
+        if ($existingUser) {
+            return new JsonResponse(['isAvailable' => false]);
+        }
+        return new JsonResponse(['isAvailable' => true]);
     }
 }

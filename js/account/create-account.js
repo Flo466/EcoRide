@@ -6,14 +6,16 @@ import { API_BASE_URL } from '../config.js';
     'use strict';
 
     const form = document.getElementById('registrationForm');
-    const pseudoInput = document.getElementById('userName');
+    const userNameInput = document.getElementById('userName'); // Renommé de pseudoInput à userNameInput
     const emailInput = document.getElementById('email');
     const confirmEmailInput = document.getElementById('confirmEmail');
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirmPassword');
-    const firstNameInput = document.getElementById('firstName');
-    const lastNameInput = document.getElementById('lastName');
     const apiMessageContainer = document.getElementById('apiMessage');
+
+    // Nouveaux éléments pour afficher les statuts de live check
+    const userNameStatus = document.getElementById('userNameStatus');
+    const emailStatus = document.getElementById('emailStatus');
 
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]|\\:;"'<>,.?/~`])[A-Za-z\d!@#$%^&*()_+={}\[\]|\\:;"'<>,.?/~`]{8,}$/;
 
@@ -41,6 +43,7 @@ import { API_BASE_URL } from '../config.js';
         console.log('Jeton d\'API supprimé.');
     }
 
+    // --- Fonctions de validation existantes ---
     emailInput.addEventListener('input', validateEmails);
     confirmEmailInput.addEventListener('input', validateEmails);
     passwordInput.addEventListener('input', validatePassword);
@@ -76,6 +79,87 @@ import { API_BASE_URL } from '../config.js';
         }
     }
 
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), delay);
+        };
+    }
+
+    const checkUserName = debounce(async (userName) => {
+        const sanitizedUserName = sanitizeInput(userName);
+        if (sanitizedUserName.length < 3) {
+            userNameStatus.textContent = '';
+            userNameStatus.style.color = 'initial';
+            return;
+        }
+
+        userNameStatus.textContent = 'Vérification...';
+        userNameStatus.style.color = 'orange';
+
+        try {
+            const result = await fetchApi(`${API_BASE_URL}/api/check-userName`, 'POST', { userName: sanitizedUserName });
+
+            if (result && typeof result.isAvailable !== 'undefined') {
+                if (result.isAvailable) {
+                    userNameStatus.textContent = 'Nom d\'utilisateur disponible !';
+                    userNameStatus.style.color = 'green';
+                } else {
+                    userNameStatus.textContent = 'Nom d\'utilisateur déjà pris.';
+                    userNameStatus.style.color = 'red';
+                }
+            } else {
+                userNameStatus.textContent = 'Erreur de vérification (réponse inattendue).';
+                userNameStatus.style.color = 'gray';
+            }
+        } catch (error) {
+            console.error('Erreur lors de la vérification du nom d\'utilisateur :', error);
+            userNameStatus.textContent = `Erreur de vérification: ${error.message || 'réseau'}.`;
+            userNameStatus.style.color = 'gray';
+        }
+    }, 500);
+
+    const checkEmailLive = debounce(async (email) => {
+        const sanitizedEmail = sanitizeInput(email);
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(sanitizedEmail)) {
+            emailStatus.textContent = 'Format d\'email invalide.';
+            emailStatus.style.color = 'red';
+            return;
+        }
+
+        emailStatus.textContent = 'Vérification...';
+        emailStatus.style.color = 'orange';
+
+        try {
+            const result = await fetchApi(`${API_BASE_URL}/api/check-email`, 'POST', { email: sanitizedEmail });
+
+            if (result && typeof result.isAvailable !== 'undefined') {
+                if (result.isAvailable) {
+                    emailStatus.textContent = 'Email disponible !';
+                    emailStatus.style.color = 'green';
+                } else {
+                    emailStatus.textContent = 'Email déjà utilisé.';
+                    emailStatus.style.color = 'red';
+                }
+            } else {
+                emailStatus.textContent = 'Erreur de vérification (réponse inattendue).';
+                emailStatus.style.color = 'gray';
+            }
+        } catch (error) {
+            console.error('Erreur lors de la vérification de l\'email :', error);
+            emailStatus.textContent = `Erreur de vérification: ${error.message || 'réseau'}.`;
+            emailStatus.style.color = 'gray';
+        }
+    }, 500);
+
+    userNameInput.addEventListener('keyup', (e) => checkUserName(e.target.value));
+    emailInput.addEventListener('keyup', (e) => checkEmailLive(e.target.value));
+
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
         clearMessage(apiMessageContainer);
@@ -86,15 +170,18 @@ import { API_BASE_URL } from '../config.js';
         validatePassword();
         validatePasswordAndConfirm();
 
+        if (userNameStatus.style.color === 'red' || emailStatus.style.color === 'red') {
+            displayMessage(apiMessageContainer, 'Veuillez corriger les erreurs dans le formulaire.', false);
+            return;
+        }
+
         if (!form.checkValidity()) {
             console.log("Formulaire invalide côté client.");
             return;
         }
 
         const userData = {
-            firstName: sanitizeInput(firstNameInput.value),
-            lastName: sanitizeInput(lastNameInput.value),
-            userName: sanitizeInput(pseudoInput.value),
+            userName: sanitizeInput(userNameInput.value),
             email: sanitizeInput(emailInput.value),
             password: passwordInput.value
         };
@@ -105,6 +192,11 @@ import { API_BASE_URL } from '../config.js';
             displayMessage(apiMessageContainer, 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.', true);
             form.reset();
             form.classList.remove('was-validated');
+
+            // Clear live check statuses on successful registration
+            userNameStatus.textContent = '';
+            emailStatus.textContent = '';
+
 
             if (result.apiToken) {
                 setAuthToken(result.apiToken);
