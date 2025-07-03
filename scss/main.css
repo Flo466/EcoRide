@@ -12454,4 +12454,78 @@ select:focus {
   .btn-perso {
     width: 25%;
   }
+}
+.profile-header {
+  border-bottom: solid;
+  border-color: #E8C8A0;
+}
+
+.profile-avatar-placeholder {
+  width: 60px;
+  height: 60px;
+  background-color: #e9ecef;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #adb5bd;
+}
+
+.profile-balance {
+  color: #373636;
+  font-weight: 550;
+}
+
+.profile-list-item {
+  border-bottom: 1px solid #00ce0a;
+  color: #373636;
+  font-weight: 500;
+}
+
+.profile-list-item:first-child {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.profile-list-item:last-child {
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  border-bottom: none;
+}
+
+.list-group-flush .list-group-item {
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+}
+
+.list-group-flush .profile-list-item + .profile-list-item {
+  border-top-width: 1px;
+}
+
+.profile-driver-section {
+  border: none;
+}
+
+.form-switch .form-check-input {
+  width: 2.5em;
+  height: 1.25em;
+  background-color: #FFFFFF;
+}
+
+.form-switch .form-check-input:checked {
+  background-color: #00ce0a;
+  border-color: #00ce0a;
+}
+
+.btn-link:focus {
+  box-shadow: none !important;
+}
+
+.bi-arrow-right-circle {
+  color: #00ce0a;
+}
+
+.text-start {
+  color: #00ce0a;
 }/*# sourceMappingURL=main.css.map */
