@@ -1,5 +1,6 @@
 import Route from "./Route.js";
 import { allRoutes, websiteName } from "./allRoutes.js";
+import { updateNavbarAuthLinks } from '../js/utils/navbarAuth.js';
 
 // Création d'une route pour la page 404 (page introuvable)
 const route404 = new Route("404", "Page introuvable", "pages/404.html");
@@ -31,7 +32,7 @@ const LoadContentPage = async () => {
   // Ajout du contenu HTML à l'élément avec l'ID "main-page"
   document.getElementById("main-page").innerHTML = html;
 
-  // Ajout du contenu JavaScript
+  // Ajout du contenu JavaScript spécifique à la page si défini
   if (actualRoute.pathJS != "") {
     // Création d'une balise script
     let scriptTag = document.createElement("script");
@@ -44,6 +45,10 @@ const LoadContentPage = async () => {
 
   // Changement du titre de la page
   document.title = actualRoute.title + " - " + websiteName;
+
+  // NOUVEAU : Met à jour l'affichage des liens de la navbar après chaque chargement de page
+  // Cela garantit que la navbar est toujours à jour avec l'état de connexion/déconnexion.
+  updateNavbarAuthLinks();
 };
 
 

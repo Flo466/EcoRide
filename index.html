@@ -36,14 +36,21 @@
                             <a class="nav-link" href="carpooling">Covoiturages</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="login">Compte</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link">Contact</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="logoutLink" href="#">Déconnexion</a>
+
+                        <li class="nav-item" id="navLoginLink">
+                            <a class="nav-link" href="login">Connexion</a>
                         </li>
+
+                        <li class="nav-item" id="navMyAccountLink" style="display: none;">
+                            <a class="nav-link" href="my-account">Mon Compte</a>
+                        </li>
+
+                        <li class="nav-item" id="navLogoutLink" style="display: none;">
+                            <a class="nav-link" href="#" id="logoutLink">Déconnexion</a>
+                        </li>
+
                     </ul>
                 </div>
             </div>
@@ -51,7 +58,6 @@
     </header>
 
     <main id="main-page">
-        <!-- Content -->
     </main>
 
     <footer class="footer">
@@ -63,8 +69,10 @@
             </ul>
         </div>
     </footer>
-    <script type="module" src="Router/router.js"></script>
+
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="module" src="Router/router.js"></script>
 </body>
 
 </html>

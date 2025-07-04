@@ -2,7 +2,25 @@ import { sanitizeInput } from '../js/utils/sanitizer.js';
 import { clearMessages, displayMessage } from '../js/utils/alert.js';
 import { setupAutocomplete } from './utils/autocomplete.js';
 
+console.log("Script de la page d'accueil (home.js) chargé.");
+
+const checkLogoutSuccess = () => {
+    const logoutSuccessMessageDiv = document.getElementById('logoutSuccessMessage');
+    const logoutSuccess = localStorage.getItem('logoutSuccess');
+
+    if (logoutSuccess && logoutSuccessMessageDiv) {
+        logoutSuccessMessageDiv.style.display = 'block';
+        localStorage.removeItem('logoutSuccess');
+
+        setTimeout(() => {
+            logoutSuccessMessageDiv.style.display = 'none';
+        }, 3000);
+    }
+};
+
 (async () => {
+    checkLogoutSuccess();
+
     const homeForm = document.querySelector('.search-form');
     const formMessagesContainer = document.getElementById('form-messages');
     const departureInput = document.getElementById('departurePlace');
