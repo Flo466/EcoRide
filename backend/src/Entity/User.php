@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth; // Assure-toi que MaxDepth est importé
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -27,14 +27,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     /**
-     * @var list<string> The user roles
+     * @var list<string>
      */
     #[ORM\Column]
     #[Groups(['user_read'])]
     private array $roles = [];
 
     /**
-     * @var string The hashed password
+     * @var string
      */
     #[ORM\Column]
     #[Groups(['user_read'])]
@@ -60,9 +60,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user_read'])]
     private ?\DateTime $birthDate = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user_read', 'carpooling_read'])]
-    private ?string $photo = null;
+    #[ORM\Column(type: 'blob', nullable: true)]
+    private $photo;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $photoMimeType = null;
+
 
     #[ORM\Column(length: 50)]
     #[Groups(['user_read', 'carpooling_read', 'review:read'])]
@@ -162,7 +165,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -262,14 +264,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPhoto(): ?string
+    /**
+     * @return resource|string|null
+     */
+    public function getPhoto()
     {
         return $this->photo;
     }
 
-    public function setPhoto(?string $photo): static
+    /**
+     * @param resource|string|null
+     */
+    public function setPhoto($photo): static
     {
         $this->photo = $photo;
+
+        return $this;
+    }
+
+    public function getPhotoMimeType(): ?string
+    {
+        return $this->photoMimeType;
+    }
+
+    public function setPhotoMimeType(?string $photoMimeType): static
+    {
+        $this->photoMimeType = $photoMimeType;
 
         return $this;
     }

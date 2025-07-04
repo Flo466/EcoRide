@@ -66,7 +66,7 @@ h6 {
 
 .animate-fade-in {
   animation-name: fadeIn;
-  animation-duration: 0.5s;
+  animation-duration: 1.5s;
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
   opacity: 0;
@@ -554,14 +554,28 @@ select:focus {
 }
 
 .profile-avatar-placeholder {
-  width: 60px;
-  height: 60px;
-  background-color: #e9ecef;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #adb5bd;
+  background-color: #dbdada;
+  border: 1.2px solid $primary;
+}
+
+.profile-avatar,
+.profile-avatar-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-avatar-placeholder .bi {
+  font-size: 3rem;
+  color: #ada7a7;
 }
 
 .profile-balance {
@@ -621,4 +635,43 @@ select:focus {
 
 .text-start {
   color: $primary;
+}
+
+// Car form
+// -------------------------------------------------------------
+
+
+.toggle-switch .form-check-input:checked {
+  background-color: #22c55e;
+  border-color: #22c55e;
+}
+
+.toggle-switch .form-check-input {
+  width: 2.5em;
+  height: 1.25em;
+  margin-top: 0.2em;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease-in-out;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.toggle-switch .form-check-input::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1em;
+  height: 1em;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease-in-out;
+}
+
+.toggle-switch .form-check-input:checked::after {
+  transform: translateX(1.25em);
 }
