@@ -1,0 +1,5 @@
+# config/routes/api_cars.yaml
+api_all_cars_list:
+    path: /api/all-cars
+    controller: App\Controller\CarController::listAllCars
+    methods: [GET]

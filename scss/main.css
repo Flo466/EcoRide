@@ -12034,7 +12034,6 @@ h6,
   animation-duration: 1.5s;
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
-  opacity: 0;
 }
 
 .animate-fade-in-up {
@@ -12042,7 +12041,6 @@ h6,
   animation-duration: 0.6s;
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
-  opacity: 0;
 }
 
 .animate-fade-in-down {
@@ -12050,7 +12048,6 @@ h6,
   animation-duration: 0.6s;
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
-  opacity: 0;
 }
 
 .delay-100 {
@@ -12495,6 +12492,12 @@ select:focus {
   border-bottom: 1px solid #00ce0a;
   color: #373636;
   font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.profile-list-item:hover {
+  background-color: #baf6be;
 }
 
 .profile-list-item:first-child {
@@ -12543,4 +12546,38 @@ select:focus {
 
 .text-start {
   color: #00ce0a;
+}
+
+.vehicule-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  /* Espacement entre les cartes de véhicule */
+  justify-content: center;
+  /* Centre les cartes */
+  padding: 20px;
+}
+
+.vehicule-list .card {
+  min-width: 300px;
+  /* Largeur minimale pour les cartes */
+  max-width: 400px;
+  /* Largeur maximale pour les cartes */
+  flex: 1;
+  /* Permet aux cartes de s'étirer */
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }/*# sourceMappingURL=main.css.map */

@@ -60,8 +60,8 @@ if (loginForm && submitButton && emailInput && passwordInput) {
             localStorage.setItem('userEmail', data.email);
             localStorage.setItem('userRoles', JSON.stringify(data.roles));
 
-            console.log('Informations utilisateur stockées. Redirection vers /my-account.');
-            window.location.href = '/my-account';
+            console.log('Informations utilisateur stockées. Redirection vers /profile.');
+            window.location.href = '/profile';
 
         } catch (error) {
             console.error('Erreur de connexion:', error.message);

@@ -36,9 +36,9 @@ class Car
     #[Groups(['car:read', 'car:write', 'carpooling_read'])]
     private ?string $energy = null;
 
-    #[ORM\Column(type: 'string', length: 10, nullable: false)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Groups(['car:read', 'car:write'])]
-    private ?string $firstRegistrationDate = null;
+    private ?\DateTimeImmutable $firstRegistrationDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'cars', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
@@ -46,11 +46,10 @@ class Car
     #[Groups(['car:read', 'car:write'])]
     private ?User $user = null;
 
-
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     #[MaxDepth(1)]
-    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling_read', 'brand:read'])]
     private ?Brand $brand = null;
 
     /**
@@ -67,14 +66,19 @@ class Car
     #[Groups(['car:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    // NOUVEAU CHAMP : Pour les animaux acceptés
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     #[Groups(['car:read', 'car:write', 'carpooling_read'])]
     private ?bool $petsAllowed = false;
 
+    #[ORM\Column]
+    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    private ?int $seats = null;
+
+
     public function __construct()
     {
         $this->carpoolings = new ArrayCollection();
+        $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -90,7 +94,6 @@ class Car
     public function setModel(string $model): static
     {
         $this->model = $model;
-
         return $this;
     }
 
@@ -102,7 +105,6 @@ class Car
     public function setColor(?string $color): static
     {
         $this->color = $color;
-
         return $this;
     }
 
@@ -114,7 +116,6 @@ class Car
     public function setLicencePlate(string $licencePlate): static
     {
         $this->licencePlate = $licencePlate;
-
         return $this;
     }
 
@@ -126,19 +127,17 @@ class Car
     public function setEnergy(string $energy): static
     {
         $this->energy = $energy;
-
         return $this;
     }
 
-    public function getFirstRegistrationDate(): ?string
+    public function getFirstRegistrationDate(): ?\DateTimeImmutable
     {
         return $this->firstRegistrationDate;
     }
 
-    public function setFirstRegistrationDate(?string $firstRegistrationDate): static
+    public function setFirstRegistrationDate(?\DateTimeImmutable $firstRegistrationDate): static
     {
         $this->firstRegistrationDate = $firstRegistrationDate;
-
         return $this;
     }
 
@@ -150,7 +149,6 @@ class Car
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
         return $this;
     }
 
@@ -162,7 +160,6 @@ class Car
     public function setBrand(?Brand $brand): static
     {
         $this->brand = $brand;
-
         return $this;
     }
 
@@ -180,7 +177,6 @@ class Car
             $this->carpoolings->add($carpooling);
             $carpooling->setCar($this);
         }
-
         return $this;
     }
 
@@ -191,7 +187,6 @@ class Car
                 $carpooling->setCar(null);
             }
         }
-
         return $this;
     }
 
@@ -203,7 +198,6 @@ class Car
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -215,19 +209,7 @@ class Car
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
         return $this;
-    }
-
-    public function isValidFirstRegistrationDate(): bool
-    {
-        if ($this->firstRegistrationDate === null) {
-            return false;
-        }
-
-        $date = \DateTime::createFromFormat('d/m/Y', $this->firstRegistrationDate);
-
-        return $date && $date->format('d/m/Y') === $this->firstRegistrationDate;
     }
 
     public function isPetsAllowed(): ?bool
@@ -238,7 +220,17 @@ class Car
     public function setPetsAllowed(bool $petsAllowed): static
     {
         $this->petsAllowed = $petsAllowed;
+        return $this;
+    }
 
+    public function getSeats(): ?int
+    {
+        return $this->seats;
+    }
+
+    public function setSeats(int $seats): static
+    {
+        $this->seats = $seats;
         return $this;
     }
 }

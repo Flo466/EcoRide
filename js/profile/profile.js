@@ -15,6 +15,11 @@ const driverModeMessage = document.getElementById('driverModeMessage'); // Élé
 const enterJourneyFormBtn = document.getElementById('enterJourneyFormBtn');
 const enterVehicleFormBtn = document.getElementById('enterVehicleFormBtn');
 
+// AJOUTÉ : Élément pour le lien "Mes véhicules"
+// Sélectionne le 2ème <li> avec la classe .profile-list-item
+const myVehiclesLink = document.querySelector('ul.list-group-flush > li:nth-child(2)');
+
+
 // --- DÉBOGAGE : Vérification des éléments DOM au chargement du script ---
 console.log('DOM Element Check: userNameDisplay', userNameDisplay);
 console.log('DOM Element Check: userCreditsDisplay', userCreditsDisplay);
@@ -26,6 +31,7 @@ console.log('DOM Element Check: driverSwitch', driverSwitch);
 console.log('DOM Element Check: driverModeMessage', driverModeMessage);
 console.log('DOM Element Check: enterJourneyFormBtn', enterJourneyFormBtn);
 console.log('DOM Element Check: enterVehicleFormBtn', enterVehicleFormBtn);
+console.log('DOM Element Check: myVehiclesLink', myVehiclesLink); // DÉBOGAGE : Vérification du lien Mes véhicules
 
 
 // Global variable to store the previous object URL, to revoke it and avoid memory leaks
@@ -173,9 +179,13 @@ const loadUserProfile = async () => {
         // Update username and credits
         if (userNameDisplay) {
             userNameDisplay.textContent = user.userName || 'Utilisateur';
+            console.log('loadUserProfile: userNameDisplay mis à jour:', userNameDisplay.textContent);
+            console.log('loadUserProfile: userNameDisplay outerHTML après mise à jour:', userNameDisplay.outerHTML); // NOUVEAU LOG
         }
         if (userCreditsDisplay) {
             userCreditsDisplay.textContent = typeof user.credits !== 'undefined' ? user.credits : '0';
+            console.log('loadUserProfile: userCreditsDisplay mis à jour:', userCreditsDisplay.textContent);
+            console.log('loadUserProfile: userCreditsDisplay outerHTML après mise à jour:', userCreditsDisplay.outerHTML); // NOUVEAU LOG
         }
 
         // Manage avatar display based on 'hasAvatar'
@@ -184,6 +194,7 @@ const loadUserProfile = async () => {
             if (currentAvatarObjectURL) {
                 URL.revokeObjectURL(currentAvatarObjectURL);
                 currentAvatarObjectURL = null;
+                console.log('loadUserProfile: Ancien avatar URL révoqué.');
             }
 
             if (user.hasAvatar) {
@@ -198,24 +209,32 @@ const loadUserProfile = async () => {
                     });
 
                     if (!response.ok) {
-                        const errorText = await response.text(); // Get raw text for more info
+                        const errorText = await response.text();
                         throw new Error(`Erreur lors du chargement de l'avatar: ${response.status} ${response.statusText} - ${errorText}`);
                     }
 
                     const imageBlob = await response.blob();
                     currentAvatarObjectURL = URL.createObjectURL(imageBlob);
 
-                    profileAvatarPlaceholder.innerHTML = `<img src="${currentAvatarObjectURL}" alt="Avatar" class="profile-avatar">`;
-                    console.log("Avatar chargé et affiché depuis le BLOB.");
+                    // Utiliser un petit délai pour voir si cela aide à la persistance
+                    setTimeout(() => { // NOUVEAU : Ajout d'un setTimeout
+                        profileAvatarPlaceholder.innerHTML = `<img src="${currentAvatarObjectURL}" alt="Avatar" class="profile-avatar">`;
+                        console.log("Avatar chargé et affiché depuis le BLOB.");
+                        console.log('loadUserProfile: profileAvatarPlaceholder outerHTML après mise à jour:', profileAvatarPlaceholder.outerHTML); // NOUVEAU LOG
+                    }, 50); // Petit délai de 50ms
 
                 } catch (imageError) {
                     console.error("Erreur lors du chargement de l'avatar BLOB:", imageError);
                     profileAvatarPlaceholder.innerHTML = `<i class="bi bi-person-circle fs-1"></i>`;
                     displayMessage("Impossible de charger votre photo de profil.", 'danger');
+                    console.log("Avatar par défaut affiché suite à une erreur de chargement.");
+                    console.log('loadUserProfile: profileAvatarPlaceholder outerHTML après erreur:', profileAvatarPlaceholder.outerHTML); // NOUVEAU LOG
                 }
             } else {
                 console.log("loadUserProfile: User has no avatar, displaying default icon.");
                 profileAvatarPlaceholder.innerHTML = `<i class="bi bi-person-circle fs-1"></i>`;
+                console.log("Avatar par défaut affiché (pas d'avatar utilisateur).");
+                console.log('loadUserProfile: profileAvatarPlaceholder outerHTML (pas d\'avatar):', profileAvatarPlaceholder.outerHTML); // NOUVEAU LOG
             }
         } else {
             console.warn("loadUserProfile: profileAvatarPlaceholder element not found.");
@@ -366,6 +385,15 @@ if (enterJourneyFormBtn) {
         console.log("Redirection vers la page du formulaire de voyage.");
         // Assurez-vous que cette URL est correcte pour votre formulaire de voyage
         window.location.href = '/journey-form';
+    });
+}
+
+// AJOUTÉ : Écouteur d'événement pour le lien "Mes véhicules"
+if (myVehiclesLink) {
+    myVehiclesLink.addEventListener('click', (event) => {
+        event.preventDefault(); // Empêche le comportement par défaut du lien si c'est un <a>
+        console.log("Clic sur 'Mes véhicules'. Redirection vers /my-vehicules.");
+        window.location.href = '/my-vehicules'; // Redirige vers la page des véhicules
     });
 }
 

@@ -1,6 +1,6 @@
-import { fetchApi } from './api/fetch.js';
-import { API_BASE_URL } from './config.js';
-import { sanitizeInput } from './utils/sanitizer.js'; // AJOUTÉ : Importation de la fonction sanitizeInput
+import { fetchApi } from '../api/fetch.js';
+import { API_BASE_URL } from '../config.js';
+import { sanitizeInput } from '../utils/sanitizer.js';
 
 // --- DOM Elements ---
 const carBrandSelect = document.getElementById('carBrand');
@@ -11,14 +11,15 @@ const immatInput = document.getElementById('immat');
 const immatInvalidFeedback = immatInput ? immatInput.nextElementSibling?.nextElementSibling : null;
 const firstImmatInput = document.getElementById('firstImmat');
 const seatNmbInput = document.getElementById('seatNmb');
-const seatNmbInvalidFeedback = seatNmbInput ? seatNmbInput.nextElementSibling : null; // Assurez-vous que c'est le bon nextElementSibling
+const seatNmbInvalidFeedback = seatNmbInput ? seatNmbInput.nextElementSibling : null;
 const petFriendlySwitch = document.getElementById('petFriendlySwitch');
 const registrationForm = document.getElementById('registrationForm');
 const messageDisplay = document.getElementById('messageDisplay');
+const cancelButton = document.getElementById('cancelButton'); // Référence au bouton Annuler
 
 // --- Regex Patterns for License Plate Validation ---
-const REGEX_NEW_FORMAT = /^[A-Z]{2}\d{3}[A-Z]{2}$/i;           // Format: AA123AA
-const REGEX_OLD_FORMAT_NO_SPACE = /^\d{1,4}[A-Z]{1,2}\d{1,2}$/i;   // Format: 1234AB56
+const REGEX_NEW_FORMAT = /^[A-Z]{2}\d{3}[A-Z]{2}$/i;
+const REGEX_OLD_FORMAT_NO_SPACE = /^\d{1,4}[A-Z]{1,2}\d{1,2}$/i;
 
 // --- Message Display Utility ---
 /**
@@ -66,7 +67,7 @@ const validateImmatriculation = (immat) => {
  */
 const handleImmatValidation = () => {
     if (immatInput && immatInvalidFeedback) {
-        if (immatInput.value.length > 0) { // Si le champ n'est pas vide, on valide
+        if (immatInput.value.length > 0) {
             if (!validateImmatriculation(immatInput.value)) {
                 immatInput.classList.add('is-invalid');
                 immatInput.classList.remove('is-valid');
@@ -78,10 +79,10 @@ const handleImmatValidation = () => {
                 immatInvalidFeedback.style.display = 'none';
                 return true;
             }
-        } else { // Si le champ est vide, on nettoie les styles
+        } else {
             immatInput.classList.remove('is-invalid', 'is-valid');
             immatInvalidFeedback.style.display = 'none';
-            return false; // Un champ requis vide est toujours considéré invalide pour la soumission
+            return false;
         }
     }
     return false;
@@ -96,13 +97,12 @@ const validateSeatNumber = () => {
         const value = seatNmbInput.value.trim();
         const numValue = parseInt(value, 10);
 
-        if (value === '') { // Si le champ est vide, on nettoie les styles
+        if (value === '') {
             seatNmbInput.classList.remove('is-invalid', 'is-valid');
             seatNmbInvalidFeedback.style.display = 'none';
-            return false; // Un champ requis vide est toujours considéré invalide pour la soumission
+            return false;
         }
 
-        // La logique de validation s'applique seulement si le champ n'est PAS vide
         if (isNaN(numValue) || numValue < 1 || numValue > 10) {
             seatNmbInput.classList.add('is-invalid');
             seatNmbInput.classList.remove('is-valid');
@@ -243,17 +243,16 @@ if (registrationForm) {
             return;
         }
 
-        // AJOUTÉ : Assainissement des données avant de créer l'objet vehicleData
         const sanitizedModel = sanitizeInput(modelInput.value);
         const sanitizedColor = sanitizeInput(colorInput.value);
         const sanitizedLicencePlate = sanitizeInput(immatInput.value);
 
         const vehicleData = {
             brand_id: carBrandSelect.value,
-            model: sanitizedModel, // UTILISE LA VALEUR ASSAINIE
-            color: sanitizedColor, // UTILISE LA VALEUR ASSAINIE
+            model: sanitizedModel,
+            color: sanitizedColor,
             energy: energySelect.value,
-            licencePlate: sanitizedLicencePlate, // UTILISE LA VALEUR ASSAINIE
+            licencePlate: sanitizedLicencePlate,
             firstRegistrationDate: formatDateForBackend(firstImmatInput.value),
             seats: parseInt(seatNmbInput.value, 10),
             petsAllowed: petFriendlySwitch.checked,
@@ -274,7 +273,7 @@ if (registrationForm) {
             validateSeatNumber();
 
             setTimeout(() => {
-                window.location.href = '/my-account';
+                window.location.href = '/profile';
             }, 2000);
 
         } catch (error) {
@@ -294,3 +293,11 @@ if (immatInput) {
 // --- Initial Data Load ---
 loadCarBrands();
 loadEnergyTypes();
+
+// Logique pour le bouton Annuler
+if (cancelButton) {
+    cancelButton.addEventListener('click', () => {
+        console.log("Clic sur le bouton Annuler. Redirection vers /profile.");
+        window.location.href = '/profile';
+    });
+}

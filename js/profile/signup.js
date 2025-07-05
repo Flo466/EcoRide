@@ -203,7 +203,7 @@ import { API_BASE_URL } from '../config.js';
             }
 
             setTimeout(() => {
-                window.location.href = '/connection';
+                window.location.href = '/login';
             }, 3000);
         } catch (error) {
             const errorMessage = error.message || 'Une erreur est survenue lors de l\'inscription.';
