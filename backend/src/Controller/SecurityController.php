@@ -130,14 +130,6 @@ final class SecurityController extends AbstractController
                         new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string", example: "ROLE_USER")),
                     ]
                 )
-            ),
-            new OA\Response(
-                response: 401,
-                description: "Invalid credentials"
-            ),
-            new OA\Response(
-                response: 400,
-                description: "Missing email or password"
             )
         ]
     )]
@@ -188,6 +180,7 @@ final class SecurityController extends AbstractController
                 new OA\Property(property: "updated_at", type: "string", format: "date-time"),
                 new OA\Property(property: "api_token", type: "string", example: "abcdef1234567890"),
                 new OA\Property(property: "hasAvatar", type: "boolean", example: true),
+                new OA\Property(property: "isDriver", type: "boolean", example: false), // AJOUTÉ pour la doc Swagger
             ]
         )
     )]
@@ -207,6 +200,7 @@ final class SecurityController extends AbstractController
         // NOUVEAU : Force le rafraîchissement de l'entité utilisateur pour s'assurer d'avoir les dernières données
         $this->manager->refresh($user);
 
+        // Assure-toi que le groupe 'user_read' est défini sur les propriétés que tu veux exposer dans l'entité User
         $userData = json_decode(
             $this->serializer->serialize(
                 $user,
@@ -217,6 +211,9 @@ final class SecurityController extends AbstractController
         );
 
         $userData['hasAvatar'] = $user->getPhoto() !== null;
+        // AJOUTÉ : Inclure le statut isDriver dans la réponse
+        $userData['isDriver'] = $user->isDriver();
+
 
         return new JsonResponse(
             $userData,
@@ -485,5 +482,68 @@ final class SecurityController extends AbstractController
             return new JsonResponse(['isAvailable' => false]);
         }
         return new JsonResponse(['isAvailable' => true]);
+    }
+
+    /**
+     * Met à jour le statut de chauffeur de l'utilisateur connecté.
+     */
+    #[Route('/account/me/driver-status', name: 'update_driver_status', methods: ['PATCH'])]
+    #[IsGranted('ROLE_USER')]
+    #[OA\Patch(
+        path: "/api/account/me/driver-status",
+        summary: "Update the driver status of the current user",
+        requestBody: new OA\RequestBody(
+            required: true,
+            description: "New driver status (boolean)",
+            content: new OA\JsonContent(
+                type: "object",
+                properties: [
+                    new OA\Property(property: "isDriver", type: "boolean", example: true)
+                ],
+                required: ["isDriver"]
+            )
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Driver status updated successfully",
+        content: new OA\JsonContent(
+            type: "object",
+            properties: [
+                new OA\Property(property: "message", type: "string", example: "Mode chauffeur activé."),
+                new OA\Property(property: "isDriver", type: "boolean", example: true)
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Bad Request (e.g., missing or invalid 'isDriver' value)"
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Unauthorized"
+    )]
+    public function updateDriverStatus(Request $request, #[CurrentUser] ?User $user): JsonResponse
+    {
+        if (null === $user) {
+            $this->logger->error('updateDriverStatus: Utilisateur non authentifié.');
+            return new JsonResponse(['message' => 'Authentification requise'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $isDriver = $data['isDriver'] ?? null;
+
+        if (!isset($data['isDriver']) || !is_bool($isDriver)) {
+            $this->logger->error('updateDriverStatus: La valeur "isDriver" est manquante ou n\'est pas un booléen.', ['data' => $data]);
+            return new JsonResponse(['error' => 'La valeur "isDriver" doit être un booléen.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->setDriver($isDriver);
+        $this->manager->flush();
+
+        $message = $isDriver ? 'Mode chauffeur activé.' : 'Mode chauffeur désactivé.';
+        $this->logger->info('updateDriverStatus: Statut chauffeur mis à jour.', ['userId' => $user->getId(), 'isDriver' => $isDriver]);
+
+        return new JsonResponse(['message' => $message, 'isDriver' => $user->isDriver()], Response::HTTP_OK);
     }
 }

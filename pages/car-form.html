@@ -1,0 +1,67 @@
+<div class="container">
+    <h2 class="mt-3">Ajouter un véhicule</h2>
+    <form id="registrationForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label for="carBrand" class="form-label">Marque</label>
+            <select class="form-control form-account" id="carBrand" required>
+                <option value="" disabled selected>Sélectionnez une marque</option>
+            </select>
+            <div class="invalid-feedback ms-2">
+                Veuillez sélectionner une marque.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="model" class="form-label">Modèle</label>
+            <input type="text" class="form-control form-account" id="model" required>
+        </div>
+        <div class="mb-3">
+            <label for="color" class="form-label">Couleur</label>
+            <input type="text" class="form-control form-account" id="color" required>
+        </div>
+        <div class="mb-3">
+            <label for="energy" class="form-label">Énergie</label>
+            <select class="form-control form-account" id="energy" required>
+                <option value="" disabled selected>Sélectionnez une énergie</option>
+            </select>
+            <div class="invalid-feedback ms-2">
+                Veuillez sélectionner un type d'énergie.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="immat" class="form-label">Immatriculation</label>
+            <input type="text" class="form-control form-account" id="immat" required>
+            <div class="form-text ms-2">
+                Format : AA123AA ou 123AB45 ou 1234AB56
+            </div>
+            <div class="invalid-feedback ms-2">
+                Le format d'immatriculation ne correspond pas.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="firstImmat" class="form-label">Date de mise en circulation</label>
+            <input type="date" class="form-control form-account" id="firstImmat" required>
+        </div>
+        <div class="mb-3">
+            <label for="seatNmb" class="form-label">Nombre de places</label>
+            <input type="number" class="form-control form-account" id="seatNmb" min="1" max="10" required>
+            <div class="invalid-feedback ms-2">
+                Le nombre de places doit être un chiffre entre 1 et 10.
+            </div>
+        </div>
+
+        <div class="p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span>Animaux acceptés</span>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="petFriendlySwitch">
+                    <label class="form-check-label visually-hidden" for="petFriendlySwitch">petFriendly</label>
+                </div>
+            </div>
+        </div>
+        <div id="messageDisplay" class="alert d-none" role="alert"></div>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-perso text-white rounded-pill">Enregistrer
+                véhicule</button>
+        </div>
+    </form>
+</div>

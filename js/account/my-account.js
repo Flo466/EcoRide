@@ -1,19 +1,32 @@
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
 
-console.log("Script de la page Mon Compte (my-account.js) chargé.");
-
+// --- DOM Elements ---
 const userNameDisplay = document.getElementById('userNameDisplay');
 const userCreditsDisplay = document.getElementById('userCreditsDisplay');
 const addPhotoBtn = document.getElementById('addPhotoBtn');
 const avatarInput = document.getElementById('avatarInput');
 const profileAvatarPlaceholder = document.querySelector('.profile-avatar-placeholder');
-const messageDisplay = document.getElementById('messageDisplay');
-const driverSwitch = document.getElementById('driverSwitch');
-const enterVehicleButtonParent = document.getElementById('enterVehicleFormBtn')?.parentNode;
+const messageDisplay = document.getElementById('messageDisplay'); // Pour les messages généraux (ex: avatar)
+const driverSwitch = document.getElementById('driverSwitch'); // ID de l'interrupteur du mode chauffeur
+const driverModeMessage = document.getElementById('driverModeMessage'); // Élément pour afficher les messages du mode chauffeur
+
+// Boutons liés au mode chauffeur
+const enterJourneyFormBtn = document.getElementById('enterJourneyFormBtn');
 const enterVehicleFormBtn = document.getElementById('enterVehicleFormBtn');
-const enterJourneyButtonParent = document.getElementById('enterJourneyFormBtn')?.parentNode;
-const enterJourneyFormBtn = document.getElementById('enterVehicleFormBtn');
+
+// --- DÉBOGAGE : Vérification des éléments DOM au chargement du script ---
+console.log('DOM Element Check: userNameDisplay', userNameDisplay);
+console.log('DOM Element Check: userCreditsDisplay', userCreditsDisplay);
+console.log('DOM Element Check: addPhotoBtn', addPhotoBtn);
+console.log('DOM Element Check: avatarInput', avatarInput);
+console.log('DOM Element Check: profileAvatarPlaceholder', profileAvatarPlaceholder);
+console.log('DOM Element Check: messageDisplay', messageDisplay);
+console.log('DOM Element Check: driverSwitch', driverSwitch);
+console.log('DOM Element Check: driverModeMessage', driverModeMessage);
+console.log('DOM Element Check: enterJourneyFormBtn', enterJourneyFormBtn);
+console.log('DOM Element Check: enterVehicleFormBtn', enterVehicleFormBtn);
+
 
 // Global variable to store the previous object URL, to revoke it and avoid memory leaks
 let currentAvatarObjectURL = null;
@@ -22,45 +35,106 @@ let currentAvatarObjectURL = null;
  * Displays a temporary message in the dedicated box.
  * @param {string} message The text message to display.
  * @param {'success' | 'danger'} type The type of message ('success' for green, 'danger' for red).
+ * @param {HTMLElement} targetDisplay L'élément DOM où afficher le message (par défaut messageDisplay).
  */
-const displayMessage = (message, type) => {
-    if (messageDisplay) {
+const displayMessage = (message, type, targetDisplay = messageDisplay) => {
+    if (targetDisplay) {
         // Remove previous classes and clear content (including old icon)
-        messageDisplay.classList.remove('alert-success', 'alert-danger', 'd-none');
-        messageDisplay.innerHTML = ''; // Clear existing content
+        targetDisplay.classList.remove('alert-success', 'alert-danger', 'd-none');
+        targetDisplay.innerHTML = ''; // Clear existing content
 
         let iconClass = '';
         if (type === 'success') {
-            messageDisplay.classList.add('alert-success');
+            targetDisplay.classList.add('alert-success');
             iconClass = 'bi bi-check-circle-fill'; // Bootstrap Icons success icon
         } else if (type === 'danger') {
-            messageDisplay.classList.add('alert-danger');
+            targetDisplay.classList.add('alert-danger');
             iconClass = 'bi bi-x-circle-fill'; // Bootstrap Icons error icon
         }
 
         // Add icon and message
-        messageDisplay.innerHTML = `<i class="${iconClass} me-2"></i>${message}`;
-        messageDisplay.classList.remove('d-none'); // Show the element
+        targetDisplay.innerHTML = `<i class="${iconClass} me-2"></i>${message}`;
+        targetDisplay.classList.remove('d-none'); // Show the element
 
         // Hide the message after 5 seconds
         setTimeout(() => {
-            messageDisplay.classList.add('d-none');
-            messageDisplay.innerHTML = ''; // Clear content when hidden
+            targetDisplay.classList.add('d-none');
+            targetDisplay.innerHTML = ''; // Clear content when hidden
         }, 5000);
+    } else {
+        console.error('displayMessage: targetDisplay est null ou undefined. Message:', message);
     }
 };
 
 /**
- * Manages the visibility of the "Saisir un véhicule" button based on the driver switch state.
+ * Met à jour la visibilité des boutons "Saisir un voyage" et "Saisir un véhicule".
+ * @param {boolean} isDriver - Le statut actuel du mode chauffeur.
  */
-const toggleEnterTripButtonVisibility = () => {
-    if (driverSwitch && enterVehicleButtonParent && enterJourneyButtonParent) {
-        if (driverSwitch.checked) {
-            enterVehicleButtonParent.classList.remove('d-none'); // Show the button's container
-            enterJourneyButtonParent.classList.remove('d-none'); // Show the button's container
+const updateDriverButtonsVisibility = (isDriver) => {
+    console.log(`updateDriverButtonsVisibility: isDriver = ${isDriver}`);
+    if (enterJourneyFormBtn) {
+        if (isDriver) {
+            enterJourneyFormBtn.classList.remove('d-none');
+            console.log('enterJourneyFormBtn visible');
         } else {
-            enterVehicleButtonParent.classList.add('d-none'); // Hide the button's container
-            enterJourneyButtonParent.classList.add('d-none'); // Hide the button's container
+            enterJourneyFormBtn.classList.add('d-none');
+            console.log('enterJourneyFormBtn caché');
+        }
+    } else {
+        console.warn('enterJourneyFormBtn non trouvé.');
+    }
+
+    if (enterVehicleFormBtn) {
+        if (isDriver) {
+            enterVehicleFormBtn.classList.remove('d-none');
+            console.log('enterVehicleFormBtn visible');
+        } else {
+            enterVehicleFormBtn.classList.add('d-none');
+            console.log('enterVehicleFormBtn caché');
+        }
+    } else {
+        console.warn('enterVehicleFormBtn non trouvé.');
+    }
+};
+
+/**
+ * Met à jour le statut de chauffeur de l'utilisateur via l'API.
+ * @param {boolean} isDriverStatus - Le nouveau statut de chauffeur (true/false).
+ */
+const updateDriverStatus = async (isDriverStatus) => {
+    const userToken = localStorage.getItem('userToken');
+    console.log('updateDriverStatus: User Token:', userToken ? 'Present' : 'Missing');
+
+    if (!userToken) {
+        displayMessage("Token utilisateur manquant pour mettre à jour le mode chauffeur. Veuillez vous reconnecter.", 'danger', driverModeMessage);
+        setTimeout(() => { window.location.href = '/login'; }, 3000);
+        return;
+    }
+
+    try {
+        console.log('updateDriverStatus: Sending PATCH request to /api/account/me/driver-status with isDriver:', isDriverStatus);
+        const response = await fetchApi(
+            `${API_BASE_URL}/api/account/me/driver-status`,
+            'PATCH',
+            { isDriver: isDriverStatus },
+            { 'X-AUTH-TOKEN': userToken }
+        );
+
+        console.log('updateDriverStatus: API Response:', response);
+        const responseData = response || {};
+        const message = responseData.message || (isDriverStatus ? "Mode chauffeur activé avec succès." : "Mode chauffeur désactivé avec succès.");
+        displayMessage(message, 'success', driverModeMessage);
+
+        updateDriverButtonsVisibility(isDriverStatus); // Met à jour la visibilité des boutons après succès
+
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du mode chauffeur:", error);
+        const errorMessage = error.message || "Une erreur est survenue lors de la mise à jour du mode chauffeur.";
+        displayMessage(errorMessage, 'danger', driverModeMessage);
+        // En cas d'erreur, remet l'interrupteur à son état précédent pour cohérence
+        if (driverSwitch) {
+            console.log('updateDriverStatus: Reverting switch state due to error.');
+            driverSwitch.checked = !isDriverStatus;
         }
     }
 };
@@ -70,36 +144,38 @@ const toggleEnterTripButtonVisibility = () => {
  * Loads the user profile from the API and displays the information, including the avatar.
  */
 const loadUserProfile = async () => {
-    const userToken = localStorage.getItem('userToken'); // Corrected: Use localStorage.getItem directly
-    const userId = localStorage.getItem('userId'); // userId is not used here, but kept for consistency if needed elsewhere
+    console.log('loadUserProfile: Attempting to load user profile.');
+
+    const userToken = localStorage.getItem('userToken');
+    console.log('loadUserProfile: User Token:', userToken ? 'Present' : 'Missing');
 
     if (!userToken) {
         console.warn("Token utilisateur manquant. Redirection vers la page de connexion.");
         displayMessage("Token utilisateur manquant. Redirection vers la page de connexion.", 'danger');
+        // Désactiver l'interrupteur et masquer les boutons si pas de token
+        if (driverSwitch) driverSwitch.disabled = true;
+        updateDriverButtonsVisibility(false);
         setTimeout(() => { window.location.href = '/login'; }, 3000);
         return;
     }
 
     try {
-        const userProfileUrl = `${API_BASE_URL}/api/account/me`;
-
-        // Retrieve user profile data (including 'hasAvatar')
-        const userData = await fetchApi(
-            userProfileUrl,
+        console.log('loadUserProfile: Fetching user info from API: /api/account/me');
+        const user = await fetchApi(
+            `${API_BASE_URL}/api/account/me`, // L'URL pour récupérer les infos de l'utilisateur courant
             'GET',
             null,
-            { 'X-AUTH-TOKEN': userToken } // Use the X-AUTH-TOKEN header
+            { 'X-AUTH-TOKEN': userToken }
         );
 
-        console.log("Données de profil utilisateur de l'API /api/account/me :", userData);
+        console.log('loadUserProfile: User info from API:', user);
 
         // Update username and credits
         if (userNameDisplay) {
-            userNameDisplay.textContent = userData.userName || 'Utilisateur';
+            userNameDisplay.textContent = user.userName || 'Utilisateur';
         }
-
         if (userCreditsDisplay) {
-            userCreditsDisplay.textContent = typeof userData.credits !== 'undefined' ? userData.credits : '0';
+            userCreditsDisplay.textContent = typeof user.credits !== 'undefined' ? user.credits : '0';
         }
 
         // Manage avatar display based on 'hasAvatar'
@@ -110,11 +186,10 @@ const loadUserProfile = async () => {
                 currentAvatarObjectURL = null;
             }
 
-            if (userData.hasAvatar) {
-                // Add a cache-busting parameter to the avatar URL
+            if (user.hasAvatar) {
                 const avatarBlobUrl = `${API_BASE_URL}/api/account/me/avatar-blob?_t=${Date.now()}`;
+                console.log('loadUserProfile: Fetching avatar blob from:', avatarBlobUrl);
                 try {
-                    // Make a fetch request for the image with the authentication header
                     const response = await fetch(avatarBlobUrl, {
                         method: 'GET',
                         headers: {
@@ -123,81 +198,90 @@ const loadUserProfile = async () => {
                     });
 
                     if (!response.ok) {
-                        throw new Error(`Erreur lors du chargement de l'avatar: ${response.status} ${response.statusText}`);
+                        const errorText = await response.text(); // Get raw text for more info
+                        throw new Error(`Erreur lors du chargement de l'avatar: ${response.status} ${response.statusText} - ${errorText}`);
                     }
 
-                    const imageBlob = await response.blob(); // Get the response as a Blob
-                    currentAvatarObjectURL = URL.createObjectURL(imageBlob); // Create a temporary URL for the blob
+                    const imageBlob = await response.blob();
+                    currentAvatarObjectURL = URL.createObjectURL(imageBlob);
 
-                    // Update the HTML to display the image
                     profileAvatarPlaceholder.innerHTML = `<img src="${currentAvatarObjectURL}" alt="Avatar" class="profile-avatar">`;
                     console.log("Avatar chargé et affiché depuis le BLOB.");
 
                 } catch (imageError) {
                     console.error("Erreur lors du chargement de l'avatar BLOB:", imageError);
-                    // In case of image loading error, display the default icon
                     profileAvatarPlaceholder.innerHTML = `<i class="bi bi-person-circle fs-1"></i>`;
                     displayMessage("Impossible de charger votre photo de profil.", 'danger');
                 }
             } else {
-                // If the user has no avatar, display the default icon
+                console.log("loadUserProfile: User has no avatar, displaying default icon.");
                 profileAvatarPlaceholder.innerHTML = `<i class="bi bi-person-circle fs-1"></i>`;
             }
+        } else {
+            console.warn("loadUserProfile: profileAvatarPlaceholder element not found.");
         }
 
-        // Initialize the driver switch state and button visibility
-        // If you have an 'isDriver' property in userData (e.g., userData.isDriver), you can use it here:
-        // if (driverSwitch && typeof userData.isDriver !== 'undefined') {
-        //     driverSwitch.checked = userData.isDriver;
-        // }
-        toggleEnterTripButtonVisibility(); // Call the function to set initial visibility
-
+        // Initialiser l'état du switch chauffeur et la visibilité des boutons
+        if (driverSwitch) {
+            if (user && typeof user.isDriver === 'boolean') {
+                driverSwitch.checked = user.isDriver;
+                console.log('loadUserProfile: Driver switch set to:', user.isDriver);
+                updateDriverButtonsVisibility(user.isDriver); // Mettre à jour la visibilité des boutons
+            } else {
+                console.warn("loadUserProfile: Statut isDriver non trouvé ou non booléen pour l'utilisateur. Défini sur false par défaut.");
+                driverSwitch.checked = false;
+                updateDriverButtonsVisibility(false); // Masquer les boutons
+            }
+        } else {
+            console.warn("loadUserProfile: driverSwitch element not found.");
+        }
 
     } catch (error) {
         console.error("Erreur lors de la récupération du profil utilisateur via API /api/account/me :", error);
         if (error.message.includes('401') || error.message.includes('Unauthorized') || error.message.includes('Missing credentials')) {
             displayMessage("Votre session a expiré ou n'est plus valide. Veuillez vous reconnecter.", 'danger');
-            setTimeout(() => { window.location.href = '/login'; }, 3000); // Redirect after message display
+            setTimeout(() => { window.location.href = '/login'; }, 3000);
         } else {
             displayMessage("Impossible de charger vos informations de profil. Veuillez réessayer.", 'danger');
         }
+        // En cas d'erreur de chargement du profil, désactiver le switch et masquer les boutons
+        if (driverSwitch) driverSwitch.disabled = true;
+        updateDriverButtonsVisibility(false);
     }
 };
 
 // Event listener for the "Ajouter ou modifier une photo" button
 if (addPhotoBtn && avatarInput) {
     addPhotoBtn.addEventListener('click', () => {
-        console.log("Clic sur le bouton 'Ajouter ou modifier une photo'."); // DEBUG LOG
-        avatarInput.click(); // Simulate a click on the hidden file input to open the dialog
+        console.log("Clic sur le bouton 'Ajouter ou modifier une photo'.");
+        avatarInput.click();
     });
+} else {
+    console.warn("addPhotoBtn ou avatarInput non trouvé.");
 }
 
 // Event listener when the user selects a file
 if (avatarInput) {
     avatarInput.addEventListener('change', async (event) => {
-        console.log("Événement 'change' détecté sur l'input file."); // DEBUG LOG
-        const file = event.target.files[0]; // Get the first selected file
+        console.log("Événement 'change' détecté sur l'input file.");
+        const file = event.target.files[0];
         if (file) {
-            console.log("Fichier sélectionné:", file.name, file.type, file.size, "bytes"); // DEBUG LOG
-            // Optional: Display a preview of the selected image before upload
+            console.log("Fichier sélectionné:", file.name, file.type, file.size, "bytes");
             const reader = new FileReader();
             reader.onload = (e) => {
                 if (profileAvatarPlaceholder) {
-                    // Revoke old object URL if it exists to prevent memory leaks
                     if (currentAvatarObjectURL) {
                         URL.revokeObjectURL(currentAvatarObjectURL);
                         currentAvatarObjectURL = null;
                     }
-                    // Use a different class for the preview if you want temporary styling
                     profileAvatarPlaceholder.innerHTML = `<img src="${e.target.result}" alt="Preview" class="profile-avatar-preview">`;
                 }
             };
-            reader.readAsDataURL(file); // Read the file as a data URL
+            reader.readAsDataURL(file);
 
-            // Call the function to send the photo to the server
             await uploadAvatar(file);
         } else {
-            console.log("Aucun fichier sélectionné."); // DEBUG LOG
+            console.log("Aucun fichier sélectionné.");
         }
     });
 }
@@ -207,34 +291,33 @@ if (avatarInput) {
  * @param {File} file - The image file to upload.
  */
 const uploadAvatar = async (file) => {
-    console.log("Début de la fonction uploadAvatar."); // DEBUG LOG
+    console.log("Début de la fonction uploadAvatar.");
 
-    const userToken = localStorage.getItem('userToken'); // Corrected: Use localStorage.getItem directly
+    const userToken = localStorage.getItem('userToken');
     if (!userToken) {
         console.warn("Token utilisateur manquant pour l'upload d'avatar.");
         displayMessage("Vous devez être connecté pour télécharger une photo de profil.", 'danger');
-        setTimeout(() => { window.location.href = '/login'; }, 3000); // Redirect after message display
+        setTimeout(() => { window.location.href = '/login'; }, 3000);
         return;
     }
 
     const formData = new FormData();
-    formData.append('avatar', file); // 'avatar' is the field name expected by the Symfony server
-    console.log("FormData préparé avec le fichier avatar."); // DEBUG LOG
+    formData.append('avatar', file);
+    console.log("FormData préparé avec le fichier avatar.");
 
     try {
-        const uploadUrl = `${API_BASE_URL}/api/account/me/avatar`; // API route for upload
-        console.log(`Envoi de la requête POST à: ${uploadUrl}`); // DEBUG LOG
+        const uploadUrl = `${API_BASE_URL}/api/account/me/avatar`;
+        console.log(`Envoi de la requête POST à: ${uploadUrl}`);
 
-        // Use fetch directly for FormData (no 'Content-Type' manually set, browser handles it)
         const response = await fetch(uploadUrl, {
             method: 'POST',
             headers: {
-                'X-AUTH-TOKEN': userToken // Your authentication header
+                'X-AUTH-TOKEN': userToken
             },
             body: formData,
         });
 
-        console.log("Réponse de la requête d'upload reçue."); // DEBUG LOG
+        console.log("Réponse de la requête d'upload reçue.");
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -245,15 +328,12 @@ const uploadAvatar = async (file) => {
         console.log("Avatar téléchargé avec succès:", result);
         displayMessage("Votre photo de profil a été mise à jour !", 'success');
 
-        // Reload the profile to display the new photo from the API (which will now fetch the BLOB)
-        loadUserProfile();
+        loadUserProfile(); // Reload the profile to display the new photo from the API
 
     } catch (error) {
         console.error("Erreur lors du téléchargement de l'avatar:", error);
         displayMessage(`Impossible de télécharger votre photo : ${error.message}`, 'danger');
-        // In case of failure, revert to default icon or old image
         if (profileAvatarPlaceholder) {
-            // Revoke old object URL if it exists to prevent memory leaks
             if (currentAvatarObjectURL) {
                 URL.revokeObjectURL(currentAvatarObjectURL);
                 currentAvatarObjectURL = null;
@@ -263,20 +343,32 @@ const uploadAvatar = async (file) => {
     }
 };
 
-loadUserProfile();
+// --- Initialisation du script ---
+loadUserProfile(); // Chargement initial du profil utilisateur, y compris le statut du mode chauffeur
 
+// Écouteur d'événement pour le changement de l'interrupteur du mode chauffeur
 if (driverSwitch) {
-    driverSwitch.addEventListener('change', toggleEnterTripButtonVisibility);
+    driverSwitch.addEventListener('change', (event) => {
+        updateDriverStatus(event.target.checked);
+    });
 }
 
 // Event listener for the "Saisir un véhicule" button
 if (enterVehicleFormBtn) {
     enterVehicleFormBtn.addEventListener('click', () => {
         console.log("Redirection vers la page du formulaire de véhicule.");
-        // Ensure this path is correct for your vehicle form HTML file
-        window.location.href = '/car-form.html';
+        window.location.href = '/car-form';
     });
 }
+// Event listener for the "Saisir un voyage" button
+if (enterJourneyFormBtn) {
+    enterJourneyFormBtn.addEventListener('click', () => {
+        console.log("Redirection vers la page du formulaire de voyage.");
+        // Assurez-vous que cette URL est correcte pour votre formulaire de voyage
+        window.location.href = '/journey-form';
+    });
+}
+
 
 window.addEventListener('beforeunload', () => {
     if (currentAvatarObjectURL) {

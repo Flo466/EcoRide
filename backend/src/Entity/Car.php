@@ -17,7 +17,7 @@ class Car
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['car:read', 'car:list',  'carpooling_read'])]
+    #[Groups(['car:read', 'car:list', 'carpooling_read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
@@ -67,12 +67,15 @@ class Car
     #[Groups(['car:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    // NOUVEAU CHAMP : Pour les animaux acceptés
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    private ?bool $petsAllowed = false;
+
     public function __construct()
     {
         $this->carpoolings = new ArrayCollection();
     }
-
-    // Getters et setters...
 
     public function getId(): ?int
     {
@@ -184,7 +187,6 @@ class Car
     public function removeCarpooling(Carpooling $carpooling): static
     {
         if ($this->carpoolings->removeElement($carpooling)) {
-            // set the owning side to null (unless already changed)
             if ($carpooling->getCar() === $this) {
                 $carpooling->setCar(null);
             }
@@ -226,5 +228,17 @@ class Car
         $date = \DateTime::createFromFormat('d/m/Y', $this->firstRegistrationDate);
 
         return $date && $date->format('d/m/Y') === $this->firstRegistrationDate;
+    }
+
+    public function isPetsAllowed(): ?bool
+    {
+        return $this->petsAllowed;
+    }
+
+    public function setPetsAllowed(bool $petsAllowed): static
+    {
+        $this->petsAllowed = $petsAllowed;
+
+        return $this;
     }
 }

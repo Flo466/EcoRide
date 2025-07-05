@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Doctrine\DBAL\Types\Types; // N'oublie pas d'importer Types
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -60,7 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user_read'])]
     private ?\DateTime $birthDate = null;
 
-    #[ORM\Column(type: 'blob', nullable: true)]
+    #[ORM\Column(type: Types::BLOB, nullable: true)] // Utilise Types::BLOB pour le champ photo
     private $photo;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -86,6 +87,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     #[Groups(['user_read'])]
     private ?string $apiToken = null;
+
+    /**
+     * NOUVEAU CHAMP : Pour le statut de chauffeur
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    #[Groups(['user_read', 'user:write'])] // Groupes pour la sérialisation/désérialisation
+    private ?bool $isDriver = false;
 
     /**
      * @var Collection<int, Configuration>
@@ -130,6 +138,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new DateTimeImmutable();
         $this->credits = 0;
         $this->roles = ['ROLE_USER'];
+        // Initialise isDriver à false par défaut si ce n'est pas déjà fait par l'option 'default'
+        // $this->isDriver = false; // Pas nécessaire si options: ['default' => false] est utilisé
     }
 
     public function getId(): ?int
@@ -273,7 +283,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @param resource|string|null
+     * @param resource|string|null $photo
      */
     public function setPhoto($photo): static
     {
@@ -433,6 +443,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCar(Car $car): static
     {
         if ($this->cars->removeElement($car)) {
+            // set the owning side to null (unless already changed)
             if ($car->getUser() === $this) {
                 $car->setUser(null);
             }
@@ -479,6 +490,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUsedCar(?Car $usedCar): static
     {
         $this->usedCar = $usedCar;
+
+        return $this;
+    }
+
+    public function isDriver(): ?bool
+    {
+        return $this->isDriver;
+    }
+
+    public function setDriver(bool $isDriver): static
+    {
+        $this->isDriver = $isDriver;
 
         return $this;
     }

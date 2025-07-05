@@ -27,8 +27,7 @@ final class CarController extends AbstractController
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator,
         private Security $security,
-    ) {
-    }
+    ) {}
 
     #[Route('/', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse

@@ -35,6 +35,7 @@
         </li>
     </ul>
 
+    <!-- ... ton code HTML précédent ... -->
     <div class="profile-driver-section p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <span>Chauffeur</span>
@@ -43,16 +44,16 @@
                 <label class="form-check-label visually-hidden" for="driverSwitch">Activer mode chauffeur</label>
             </div>
         </div>
+        <div id="driverModeMessage" class="alert d-none mt-2" role="alert"></div>
         <div class="text-start">
-            <button class="btn btn-link text-decoration-none p-0" id="enterJourneyFormBtn">
+            <button class="btn btn-link text-decoration-none p-0 d-none" id="enterJourneyFormBtn">
                 <i class="bi bi-plus-circle me-1"></i> Saisir un voyage
             </button>
         </div>
-        <div class="text-start d-none">
-            <button class="btn btn-link text-decoration-none p-0" id="enterVehicleFormBtn">
+        <div class="text-start">
+            <button class="btn btn-link text-decoration-none p-0 d-none" id="enterVehicleFormBtn">
                 <i class="bi bi-plus-circle me-1"></i> Saisir un véhicule
             </button>
         </div>
     </div>
-</div>
 </div>
