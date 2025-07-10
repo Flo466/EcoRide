@@ -12552,17 +12552,12 @@ select:focus {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  /* Espacement entre les cartes de véhicule */
   justify-content: center;
-  /* Centre les cartes */
   padding: 20px;
 }
 
 .vehicule-list .card {
   min-width: 300px;
-  /* Largeur minimale pour les cartes */
   max-width: 400px;
-  /* Largeur maximale pour les cartes */
   flex: 1;
-  /* Permet aux cartes de s'étirer */
 }/*# sourceMappingURL=main.css.map */

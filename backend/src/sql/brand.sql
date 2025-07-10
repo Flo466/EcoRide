@@ -1,4 +1,4 @@
-USE sf_ecoride;
+USE ecoride;
 INSERT IGNORE INTO brand (label) VALUES
 ('Abarth'),
 ('Aiways'),
