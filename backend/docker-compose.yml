@@ -1,0 +1,40 @@
+services:
+  ecoride_db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - symfony
+
+  symfony_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: symfony_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - symfony_vendor_cache:/var/www/html/vendor
+      - symfony_var_cache:/var/www/html/var
+    depends_on:
+      - ecoride_db
+    command: php -S 0.0.0.0:8000 -t public
+    networks:
+      - symfony
+
+volumes:
+  db_data:
+  symfony_vendor_cache:
+  symfony_var_cache:
+
+
+networks:
+  symfony:

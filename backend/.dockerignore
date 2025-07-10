@@ -2,8 +2,6 @@
 
 .git
 .gitignore
-.env
-.env.local
 .docker-compose.env
 docker-compose.yml
 node_modules/
