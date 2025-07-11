@@ -112,7 +112,7 @@ const updateDriverStatus = async (isDriverStatus) => {
     console.log('updateDriverStatus: User Token:', userToken ? 'Present' : 'Missing');
 
     if (!userToken) {
-        displayMessage("Token utilisateur manquant pour mettre à jour le mode chauffeur. Veuillez vous reconnecter.", 'danger', driverModeMessage);
+        displayMessage("Jeton utilisateur manquant pour mettre à jour le mode chauffeur. Veuillez vous reconnecter.", 'danger', driverModeMessage);
         setTimeout(() => { window.location.href = '/login'; }, 3000);
         return;
     }
@@ -127,14 +127,15 @@ const updateDriverStatus = async (isDriverStatus) => {
         );
 
         console.log('updateDriverStatus: API Response:', response);
-        const responseData = response || {};
-        const message = responseData.message || (isDriverStatus ? "Mode chauffeur activé avec succès." : "Mode chauffeur désactivé avec succès.");
-        displayMessage(message, 'success', driverModeMessage);
+        // MODIFICATION ICI : Utilise directement tes messages français codés en dur pour le succès
+        const messageToDisplay = isDriverStatus ? "Mode chauffeur activé avec succès." : "Mode chauffeur désactivé avec succès.";
+        displayMessage(messageToDisplay, 'success', driverModeMessage);
 
         updateDriverButtonsVisibility(isDriverStatus); // Met à jour la visibilité des boutons après succès
 
     } catch (error) {
         console.error("Erreur lors de la mise à jour du mode chauffeur:", error);
+        // Pour les messages d'erreur, on peut laisser la logique précédente pour tenter de récupérer le message de l'API
         const errorMessage = error.message || "Une erreur est survenue lors de la mise à jour du mode chauffeur.";
         displayMessage(errorMessage, 'danger', driverModeMessage);
         // En cas d'erreur, remet l'interrupteur à son état précédent pour cohérence
