@@ -23,8 +23,7 @@ final class CarpoolingUserController extends AbstractController
         private CarpoolingRepository $carpoolingRepository,
         private CarpoolingUserRepository $carpoolingUserRepository,
         private SerializerInterface $serializer
-    ) {
-    }
+    ) {}
 
     #[Route('/', name: 'add_carpooling_user', methods: ['POST'])]
     public function addCarpoolingUser(Request $request): JsonResponse
@@ -49,7 +48,8 @@ final class CarpoolingUserController extends AbstractController
         $this->manager->persist($carpoolingUser);
         $this->manager->flush();
 
-        $responseData = $this->serializer->normalize($carpoolingUser, 'json', ['groups' => 'carpooling_user_read']);
+        // Serialize CarpoolingUser with 'carpooling_user:read' group
+        $responseData = $this->serializer->normalize($carpoolingUser, 'json', ['groups' => 'carpooling_user:read']);
 
         return new JsonResponse($responseData, Response::HTTP_CREATED);
     }
@@ -63,7 +63,8 @@ final class CarpoolingUserController extends AbstractController
             return new JsonResponse(['error' => 'CarpoolingUser not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $responseData = $this->serializer->normalize($carpoolingUser, 'json', ['groups' => 'carpooling_user_read']);
+        // Serialize CarpoolingUser with 'carpooling_user:read' group
+        $responseData = $this->serializer->normalize($carpoolingUser, 'json', ['groups' => 'carpooling_user:read']);
 
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
@@ -73,7 +74,8 @@ final class CarpoolingUserController extends AbstractController
     {
         $carpoolingUsers = $this->carpoolingUserRepository->findAll();
 
-        $responseData = $this->serializer->normalize($carpoolingUsers, 'json', ['groups' => 'carpooling_user_read']);
+        // Serialize CarpoolingUsers with 'carpooling_user:read' group
+        $responseData = $this->serializer->normalize($carpoolingUsers, 'json', ['groups' => 'carpooling_user:read']);
 
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
@@ -89,22 +91,21 @@ final class CarpoolingUserController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-
         $this->serializer->deserialize(
             $request->getContent(),
             CarpoolingUser::class,
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $carpoolingUser, AbstractNormalizer::IGNORED_ATTRIBUTES => ['user', 'carpooling']]
         );
-        
+
         if (isset($data['is_driver'])) {
             $carpoolingUser->setIsDriver((bool) $data['is_driver']);
         }
 
-
         $this->manager->flush();
 
-        $responseData = $this->serializer->normalize($carpoolingUser, 'json', ['groups' => 'carpooling_user_read']);
+        // Serialize CarpoolingUser with 'carpooling_user:read' group
+        $responseData = $this->serializer->normalize($carpoolingUser, 'json', ['groups' => 'carpooling_user:read']);
 
         return new JsonResponse($responseData, Response::HTTP_OK);
     }

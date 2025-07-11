@@ -14,11 +14,11 @@ class Brand
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['brand_read', 'car_read', 'carpooling_read'])]
+    #[Groups(['brand:read', 'car:read', 'carpooling:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['brand_read', 'car_read', 'carpooling_read'])]
+    #[Groups(['brand:read', 'car:read', 'carpooling:read'])]
     private ?string $label = null;
 
     /**

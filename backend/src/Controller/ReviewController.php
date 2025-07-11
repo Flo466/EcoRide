@@ -66,6 +66,7 @@ final class ReviewController extends AbstractController
         $this->em->persist($review);
         $this->em->flush();
 
+        // Normalize review with 'review:read' and 'user:read' groups
         $responseData = $this->normalizer->normalize($review, 'json', [
             'groups' => ['review:read', 'user:read']
         ]);
@@ -81,6 +82,7 @@ final class ReviewController extends AbstractController
         if (!$review) {
             return new JsonResponse(['message' => 'Review not found'], Response::HTTP_NOT_FOUND);
         }
+        // Normalize review with 'review:read' and 'user:read' groups
         $responseData = $this->normalizer->normalize($review, 'json', ['groups' => ['review:read', 'user:read']]);
 
         return new JsonResponse($responseData, Response::HTTP_OK);
@@ -91,6 +93,7 @@ final class ReviewController extends AbstractController
     {
         $reviews = $this->repository->findReviewsForReviewedUser($reviewedUserId, ReviewStatus::APPROVED);
 
+        // Normalize reviews with 'review:read' and 'user:read' groups
         $responseData = $this->normalizer->normalize($reviews, 'json', ['groups' => ['review:read', 'user:read']]);
 
         return new JsonResponse($responseData, Response::HTTP_OK);
@@ -126,6 +129,7 @@ final class ReviewController extends AbstractController
 
         $this->em->flush();
 
+        // Normalize review with 'review:read' and 'user:read' groups
         $responseData = $this->normalizer->normalize($review, 'json', ['groups' => ['review:read', 'user:read']]);
 
         return new JsonResponse($responseData, Response::HTTP_OK);
@@ -168,6 +172,7 @@ final class ReviewController extends AbstractController
         $review->setUpdatedAt(new DateTimeImmutable());
         $this->em->flush();
 
+        // Normalize review with 'review:read' and 'user:read' groups
         $responseData = $this->normalizer->normalize($review, 'json', ['groups' => ['review:read', 'user:read']]);
         return new JsonResponse($responseData, Response::HTTP_OK);
     }

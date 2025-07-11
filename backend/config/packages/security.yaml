@@ -43,11 +43,15 @@ security:
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
-        
+
         # Public access for GET requests on carpooling routes
         - { path: ^/api/carpooling, roles: PUBLIC_ACCESS, methods: [GET] }
         # Public access for GET requests on review routes
         - { path: ^/api/review, roles: PUBLIC_ACCESS, methods: [GET] }
+
+        # ✨ AJOUTE CETTE LIGNE POUR RENDRE LA LISTE DES MARQUES PUBLIQUE
+        # Adapte le 'path' si ta route est différente (ex: ^/api/brand)
+        - { path: ^/api/brands, roles: PUBLIC_ACCESS, methods: [GET] }
 
         # -------------------------------------------------------------
         # Next, rules that require authentication
@@ -57,10 +61,10 @@ security:
         - { path: ^/api/carpooling, roles: IS_AUTHENTICATED_FULLY, methods: [POST, PUT, DELETE] }
         # Authentication required for POST/PUT/DELETE on review routes
         - { path: ^/api/review, roles: IS_AUTHENTICATED_FULLY, methods: [POST, PUT, DELETE] }
-        
+
         # Authentication required for all car (Car) routes
         - { path: ^/api/car, roles: IS_AUTHENTICATED_FULLY }
-        
+
         # Finally, the generic rule for the rest of the API that requires IS_AUTHENTICATED_FULLY
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 

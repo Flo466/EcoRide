@@ -645,21 +645,9 @@ select:focus {
 // -------------------------------------------------------------
 
 .vehicule-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
+
   padding: 20px;
-}
 
-.vehicule-list .card {
-  min-width: 300px;
-  max-width: 400px;
-  flex: 1;
-  border-radius: 8%;
-}
-
-.vehicule-list {
   h5 {
     color: $primary;
   }
@@ -667,4 +655,10 @@ select:focus {
   strong {
     font-weight: 600;
   }
+}
+
+.vehicule-list .card {
+  border-radius: 2rem;
+  margin-left: auto;
+  margin-right: auto;
 }

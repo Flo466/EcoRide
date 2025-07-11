@@ -32,8 +32,7 @@ final class CarpoolingController extends AbstractController
         private UrlGeneratorInterface $urlGenerator,
         private NormalizerInterface $normalizer,
         private Security $security
-        )
-    {
+    ) {
         $this->repository = $repository;
         $this->serializer = $serializer;
         $this->security = $security;
@@ -74,8 +73,9 @@ final class CarpoolingController extends AbstractController
         $this->manager->persist($carpooling);
         $this->manager->persist($carpoolingUser);
         $this->manager->flush();
-        
-        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
+
+        // Serialize with 'carpooling:read' group
+        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling:read']);
         $location = $this->urlGenerator->generate(
             name: 'app_api_carpooling_show',
             parameters: ['id' => $carpooling->getId()],
@@ -95,12 +95,13 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->find($id);
 
         if ($carpooling) {
+            // Serialize with specific groups for detailed view
             $responseData = $this->serializer->normalize($carpooling, 'json', [
                 'groups' => [
-                    'carpooling_read',
-                    'car_read',
-                    'brand_read',
-                    'user_read'
+                    'carpooling:read',
+                    'car:read',
+                    'brand:read',
+                    'user:read'
                 ]
             ]);
             return new JsonResponse($responseData, status: Response::HTTP_OK);
@@ -109,7 +110,7 @@ final class CarpoolingController extends AbstractController
         return new JsonResponse(data: null, status: Response::HTTP_NOT_FOUND);
     }
 
-   #[Route('/search', name: 'app_carpooling_search', methods: ['GET'])]
+    #[Route('/search', name: 'app_carpooling_search', methods: ['GET'])]
     public function search(Request $request, CarpoolingRepository $repository): JsonResponse
     {
         $departurePlace = $request->query->get('departurePlace');
@@ -127,7 +128,8 @@ final class CarpoolingController extends AbstractController
 
         $results = $repository->findBySearchCriteria($departurePlace, $arrivalPlace, $departureDate);
 
-        return $this->json($results, 200, [], ['groups' => 'carpooling_read']);
+        // Serialize with 'carpooling:read' group
+        return $this->json($results, 200, [], ['groups' => 'carpooling:read']);
     }
 
 
@@ -151,7 +153,8 @@ final class CarpoolingController extends AbstractController
 
         $this->manager->flush();
 
-        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling_read']);
+        // Serialize with 'carpooling:read' group
+        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling:read']);
         $location = $this->urlGenerator->generate(
             'app_api_carpooling_show',
             ['id' => $carpooling->getId()],
@@ -165,7 +168,7 @@ final class CarpoolingController extends AbstractController
         );
     }
 
-   #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $carpooling = $this->repository->findOneBy(['id' => $id]);

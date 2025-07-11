@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use Doctrine\DBAL\Types\Types; // N'oublie pas d'importer Types
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -20,48 +20,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user_read', 'carpooling_read', 'car:read', 'car:write', 'review:read'])]
+    #[Groups(['user:read', 'carpooling:read', 'car:read', 'car:write', 'review:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['user_read', 'carpooling_read'])]
+    #[Groups(['user:read', 'carpooling:read'])]
     private ?string $email = null;
 
     /**
      * @var list<string>
      */
     #[ORM\Column]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private array $roles = [];
 
     /**
      * @var string
      */
     #[ORM\Column]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?string $password = null;
 
-    #[ORM\Column(length: 50,  nullable: true)]
-    #[Groups(['carpooling_read', 'user_read', 'review:read'])]
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['carpooling:read', 'user:read', 'review:read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['carpooling_read', 'user_read', 'review:read'])]
+    #[Groups(['carpooling:read', 'user:read', 'review:read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?string $address = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?\DateTime $birthDate = null;
 
-    #[ORM\Column(type: Types::BLOB, nullable: true)] // Utilise Types::BLOB pour le champ photo
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
     private $photo;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -69,51 +69,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user_read', 'carpooling_read', 'review:read'])]
+    #[Groups(['user:read', 'carpooling:read', 'review:read'])]
     private ?string $userName = null;
 
     #[ORM\Column]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?int $credits = null;
 
     #[ORM\Column]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private ?string $apiToken = null;
 
     /**
      * NOUVEAU CHAMP : Pour le statut de chauffeur
      */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    #[Groups(['user_read', 'user:write'])] // Groupes pour la sérialisation/désérialisation
+    #[Groups(['user:read', 'user:write'])]
     private ?bool $isDriver = false;
 
     /**
      * @var Collection<int, Configuration>
      */
     #[ORM\OneToMany(targetEntity: Configuration::class, mappedBy: 'user', orphanRemoval: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private Collection $configurations;
 
     /**
      * @var Collection<int, Review>
      */
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user', orphanRemoval: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private Collection $reviews;
 
     /**
      * @var Collection<int, Car>
      */
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
-    #[Groups(['user_read'])]
+    #[Groups(['user:read'])]
     private Collection $cars;
 
     /**
@@ -124,7 +124,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\ManyToOne(targetEntity: Car::class)]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['user_read', 'carpooling_read'])]
+    #[Groups(['user:read', 'carpooling:read'])]
     #[MaxDepth(1)]
     private ?Car $usedCar = null;
 
@@ -138,8 +138,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new DateTimeImmutable();
         $this->credits = 0;
         $this->roles = ['ROLE_USER'];
-        // Initialise isDriver à false par défaut si ce n'est pas déjà fait par l'option 'default'
-        // $this->isDriver = false; // Pas nécessaire si options: ['default' => false] est utilisé
     }
 
     public function getId(): ?int
@@ -443,7 +441,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCar(Car $car): static
     {
         if ($this->cars->removeElement($car)) {
-            // set the owning side to null (unless already changed)
             if ($car->getUser() === $this) {
                 $car->setUser(null);
             }
@@ -473,7 +470,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
     {
         if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
-            // set the owning side to null (unless already changed)
             if ($carpoolingUser->getUser() === $this) {
                 $carpoolingUser->setUser(null);
             }

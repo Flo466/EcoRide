@@ -9,9 +9,11 @@ export const getCarCardHtml = (vehicle) => {
         ? vehicle.getFormattedRegistrationDate()
         : 'Non spécifiée';
 
+    const fullCarName = vehicle.getFullName();
+
     return `
         <div class="card-body">
-            <h5 class="card-title">${vehicle.brand?.label || 'Marque inconnue'} ${vehicle.model || 'Modèle inconnu'}</h5>
+            <h5 class="card-title">${fullCarName}</h5>
             <h6 class="card-subtitle mb-2 text-muted">${vehicle.licencePlate || 'Plaque non spécifiée'}</h6>
             <p class="card-text">
                 <strong>Couleur:</strong> ${vehicle.color || 'Non spécifiée'}<br>
@@ -20,8 +22,7 @@ export const getCarCardHtml = (vehicle) => {
                 <strong>Première immatriculation:</strong> ${firstRegistrationDate}<br>
                 <strong>Animaux acceptés:</strong> ${petsAllowedText}
             </p>
-            <div class="d-flex justify-content-center">
-                <button class="btn btn-sm btn-outline-danger delete-vehicle-btn" data-id="${vehicle.id}">
+            <div class="d-flex justify-content-center"> <button class="btn btn-sm btn-outline-danger delete-vehicle-btn" data-id="${vehicle.id}">
                     <i class="bi bi-trash"></i> Supprimer
                 </button>
             </div>

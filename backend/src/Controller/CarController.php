@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface; // Ajout pour la validation si nécessaire
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('api/car', name: 'app_api_car_')] // Ce préfixe s'applique aux routes ci-dessous
+#[Route('api/car', name: 'app_api_car_')]
 final class CarController extends AbstractController
 {
     public function __construct(
@@ -28,25 +28,20 @@ final class CarController extends AbstractController
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator,
         private Security $security,
-        // private ValidatorInterface $validator, // Décommenter si tu as besoin d'une validation manuelle ici
     ) {}
 
     /**
-     * Récupère la liste des véhicules de l'utilisateur authentifié.
-     * L'annotation de route est maintenant définie dans config/routes/api_cars.yaml.
+     * Retrieves all vehicles for the authenticated user.
      */
-    public function listAllCars(CarRepository $carRepository, SerializerInterface $serializer): JsonResponse // Ajout des dépendances pour la clarté
+    public function listAllCars(CarRepository $carRepository, SerializerInterface $serializer): JsonResponse
     {
         $user = $this->security->getUser();
 
         if (!$user) {
-            return new JsonResponse(['message' => 'Authentification requise.'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['message' => 'Authentication required.'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Récupère les véhicules associés à l'utilisateur connecté
-        $cars = $carRepository->findBy(['user' => $user]); // Utilise le repository injecté
-
-        // Sérialise les données des véhicules en JSON
+        $cars = $carRepository->findByUserWithBrand($user);
         $jsonCars = $serializer->serialize($cars, 'json', ['groups' => ['car:read', 'brand:read']]);
 
         return new JsonResponse($jsonCars, Response::HTTP_OK, [], true);
@@ -77,17 +72,17 @@ final class CarController extends AbstractController
             if ($brand) {
                 $car->setBrand($brand);
             } else {
-                return new JsonResponse(['message' => 'Marque de voiture introuvable.'], JsonResponse::HTTP_BAD_REQUEST);
+                return new JsonResponse(['message' => 'Car brand not found.'], JsonResponse::HTTP_BAD_REQUEST);
             }
         } else {
-            return new JsonResponse(['message' => 'L\'ID de la marque est requis.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => 'Brand ID is required.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         if (isset($data['firstRegistrationDate']) && is_string($data['firstRegistrationDate'])) {
             $date = DateTimeImmutable::createFromFormat('d/m/Y', $data['firstRegistrationDate']);
             if ($date === false) {
                 return new JsonResponse([
-                    'message' => 'Format de date de première immatriculation invalide. Attendu JJ/MM/AAAA.'
+                    'message' => 'Invalid first registration date format. Expected DD/MM/YYYY.'
                 ], JsonResponse::HTTP_BAD_REQUEST);
             }
             $car->setFirstRegistrationDate($date);
@@ -115,12 +110,12 @@ final class CarController extends AbstractController
         $car = $carRepository->find($id);
 
         if (!$car) {
-            return new JsonResponse(['message' => 'Véhicule non trouvé'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => 'Vehicle not found'], Response::HTTP_NOT_FOUND);
         }
 
         $user = $this->security->getUser();
         if (!$user || $car->getUser() !== $user) {
-            throw $this->createAccessDeniedException('Accès refusé à ce véhicule.');
+            throw $this->createAccessDeniedException('Access denied to this vehicle.');
         }
 
         $responseData = $this->serializer->serialize($car, 'json', ['groups' => ['car:read', 'brand:read']]);
@@ -134,12 +129,12 @@ final class CarController extends AbstractController
         $car = $carRepository->find($id);
 
         if (!$car) {
-            return new JsonResponse(['message' => 'Véhicule non trouvé'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => 'Vehicle not found'], Response::HTTP_NOT_FOUND);
         }
 
         $user = $this->security->getUser();
         if (!$user || $car->getUser() !== $user) {
-            throw $this->createAccessDeniedException('Accès refusé à ce véhicule.');
+            throw $this->createAccessDeniedException('Access denied to this vehicle.');
         }
 
         $this->serializer->deserialize(
@@ -163,22 +158,22 @@ final class CarController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(int $id, CarRepository $carRepository): JsonResponse
+    public function delete(int $id, CarRepository $carRepository): Response
     {
         $car = $carRepository->find($id);
 
         if (!$car) {
-            return new JsonResponse(['message' => 'Véhicule non trouvé'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => 'Vehicle not found'], Response::HTTP_NOT_FOUND);
         }
 
         $user = $this->security->getUser();
         if (!$user || $car->getUser() !== $user) {
-            throw $this->createAccessDeniedException('Accès refusé à ce véhicule.');
+            throw $this->createAccessDeniedException('Access denied to this vehicle.');
         }
 
         $this->manager->remove($car);
         $this->manager->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new Jsonresponse(null, Response::HTTP_NO_CONTENT);
     }
 }

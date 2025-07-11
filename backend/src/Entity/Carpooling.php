@@ -17,68 +17,68 @@ class Carpooling
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?\DateTime $departureDate = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?\DateTime $departureTime = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?string $departurePlace = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?\DateTime $arrivalDate = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?\DateTime $arrivalTime = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?string $arrivalPlace = null;
 
     #[ORM\Column]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?int $seatCount = null;
 
     #[ORM\Column]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?float $pricePerPerson = null;
 
     #[ORM\Column]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?bool $isEco = null;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolings')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     #[MaxDepth(1)]
     private ?Car $car = null;
 
     #[ORM\Column]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(type: 'string', enumType: CarpoolingStatus::class)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private CarpoolingStatus $status = CarpoolingStatus::OPEN;
 
     /**
      * @var Collection<int, CarpoolingUser>
      */
     #[ORM\OneToMany(targetEntity: CarpoolingUser::class, mappedBy: 'carpooling')]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])]
     private Collection $carpoolingUsers;
 
     public function __construct()
@@ -255,7 +255,6 @@ class Carpooling
     public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
     {
         if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
-            // set the owning side to null (unless already changed)
             if ($carpoolingUser->getCarpooling() === $this) {
                 $carpoolingUser->setCarpooling(null);
             }
@@ -282,7 +281,7 @@ class Carpooling
         return $this;
     }
 
-     public function getDriver(): ?User
+    public function getDriver(): ?User
     {
         foreach ($this->carpoolingUsers as $carpoolingUser) {
             if ($carpoolingUser->isDriver()) {
@@ -291,5 +290,4 @@ class Carpooling
         }
         return null;
     }
-
 }

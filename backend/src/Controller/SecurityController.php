@@ -176,11 +176,11 @@ final class SecurityController extends AbstractController
                 new OA\Property(property: "firstName", type: "string", example: "first name"),
                 new OA\Property(property: "lastName", type: "string", example: "last name"),
                 new OA\Property(property: "email", type: "string", example: "user@example.com"),
-                new OA\Property(property: "created_at", type: "string", format: "date-time"),
-                new OA\Property(property: "updated_at", type: "string", format: "date-time"),
-                new OA\Property(property: "api_token", type: "string", example: "abcdef1234567890"),
+                new OA\Property(property: "createdAt", type: "string", format: "date-time"),
+                new OA\Property(property: "updatedAt", type: "string", format: "date-time"),
+                new OA\Property(property: "apiToken", type: "string", example: "abcdef1234567890"),
                 new OA\Property(property: "hasAvatar", type: "boolean", example: true),
-                new OA\Property(property: "isDriver", type: "boolean", example: false), // AJOUTÉ pour la doc Swagger
+                new OA\Property(property: "isDriver", type: "boolean", example: false),
             ]
         )
     )]
@@ -197,21 +197,20 @@ final class SecurityController extends AbstractController
             return new JsonResponse(['message' => 'Missing credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // NOUVEAU : Force le rafraîchissement de l'entité utilisateur pour s'assurer d'avoir les dernières données
+        // Force user entity refresh to ensure latest data
         $this->manager->refresh($user);
 
-        // Assure-toi que le groupe 'user_read' est défini sur les propriétés que tu veux exposer dans l'entité User
+        // Ensure 'user:read' group is defined on properties to expose in User entity
         $userData = json_decode(
             $this->serializer->serialize(
                 $user,
                 'json',
-                ['groups' => ['user_read']]
+                ['groups' => ['user:read']]
             ),
             true
         );
 
         $userData['hasAvatar'] = $user->getPhoto() !== null;
-        // AJOUTÉ : Inclure le statut isDriver dans la réponse
         $userData['isDriver'] = $user->isDriver();
 
 
@@ -221,7 +220,7 @@ final class SecurityController extends AbstractController
         );
     }
 
-    // NOUVELLE ROUTE : Upload de l'avatar (BLOB)
+    // NEW ROUTE: Upload avatar (BLOB)
     #[Route('/account/me/avatar', name: 'upload_avatar', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     #[OA\Post(
@@ -247,7 +246,7 @@ final class SecurityController extends AbstractController
                 content: new OA\JsonContent(
                     type: "object",
                     properties: [
-                        new OA\Property(property: "message", type: "string", example: "Photo de profil mise à jour avec succès."),
+                        new OA\Property(property: "message", type: "string", example: "Profile picture updated successfully."),
                         new OA\Property(property: "hasAvatar", type: "boolean", example: true)
                     ]
                 )
@@ -259,70 +258,70 @@ final class SecurityController extends AbstractController
     )]
     public function uploadAvatar(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
-        $this->logger->info('Début de la méthode uploadAvatar.');
+        $this->logger->info('Starting uploadAvatar method.');
 
         if (null === $user) {
-            $this->logger->error('uploadAvatar: Utilisateur non authentifié.');
-            return new JsonResponse(['message' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
+            $this->logger->error('uploadAvatar: User not authenticated.');
+            return new JsonResponse(['message' => 'User not authenticated'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         /** @var UploadedFile $avatarFile */
         $avatarFile = $request->files->get('avatar');
-        $this->logger->info('uploadAvatar: Fichier avatar récupéré.', ['filename' => $avatarFile ? $avatarFile->getClientOriginalName() : 'N/A']);
+        $this->logger->info('uploadAvatar: Avatar file retrieved.', ['filename' => $avatarFile ? $avatarFile->getClientOriginalName() : 'N/A']);
 
         if (!$avatarFile) {
-            $this->logger->error('uploadAvatar: Aucun fichier d\'avatar fourni.');
-            return new JsonResponse(['message' => 'Aucun fichier d\'avatar fourni.'], JsonResponse::HTTP_BAD_REQUEST);
+            $this->logger->error('uploadAvatar: No avatar file provided.');
+            return new JsonResponse(['message' => 'No avatar file provided.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        // --- 1. Validation du fichier ---
+        // --- 1. File Validation ---
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         $mimeType = $avatarFile->getMimeType();
-        $this->logger->info('uploadAvatar: Type MIME du fichier.', ['mimeType' => $mimeType]);
+        $this->logger->info('uploadAvatar: File MIME type.', ['mimeType' => $mimeType]);
 
         if (!in_array($mimeType, $allowedMimeTypes)) {
-            $this->logger->error('uploadAvatar: Type de fichier non autorisé.', ['mimeType' => $mimeType]);
-            return new JsonResponse(['message' => 'Type de fichier non autorisé. Seules les images (JPEG, PNG, GIF, WebP) sont acceptées.'], JsonResponse::HTTP_UNSUPPORTED_MEDIA_TYPE);
+            $this->logger->error('uploadAvatar: Unauthorized file type.', ['mimeType' => $mimeType]);
+            return new JsonResponse(['message' => 'Unauthorized file type. Only images (JPEG, PNG, GIF, WebP) are accepted.'], JsonResponse::HTTP_UNSUPPORTED_MEDIA_TYPE);
         }
 
         $maxFileSize = 2 * 1024 * 1024; // 2 MB
         $fileSize = $avatarFile->getSize();
-        $this->logger->info('uploadAvatar: Taille du fichier.', ['fileSize' => $fileSize]);
+        $this->logger->info('uploadAvatar: File size.', ['fileSize' => $fileSize]);
 
         if ($fileSize > $maxFileSize) {
-            $this->logger->error('uploadAvatar: Le fichier est trop grand.', ['fileSize' => $fileSize, 'maxSize' => $maxFileSize]);
-            return new JsonResponse(['message' => 'Le fichier est trop grand (max 2MB).'], JsonResponse::HTTP_REQUEST_ENTITY_TOO_LARGE);
+            $this->logger->error('uploadAvatar: File is too large.', ['fileSize' => $fileSize, 'maxSize' => $maxFileSize]);
+            return new JsonResponse(['message' => 'The file is too large (max 2MB).'], JsonResponse::HTTP_REQUEST_ENTITY_TOO_LARGE);
         }
 
         try {
-            // --- 2. Lecture du contenu binaire du fichier ---
+            // --- 2. Read binary file content ---
             $binaryContent = file_get_contents($avatarFile->getPathname());
-            $this->logger->info('uploadAvatar: Contenu binaire du fichier lu avec succès.');
+            $this->logger->info('uploadAvatar: Binary file content successfully read.');
 
-            // --- 3. Stockage du BLOB et du type MIME dans l'entité utilisateur ---
+            // --- 3. Store BLOB and MIME type in user entity ---
             $user->setPhoto($binaryContent);
             $user->setPhotoMimeType($mimeType);
 
-            $this->manager->flush(); // Persiste les changements en base de données
-            $this->logger->info('uploadAvatar: Changements flushés en base de données.');
+            $this->manager->flush(); // Persist changes to the database
+            $this->logger->info('uploadAvatar: Changes flushed to database.');
 
             return new JsonResponse([
-                'message' => 'Photo de profil mise à jour avec succès.',
+                'message' => 'Profile picture updated successfully.',
                 'hasAvatar' => true
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
-            $this->logger->error('uploadAvatar: Erreur inattendue lors du traitement de l\'avatar.', [
+            $this->logger->error('uploadAvatar: Unexpected error during avatar processing.', [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return new JsonResponse(['message' => 'Une erreur interne est survenue lors du traitement de votre photo.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => 'An internal error occurred while processing your photo.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    // NOUVELLE ROUTE : Récupération de l'avatar (BLOB)
+    // NEW ROUTE: Retrieve avatar (BLOB)
     #[Route('/account/me/avatar-blob', name: 'get_avatar_blob', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     #[OA\Get(
@@ -341,39 +340,39 @@ final class SecurityController extends AbstractController
     )]
     public function getAvatarBlob(#[CurrentUser] ?User $user): Response
     {
-        $this->logger->info('Début de la méthode getAvatarBlob.');
+        $this->logger->info('Starting getAvatarBlob method.');
 
         if (null === $user) {
-            $this->logger->error('getAvatarBlob: Utilisateur non authentifié.');
-            return new JsonResponse(['message' => 'Utilisateur non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
+            $this->logger->error('getAvatarBlob: User not authenticated.');
+            return new JsonResponse(['message' => 'User not authenticated'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        // NOUVEAU : Force le rafraîchissement de l'entité utilisateur pour s'assurer d'avoir les dernières données
+        // Force user entity refresh to ensure latest data
         $this->manager->refresh($user);
 
         $photoContent = $user->getPhoto();
         $mimeType = $user->getPhotoMimeType();
-        $this->logger->info('getAvatarBlob: Contenu photo et MIME type récupérés de l\'utilisateur.', ['hasPhoto' => $photoContent !== null, 'mimeType' => $mimeType]);
+        $this->logger->info('getAvatarBlob: Photo content and MIME type retrieved from user.', ['hasPhoto' => $photoContent !== null, 'mimeType' => $mimeType]);
 
         if (!$photoContent) {
-            $this->logger->error('getAvatarBlob: Avatar non trouvé pour cet utilisateur.');
-            return new JsonResponse(['message' => 'Avatar non trouvé pour cet utilisateur.'], JsonResponse::HTTP_NOT_FOUND);
+            $this->logger->error('getAvatarBlob: Avatar not found for this user.');
+            return new JsonResponse(['message' => 'Avatar not found for this user.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
-        // Si le BLOB est une ressource stream, il faut la lire
+        // If the BLOB is a stream resource, it must be read
         if (is_resource($photoContent)) {
             $photoContent = stream_get_contents($photoContent);
-            $this->logger->info('getAvatarBlob: Contenu photo lu depuis la ressource stream.');
+            $this->logger->info('getAvatarBlob: Photo content read from stream resource.');
         }
 
-        // Créer une réponse avec le contenu binaire et le bon Content-Type
+        // Create a response with binary content and correct Content-Type
         $response = new Response($photoContent);
         $response->headers->set('Content-Type', $mimeType ?: 'application/octet-stream');
-        // NOUVEAU : En-têtes pour empêcher la mise en cache agressive par le navigateur
+        // Headers to prevent aggressive browser caching
         $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
         $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('Expires', '0');
-        $this->logger->info('getAvatarBlob: Réponse d\'avatar préparée et envoyée.');
+        $this->logger->info('getAvatarBlob: Avatar response prepared and sent.');
 
         return $response;
     }
@@ -405,9 +404,9 @@ final class SecurityController extends AbstractController
                 new OA\Property(property: "email", type: "string", example: "user@example.com"),
                 new OA\Property(property: "firstName", type: "string", example: "first name"),
                 new OA\Property(property: "lastName", type: "string", example: "last name"),
-                new OA\Property(property: "created_at", type: "string", format: "date-time"),
-                new OA\Property(property: "updated_at", type: "string", format: "date-time"),
-                new OA\Property(property: "api_token", type: "string", example: "abcdef1234567890"),
+                new OA\Property(property: "createdAt", type: "string", format: "date-time"),
+                new OA\Property(property: "updatedAt", type: "string", format: "date-time"),
+                new OA\Property(property: "apiToken", type: "string", example: "abcdef1234567890"),
             ]
         )
     )]
@@ -440,7 +439,7 @@ final class SecurityController extends AbstractController
                 $this->serializer->serialize(
                     $user,
                     'json',
-                    ['groups' => ['user_read']]
+                    ['groups' => ['user:read']]
                 ),
                 true
             ),
@@ -485,7 +484,7 @@ final class SecurityController extends AbstractController
     }
 
     /**
-     * Met à jour le statut de chauffeur de l'utilisateur connecté.
+     * Updates the driver status of the authenticated user.
      */
     #[Route('/account/me/driver-status', name: 'update_driver_status', methods: ['PATCH'])]
     #[IsGranted('ROLE_USER')]
@@ -510,7 +509,7 @@ final class SecurityController extends AbstractController
         content: new OA\JsonContent(
             type: "object",
             properties: [
-                new OA\Property(property: "message", type: "string", example: "Mode chauffeur activé."),
+                new OA\Property(property: "message", type: "string", example: "Driver mode activated."),
                 new OA\Property(property: "isDriver", type: "boolean", example: true)
             ]
         )
@@ -526,23 +525,23 @@ final class SecurityController extends AbstractController
     public function updateDriverStatus(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
-            $this->logger->error('updateDriverStatus: Utilisateur non authentifié.');
-            return new JsonResponse(['message' => 'Authentification requise'], Response::HTTP_UNAUTHORIZED);
+            $this->logger->error('updateDriverStatus: User not authenticated.');
+            return new JsonResponse(['message' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
         }
 
         $data = json_decode($request->getContent(), true);
         $isDriver = $data['isDriver'] ?? null;
 
         if (!isset($data['isDriver']) || !is_bool($isDriver)) {
-            $this->logger->error('updateDriverStatus: La valeur "isDriver" est manquante ou n\'est pas un booléen.', ['data' => $data]);
-            return new JsonResponse(['error' => 'La valeur "isDriver" doit être un booléen.'], Response::HTTP_BAD_REQUEST);
+            $this->logger->error('updateDriverStatus: "isDriver" value is missing or not a boolean.', ['data' => $data]);
+            return new JsonResponse(['error' => '"isDriver" value must be a boolean.'], Response::HTTP_BAD_REQUEST);
         }
 
         $user->setDriver($isDriver);
         $this->manager->flush();
 
-        $message = $isDriver ? 'Mode chauffeur activé.' : 'Mode chauffeur désactivé.';
-        $this->logger->info('updateDriverStatus: Statut chauffeur mis à jour.', ['userId' => $user->getId(), 'isDriver' => $isDriver]);
+        $message = $isDriver ? 'Driver mode activated.' : 'Driver mode deactivated.';
+        $this->logger->info('updateDriverStatus: Driver status updated.', ['userId' => $user->getId(), 'isDriver' => $isDriver]);
 
         return new JsonResponse(['message' => $message, 'isDriver' => $user->isDriver()], Response::HTTP_OK);
     }

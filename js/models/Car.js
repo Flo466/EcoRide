@@ -11,7 +11,11 @@ class Car {
     this.seats = data.seats ?? null;
     this.petsAllowed = data.petsAllowed ?? false;
 
-    this.brand = data.brand ?? null;
+    this.brand = (typeof data.brand === 'object' && data.brand !== null && !Array.isArray(data.brand))
+      ? data.brand
+      : null;
+
+
     this.user = data.user ?? null;
 
     this.carpoolings = data.carpoolings ?? [];
@@ -21,28 +25,26 @@ class Car {
   }
 
   getFullName() {
-    const brandName = typeof this.brand === 'object' && this.brand !== null ? this.brand.label : this.brand;
-    return `${brandName ?? ''} ${this.model}`.trim();
+    // Si this.brand est null (car on l'a nettoyé dans le constructeur), brandName sera vide.
+    const brandName = this.brand?.label || 'Marque inconnue';
+    return `${brandName} ${this.model || 'Modèle inconnu'}`.trim();
   }
 
   /**
    * @returns {string}
    */
   getFormattedRegistrationDate() {
-    // Vérifie si la date existe et n'est pas une chaîne vide
     if (this.firstRegistrationDate) {
       try {
         const date = new Date(this.firstRegistrationDate);
-        // Vérifie si l'objet Date est valide (getTime() retourne NaN pour une date invalide)
         if (!isNaN(date.getTime())) {
           return date.toLocaleDateString('fr-FR');
         }
       } catch (e) {
-        // Log l'erreur de parsing pour le débogage
         console.error("Erreur lors du parsing de la date d'immatriculation:", this.firstRegistrationDate, e);
       }
     }
-    return 'Non spécifiée'; // Retourne 'Non spécifiée' si la date est nulle, vide ou invalide
+    return 'Non spécifiée';
   }
 
   /**
@@ -54,22 +56,21 @@ class Car {
    * @returns {HTMLElement} - L'élément div HTML de la carte du véhicule.
    */
   toCarCardElement(displayMessageCallback, deleteVehicleCallback) {
+    const vehicleCardWrapper = document.createElement('div');
+    // On garde col-12 pour mobile, col-md-6 pour desktop (deux par ligne)
+    // mb-4 pour la marge verticale
+    vehicleCardWrapper.classList.add('col-12', 'col-md-6', 'mb-4');
+    // ✨ Important : Ajouter les classes de centrage flexbox ici pour centrer la carte dans sa colonne
+    vehicleCardWrapper.classList.add('d-flex', 'justify-content-center');
+
+
     const vehicleCard = document.createElement('div');
-    vehicleCard.classList.add('card', 'mb-3', 'shadow-sm', 'animate-fade-in'); // Ajoute des classes Bootstrap pour le style
+    vehicleCard.classList.add('card', 'shadow-sm', 'animate-fade-in');
+    vehicleCard.style.width = '100%';
+    vehicleCard.style.maxWidth = '550px';
 
-    // Utilise le template pour générer le HTML interne
-    vehicleCard.innerHTML = getCarCardHtml(this); // 'this' fait référence à l'instance de Car
 
-    // Ajoute les écouteurs d'événements pour les boutons Modifier et Supprimer
-    const editButton = vehicleCard.querySelector('.edit-vehicle-btn');
-    if (editButton) {
-      editButton.addEventListener('click', () => {
-        console.log(`Modifier le véhicule avec l'ID: ${this.id}`);
-        // Logique de modification ici, par exemple redirection vers un formulaire d'édition
-        // window.location.href = `/edit-car/${this.id}`;
-        displayMessageCallback(`Fonctionnalité de modification pour le véhicule ${this.id} à implémenter.`, 'info');
-      });
-    }
+    vehicleCard.innerHTML = getCarCardHtml(this);
 
     const deleteButton = vehicleCard.querySelector('.delete-vehicle-btn');
     if (deleteButton) {
@@ -81,7 +82,8 @@ class Car {
       });
     }
 
-    return vehicleCard;
+    vehicleCardWrapper.appendChild(vehicleCard);
+    return vehicleCardWrapper;
   }
 }
 

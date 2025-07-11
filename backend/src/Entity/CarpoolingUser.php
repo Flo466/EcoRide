@@ -12,19 +12,21 @@ class CarpoolingUser
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    // Pas de groupe ici si l'ID n'est pas directement exposé dans ce contexte
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolingUsers')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])] // Uniformisé avec le deux-points
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolingUsers')]
     #[ORM\JoinColumn(nullable: false)]
+    // Pas de groupe ici si la relation carpooling n'est pas directement exposée
     private ?Carpooling $carpooling = null;
 
     #[ORM\Column]
-    #[Groups(['carpooling_read'])]
+    #[Groups(['carpooling:read'])] // Uniformisé avec le deux-points
     private ?bool $isDriver = null;
 
     public function getId(): ?int

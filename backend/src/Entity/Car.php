@@ -17,23 +17,23 @@ class Car
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['car:read', 'car:list', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:list', 'carpooling:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling:read'])]
     private ?string $model = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling:read'])]
     private ?string $color = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling:read'])]
     private ?string $licencePlate = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling:read'])]
     private ?string $energy = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
@@ -49,13 +49,17 @@ class Car
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     #[MaxDepth(1)]
-    #[Groups(['car:read', 'car:write', 'carpooling_read', 'brand:read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling:read', 'brand:read'])]
     private ?Brand $brand = null;
 
     /**
      * @var Collection<int, Carpooling>
      */
-    #[ORM\OneToMany(targetEntity: Carpooling::class, mappedBy: 'car', orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: Carpooling::class,
+        mappedBy: 'car'
+        /** , orphanRemoval: true*/
+    )]
     private Collection $carpoolings;
 
     #[ORM\Column]
@@ -67,11 +71,11 @@ class Car
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling:read'])]
     private ?bool $petsAllowed = false;
 
     #[ORM\Column]
-    #[Groups(['car:read', 'car:write', 'carpooling_read'])]
+    #[Groups(['car:read', 'car:write', 'carpooling:read'])]
     private ?int $seats = null;
 
 
