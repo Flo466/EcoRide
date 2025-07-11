@@ -26,9 +26,7 @@ class Car {
   }
 
   /**
-   * Formate la date de première immatriculation.
-   * Gère les cas où la date est nulle, vide ou invalide.
-   * @returns {string} La date formatée ou 'Non spécifiée'.
+   * @returns {string}
    */
   getFormattedRegistrationDate() {
     // Vérifie si la date existe et n'est pas une chaîne vide

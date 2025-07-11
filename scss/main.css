@@ -12560,4 +12560,12 @@ select:focus {
   min-width: 300px;
   max-width: 400px;
   flex: 1;
+  border-radius: 8%;
+}
+
+.vehicule-list h5, .vehicule-list .h5 {
+  color: #00ce0a;
+}
+.vehicule-list strong {
+  font-weight: 600;
 }/*# sourceMappingURL=main.css.map */
