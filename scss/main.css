@@ -12452,6 +12452,10 @@ select:focus {
     width: 25%;
   }
 }
+.form-label {
+  font-weight: 600;
+}
+
 .profile-header {
   border-bottom: solid;
   border-color: #E8C8A0;
