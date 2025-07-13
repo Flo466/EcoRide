@@ -42,13 +42,11 @@ class Car
 
     #[ORM\ManyToOne(inversedBy: 'cars', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[MaxDepth(1)]
     #[Groups(['car:read', 'car:write'])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
-    #[MaxDepth(1)]
     #[Groups(['car:read', 'car:write', 'carpooling:read', 'brand:read'])]
     private ?Brand $brand = null;
 

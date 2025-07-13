@@ -38,7 +38,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string
      */
     #[ORM\Column]
-    // Le mot de passe ne doit généralement pas être sérialisé pour des raisons de sécurité
     // #[Groups(['user:read'])] // NE PAS METTRE DE GROUPE ICI !
     private ?string $password = null;
 
@@ -70,7 +69,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 50)]
     #[Groups(['user:read', 'carpooling:read', 'review:read'])]
-    private ?string $userName = null; // Assure-toi que c'est distinct de 'username' si tu l'avais avant
+    private ?string $userName = null;
 
     #[ORM\Column]
     #[Groups(['user:read'])]
@@ -99,7 +98,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Configuration>
      */
     #[ORM\OneToMany(targetEntity: Configuration::class, mappedBy: 'user', orphanRemoval: true)]
-    #[Groups(['user:read'])] // Si tu veux inclure les configurations avec user:read
+    #[Groups(['user:read'])]
     #[MaxDepth(1)]
     private Collection $configurations;
 
@@ -115,17 +114,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Car>
      */
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
-    #[Groups(['user:read'])] // Si tu veux inclure les voitures avec user:read
-    #[MaxDepth(1)] // <<< AJOUTÉ : Très important pour éviter les boucles
+    // #[Groups(['user:read'])]
+    // #[MaxDepth(1)]
     private Collection $cars;
 
     /**
      * @var Collection<int, CarpoolingUser>
      */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class, orphanRemoval: true)] // <<< AJOUTÉ : orphanRemoval: true
-    // Laisse cette ligne commentée si tu ne veux PAS sérialiser les CarpoolingUser par défaut avec user:read
-    // #[Groups(['user:read'])] // Si tu veux inclure les associations de covoiturage avec user:read
-    #[MaxDepth(1)] // <<< AJOUTÉ : Très important pour éviter les boucles
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class, orphanRemoval: true)]
+    // #[Groups(['user:read'])]
+    // #[MaxDepth(1)]
     private Collection $carpoolingUsers;
 
     #[ORM\ManyToOne(targetEntity: Car::class)]
@@ -320,6 +318,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function getUsedCar(): ?Car
+    {
+        return $this->usedCar;
+    }
+
+    public function setUsedCar(?Car $usedCar): static
+    {
+        $this->usedCar = $usedCar;
+
+        return $this;
+    }
+
 
     public function getCredits(): ?int
     {

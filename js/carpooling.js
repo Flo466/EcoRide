@@ -36,7 +36,7 @@ import { setupAutocomplete } from './utils/autocomplete.js';
             return;
         }
 
-        const apiUrl = `${API_BASE_URL}/api/carpooling/search?${searchParams.toString()}`;
+        const apiUrl = `${API_BASE_URL}/api/carpoolings/search?${searchParams.toString()}`;
 
         try {
             const result = await fetchApi(apiUrl);

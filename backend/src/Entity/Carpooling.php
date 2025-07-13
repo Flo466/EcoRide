@@ -59,7 +59,6 @@ class Carpooling
     #[ORM\ManyToOne(inversedBy: 'carpoolings')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['carpooling:read'])]
-    #[MaxDepth(1)]
     private ?Car $car = null;
 
     #[ORM\Column]

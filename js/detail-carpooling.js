@@ -36,7 +36,7 @@ import { Review } from './models/Review.js';
         return;
     }
 
-    const apiUrl = `${API_BASE_URL}/api/carpooling/${id}`;
+    const apiUrl = `${API_BASE_URL}/api/carpoolings/${id}`;
 
     try {
         const result = await fetchApi(apiUrl);

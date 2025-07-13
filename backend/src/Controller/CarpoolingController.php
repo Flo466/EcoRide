@@ -22,7 +22,6 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use DateTime; // Ajout pour les dates/heures
 
-// MODIFIÉ : Le préfixe du contrôleur est maintenant au pluriel pour la cohérence RESTful
 #[Route('api/carpoolings', name: 'app_api_carpooling_')]
 final class CarpoolingController extends AbstractController
 {
@@ -40,24 +39,21 @@ final class CarpoolingController extends AbstractController
         $this->normalizer = $normalizer;
     }
 
-    // NOUVEAU : Route pour lister tous les covoiturages (GET /api/carpoolings)
     #[Route('', name: 'list', methods: ['GET'])]
     public function listAllCarpoolings(): JsonResponse
     {
         $carpoolings = $this->repository->findAll(); // Récupère tous les covoiturages
 
-        // Sérialise avec le groupe 'carpooling:read'
-        return $this->json($carpoolings, Response::HTTP_OK, [], ['groups' => 'carpooling:read']);
+        return $this->json($carpoolings, Response::HTTP_OK, [], [
+            'groups' => 'carpooling:read',
+            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
+        ]);
     }
 
-    // MODIFIÉ : La route de création est maintenant sur le chemin vide '' pour correspondre au préfixe
     #[Route('', name: 'new', methods: 'POST')]
     public function new(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-
-        // --- GESTION DES DATES ET HEURES SÉPARÉES ---
-        // Le format attendu du frontend est "YYYY-MM-DD" pour la date et "HH:MM:SS" pour l'heure
 
         $carpooling = new Carpooling();
 
@@ -104,22 +100,12 @@ final class CarpoolingController extends AbstractController
         } else {
             return new JsonResponse(['message' => 'arrivalTime is required.'], Response::HTTP_BAD_REQUEST);
         }
-        // --- FIN GESTION DES DATES ET HEURES SÉPARÉES ---
-
 
         $car = $this->manager->getRepository(Car::class)->find($data['car']);
-
         if (!$car) {
             return new JsonResponse(['message' => 'Car not found'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Suppression de la désérialisation automatique ici car nous la faisons manuellement pour les dates
-        // $carpooling = $this->serializer->deserialize(
-        //     $request->getContent(),
-        //     Carpooling::class,
-        //     'json',
-        //     [AbstractNormalizer::IGNORED_ATTRIBUTES => ['car']]
-        // );
         $carpooling->setCar($car);
         $carpooling->setCreatedAt(new DateTimeImmutable());
         $carpooling->setStatus(CarpoolingStatus::OPEN);
@@ -132,7 +118,7 @@ final class CarpoolingController extends AbstractController
         $carpooling->setIsEco($data['isEco'] ?? false);
         $carpooling->setStatus(CarpoolingStatus::tryFrom($data['status'] ?? CarpoolingStatus::OPEN->value));
 
-
+        // Utilisateur authentifié
         $user = $this->security->getUser();
         if (!$user) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
@@ -147,8 +133,11 @@ final class CarpoolingController extends AbstractController
         $this->manager->persist($carpoolingUser);
         $this->manager->flush();
 
-        // Serialize with 'carpooling:read' group
-        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling:read']);
+        $responseData = $this->serializer->normalize($carpooling, 'json', [
+            'groups' => 'carpooling:read',
+            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
+        ]);
+
         $location = $this->urlGenerator->generate(
             name: 'app_api_carpooling_show',
             parameters: ['id' => $carpooling->getId()],
@@ -168,14 +157,14 @@ final class CarpoolingController extends AbstractController
         $carpooling = $this->repository->find($id);
 
         if ($carpooling) {
-            // Serialize with specific groups for detailed view
             $responseData = $this->serializer->normalize($carpooling, 'json', [
                 'groups' => [
                     'carpooling:read',
                     'car:read',
                     'brand:read',
                     'user:read'
-                ]
+                ],
+                'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
             ]);
             return new JsonResponse($responseData, status: Response::HTTP_OK);
         }
@@ -201,10 +190,11 @@ final class CarpoolingController extends AbstractController
 
         $results = $repository->findBySearchCriteria($departurePlace, $arrivalPlace, $departureDate);
 
-        // Serialize with 'carpooling:read' group
-        return $this->json($results, 200, [], ['groups' => 'carpooling:read']);
+        return $this->json($results, 200, [], [
+            'groups' => 'carpooling:read',
+            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
+        ]);
     }
-
 
     #[Route('/{id}', name: 'edit', requirements: ['id' => '\d+'], methods: ['PUT'])]
     public function edit(int $id, Request $request): JsonResponse
@@ -215,10 +205,8 @@ final class CarpoolingController extends AbstractController
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
 
-        // MODIFIÉ : La désérialisation pour l'édition doit aussi gérer les dates séparées
         $data = json_decode($request->getContent(), true);
 
-        // Mise à jour des champs de date/heure
         if (isset($data['departureDate']) && isset($data['departureTime'])) {
             $departureDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $data['departureDate'] . ' ' . $data['departureTime']);
             if ($departureDateTime !== false) {
@@ -234,65 +222,18 @@ final class CarpoolingController extends AbstractController
             }
         }
 
-        // Mise à jour des autres champs manuellement ou avec le sérialiseur pour les autres
-        // Si tu veux que le sérialiseur gère le reste, tu peux le faire ainsi:
-        $this->serializer->deserialize(
-            $request->getContent(),
-            Carpooling::class,
-            'json',
-            [
-                AbstractNormalizer::OBJECT_TO_POPULATE => $carpooling,
-                // Ignorer les champs de date/heure car nous les gérons manuellement
-                AbstractNormalizer::IGNORED_ATTRIBUTES => ['departureDate', 'departureTime', 'arrivalDate', 'arrivalTime', 'car']
-            ]
-        );
-        // Assure-toi de re-setter la voiture si elle peut être changée, ou ignorée si elle ne l'est pas
-        if (isset($data['car'])) {
-            $car = $this->manager->getRepository(Car::class)->find($data['car']);
-            if ($car) {
-                $carpooling->setCar($car);
-            }
-        }
-        // Mise à jour des autres champs qui ne sont pas gérés par le sérialiseur (comme seatCount, pricePerPerson, etc.)
         $carpooling->setDeparturePlace($data['departurePlace'] ?? $carpooling->getDeparturePlace());
         $carpooling->setArrivalPlace($data['arrivalPlace'] ?? $carpooling->getArrivalPlace());
-        $carpooling->setSeatCount($data['availableSeats'] ?? $carpooling->getSeatCount());
         $carpooling->setPricePerPerson($data['pricePerPassenger'] ?? $carpooling->getPricePerPerson());
-        $carpooling->setIsEco($data['isEco'] ?? $carpooling->isEco());
-        $carpooling->setStatus(CarpoolingStatus::tryFrom($data['status'] ?? $carpooling->getStatus()->value));
-
-
-        $carpooling->setUpdatedAt(new \DateTimeImmutable());
+        $carpooling->setIsEco($data['isEco'] ?? $carpooling->getIsEco());
 
         $this->manager->flush();
 
-        // Serialize with 'carpooling:read' group
-        $responseData = $this->serializer->normalize($carpooling, 'json', ['groups' => 'carpooling:read']);
-        $location = $this->urlGenerator->generate(
-            'app_api_carpooling_show',
-            ['id' => $carpooling->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        $responseData = $this->serializer->normalize($carpooling, 'json', [
+            'groups' => 'carpooling:read',
+            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
+        ]);
 
-        return new JsonResponse(
-            data: $responseData,
-            status: Response::HTTP_OK,
-            headers: ['Location' => $location]
-        );
-    }
-
-    #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
-    public function delete(int $id): JsonResponse
-    {
-        $carpooling = $this->repository->findOneBy(['id' => $id]);
-
-        if ($carpooling) {
-            $this->manager->remove($carpooling);
-            $this->manager->flush();
-
-            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
-        }
-
-        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        return new JsonResponse($responseData, status: Response::HTTP_OK);
     }
 }
