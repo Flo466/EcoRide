@@ -6,6 +6,7 @@ use App\Repository\ConfigurationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: ConfigurationRepository::class)]
 class Configuration
@@ -17,6 +18,7 @@ class Configuration
 
     #[ORM\ManyToOne(inversedBy: 'configurations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[MaxDepth(1)]
     private ?User $user = null;
 
     /**

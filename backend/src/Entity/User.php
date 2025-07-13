@@ -2,76 +2,153 @@
 
 namespace App\Entity;
 
+use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use App\Repository\UserRepository;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:minimal', 'review:read', 'car:read', 'carpooling:read'])]
+    #[Groups(['user:read', 'carpooling:read', 'car:read', 'car:write', 'review:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    #[Groups(['user:minimal', 'review:read', 'car:read', 'carpooling:read'])]
-    private ?string $username = null;
-
-    #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['user:minimal', 'review:read'])]
+    #[ORM\Column(length: 180)]
+    #[Groups(['user:read', 'carpooling:read'])]
     private ?string $email = null;
 
+    /**
+     * @var list<string>
+     */
     #[ORM\Column]
-    #[Groups(['user:minimal'])]
+    #[Groups(['user:read'])]
+    private array $roles = [];
+
+    /**
+     * @var string
+     */
+    #[ORM\Column]
+    // Le mot de passe ne doit généralement pas être sérialisé pour des raisons de sécurité
+    // #[Groups(['user:read'])] // NE PAS METTRE DE GROUPE ICI !
+    private ?string $password = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['carpooling:read', 'user:read', 'review:read'])]
+    private ?string $lastName = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['carpooling:read', 'user:read', 'review:read'])]
+    private ?string $firstName = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['user:read'])]
+    private ?string $phone = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['user:read'])]
+    private ?string $address = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['user:read'])]
+    private ?\DateTime $birthDate = null;
+
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    private $photo;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $photoMimeType = null;
+
+    #[ORM\Column(length: 50)]
+    #[Groups(['user:read', 'carpooling:read', 'review:read'])]
+    private ?string $userName = null; // Assure-toi que c'est distinct de 'username' si tu l'avais avant
+
+    #[ORM\Column]
+    #[Groups(['user:read'])]
+    private ?int $credits = null;
+
+    #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['user:minimal'])]
+    #[Groups(['user:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class)]
-    // #[Groups(['user:reviews'])]
+    #[ORM\Column(length: 255)]
+    #[Groups(['user:read'])] // L'API token peut être sérialisé si nécessaire
+    private ?string $apiToken = null;
+
+    /**
+     * NOUVEAU CHAMP : Pour le statut de chauffeur
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    #[Groups(['user:read', 'user:write'])]
+    private ?bool $isDriver = false;
+
+    /**
+     * @var Collection<int, Configuration>
+     */
+    #[ORM\OneToMany(targetEntity: Configuration::class, mappedBy: 'user', orphanRemoval: true)]
+    #[Groups(['user:read'])] // Si tu veux inclure les configurations avec user:read
+    #[MaxDepth(1)]
+    private Collection $configurations;
+
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user', orphanRemoval: true)]
+    #[Groups(['user:read'])]
     #[MaxDepth(1)]
     private Collection $reviews;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Car::class, orphanRemoval: true)]
-    // #[Groups(['user:cars'])]
-    #[MaxDepth(1)]
+    /**
+     * @var Collection<int, Car>
+     */
+    #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
+    #[Groups(['user:read'])] // Si tu veux inclure les voitures avec user:read
+    #[MaxDepth(1)] // <<< AJOUTÉ : Très important pour éviter les boucles
     private Collection $cars;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class, orphanRemoval: true)]
-    // #[Groups(['user:carpooling_associations'])]
-    #[MaxDepth(1)]
+    /**
+     * @var Collection<int, CarpoolingUser>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class, orphanRemoval: true)] // <<< AJOUTÉ : orphanRemoval: true
+    // Laisse cette ligne commentée si tu ne veux PAS sérialiser les CarpoolingUser par défaut avec user:read
+    // #[Groups(['user:read'])] // Si tu veux inclure les associations de covoiturage avec user:read
+    #[MaxDepth(1)] // <<< AJOUTÉ : Très important pour éviter les boucles
     private Collection $carpoolingUsers;
 
+    #[ORM\ManyToOne(targetEntity: Car::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['user:read', 'carpooling:read'])]
+    #[MaxDepth(1)]
+    private ?Car $usedCar = null;
 
+    /** @throws \Exception */
     public function __construct()
     {
+        $this->configurations = new ArrayCollection();
         $this->reviews = new ArrayCollection();
         $this->cars = new ArrayCollection();
         $this->carpoolingUsers = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->credits = 0;
+        $this->roles = ['ROLE_USER'];
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
-
-    public function setUsername(string $username): static
-    {
-        $this->username = $username;
-        return $this;
     }
 
     public function getEmail(): ?string
@@ -82,6 +159,177 @@ class User
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // ensure they all have at least ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(?string $lastName): static
+    {
+        $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(?string $firstName): static
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): static
+    {
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?string $address): static
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getBirthDate(): ?\DateTime
+    {
+        return $this->birthDate;
+    }
+
+    public function setBirthDate(?\DateTime $birthDate): static
+    {
+        $this->birthDate = $birthDate;
+
+        return $this;
+    }
+
+    /**
+     * @return resource|string|null
+     */
+    public function getPhoto()
+    {
+        return $this->photo;
+    }
+
+    /**
+     * @param resource|string|null $photo
+     */
+    public function setPhoto($photo): static
+    {
+        $this->photo = $photo;
+
+        return $this;
+    }
+
+    public function getPhotoMimeType(): ?string
+    {
+        return $this->photoMimeType;
+    }
+
+    public function setPhotoMimeType(?string $photoMimeType): static
+    {
+        $this->photoMimeType = $photoMimeType;
+
+        return $this;
+    }
+
+    public function getUserName(): ?string
+    {
+        return $this->userName;
+    }
+
+    public function setUserName(string $userName): static
+    {
+        $this->userName = $userName;
+
+        return $this;
+    }
+
+    public function getCredits(): ?int
+    {
+        return $this->credits;
+    }
+
+    public function setCredits(int $credits): static
+    {
+        $this->credits = $credits;
+
         return $this;
     }
 
@@ -93,6 +341,7 @@ class User
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -104,6 +353,61 @@ class User
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(string $apiToken): static
+    {
+        $this->apiToken = $apiToken;
+
+        return $this;
+    }
+
+    public function isDriver(): ?bool
+    {
+        return $this->isDriver;
+    }
+
+    public function setDriver(bool $isDriver): static
+    {
+        $this->isDriver = $isDriver;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Configuration>
+     */
+    public function getConfigurations(): Collection
+    {
+        return $this->configurations;
+    }
+
+    public function addConfiguration(Configuration $configuration): static
+    {
+        if (!$this->configurations->contains($configuration)) {
+            $this->configurations->add($configuration);
+            $configuration->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConfiguration(Configuration $configuration): static
+    {
+        if ($this->configurations->removeElement($configuration)) {
+            // set the owning side to null (unless already changed)
+            if ($configuration->getUser() === $this) {
+                $configuration->setUser(null);
+            }
+        }
+
         return $this;
     }
 
@@ -118,19 +422,22 @@ class User
     public function addReview(Review $review): static
     {
         if (!$this->reviews->contains($review)) {
-            $this->reviews[] = $review;
+            $this->reviews->add($review);
             $review->setUser($this);
         }
+
         return $this;
     }
 
     public function removeReview(Review $review): static
     {
         if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
             if ($review->getUser() === $this) {
                 $review->setUser(null);
             }
         }
+
         return $this;
     }
 
@@ -148,16 +455,19 @@ class User
             $this->cars->add($car);
             $car->setUser($this);
         }
+
         return $this;
     }
 
     public function removeCar(Car $car): static
     {
         if ($this->cars->removeElement($car)) {
+            // set the owning side to null (unless already changed)
             if ($car->getUser() === $this) {
                 $car->setUser(null);
             }
         }
+
         return $this;
     }
 
@@ -175,16 +485,19 @@ class User
             $this->carpoolingUsers->add($carpoolingUser);
             $carpoolingUser->setUser($this);
         }
+
         return $this;
     }
 
     public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
     {
         if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
+            // set the owning side to null (unless already changed)
             if ($carpoolingUser->getUser() === $this) {
                 $carpoolingUser->setUser(null);
             }
         }
+
         return $this;
     }
 }
