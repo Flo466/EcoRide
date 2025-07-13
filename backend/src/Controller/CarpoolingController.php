@@ -20,9 +20,10 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use DateTime; // Ajout pour les dates/heures
 
-
-#[Route('api/carpooling', name: 'app_api_carpooling_')]
+// MODIFIÉ : Le préfixe du contrôleur est maintenant au pluriel pour la cohérence RESTful
+#[Route('api/carpoolings', name: 'app_api_carpooling_')]
 final class CarpoolingController extends AbstractController
 {
     public function __construct(
@@ -39,10 +40,72 @@ final class CarpoolingController extends AbstractController
         $this->normalizer = $normalizer;
     }
 
-    #[Route('/', name: 'new', methods: 'POST')]
+    // NOUVEAU : Route pour lister tous les covoiturages (GET /api/carpoolings)
+    #[Route('', name: 'list', methods: ['GET'])]
+    public function listAllCarpoolings(): JsonResponse
+    {
+        $carpoolings = $this->repository->findAll(); // Récupère tous les covoiturages
+
+        // Sérialise avec le groupe 'carpooling:read'
+        return $this->json($carpoolings, Response::HTTP_OK, [], ['groups' => 'carpooling:read']);
+    }
+
+    // MODIFIÉ : La route de création est maintenant sur le chemin vide '' pour correspondre au préfixe
+    #[Route('', name: 'new', methods: 'POST')]
     public function new(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
+        // --- GESTION DES DATES ET HEURES SÉPARÉES ---
+        // Le format attendu du frontend est "YYYY-MM-DD" pour la date et "HH:MM:SS" pour l'heure
+
+        $carpooling = new Carpooling();
+
+        // Departure Date
+        if (isset($data['departureDate'])) {
+            $departureDate = DateTime::createFromFormat('Y-m-d', $data['departureDate']);
+            if ($departureDate === false) {
+                return new JsonResponse(['message' => 'Invalid departureDate format. Expected YYYY-MM-DD.'], Response::HTTP_BAD_REQUEST);
+            }
+            $carpooling->setDepartureDate($departureDate);
+        } else {
+            return new JsonResponse(['message' => 'departureDate is required.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Departure Time
+        if (isset($data['departureTime'])) {
+            $departureTime = DateTime::createFromFormat('H:i:s', $data['departureTime']);
+            if ($departureTime === false) {
+                return new JsonResponse(['message' => 'Invalid departureTime format. Expected HH:MM:SS.'], Response::HTTP_BAD_REQUEST);
+            }
+            $carpooling->setDepartureTime($departureTime);
+        } else {
+            return new JsonResponse(['message' => 'departureTime is required.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Arrival Date
+        if (isset($data['arrivalDate'])) {
+            $arrivalDate = DateTime::createFromFormat('Y-m-d', $data['arrivalDate']);
+            if ($arrivalDate === false) {
+                return new JsonResponse(['message' => 'Invalid arrivalDate format. Expected YYYY-MM-DD.'], Response::HTTP_BAD_REQUEST);
+            }
+            $carpooling->setArrivalDate($arrivalDate);
+        } else {
+            return new JsonResponse(['message' => 'arrivalDate is required.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Arrival Time
+        if (isset($data['arrivalTime'])) {
+            $arrivalTime = DateTime::createFromFormat('H:i:s', $data['arrivalTime']);
+            if ($arrivalTime === false) {
+                return new JsonResponse(['message' => 'Invalid arrivalTime format. Expected HH:MM:SS.'], Response::HTTP_BAD_REQUEST);
+            }
+            $carpooling->setArrivalTime($arrivalTime);
+        } else {
+            return new JsonResponse(['message' => 'arrivalTime is required.'], Response::HTTP_BAD_REQUEST);
+        }
+        // --- FIN GESTION DES DATES ET HEURES SÉPARÉES ---
+
 
         $car = $this->manager->getRepository(Car::class)->find($data['car']);
 
@@ -50,15 +113,25 @@ final class CarpoolingController extends AbstractController
             return new JsonResponse(['message' => 'Car not found'], Response::HTTP_BAD_REQUEST);
         }
 
-        $carpooling = $this->serializer->deserialize(
-            $request->getContent(),
-            Carpooling::class,
-            'json',
-            [AbstractNormalizer::IGNORED_ATTRIBUTES => ['car']]
-        );
+        // Suppression de la désérialisation automatique ici car nous la faisons manuellement pour les dates
+        // $carpooling = $this->serializer->deserialize(
+        //     $request->getContent(),
+        //     Carpooling::class,
+        //     'json',
+        //     [AbstractNormalizer::IGNORED_ATTRIBUTES => ['car']]
+        // );
         $carpooling->setCar($car);
         $carpooling->setCreatedAt(new DateTimeImmutable());
         $carpooling->setStatus(CarpoolingStatus::OPEN);
+
+        // Autres champs
+        $carpooling->setDeparturePlace($data['departurePlace'] ?? null);
+        $carpooling->setArrivalPlace($data['arrivalPlace'] ?? null);
+        $carpooling->setSeatCount($data['availableSeats'] ?? null);
+        $carpooling->setPricePerPerson($data['pricePerPassenger'] ?? null);
+        $carpooling->setIsEco($data['isEco'] ?? false);
+        $carpooling->setStatus(CarpoolingStatus::tryFrom($data['status'] ?? CarpoolingStatus::OPEN->value));
+
 
         $user = $this->security->getUser();
         if (!$user) {
@@ -142,12 +215,52 @@ final class CarpoolingController extends AbstractController
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
 
+        // MODIFIÉ : La désérialisation pour l'édition doit aussi gérer les dates séparées
+        $data = json_decode($request->getContent(), true);
+
+        // Mise à jour des champs de date/heure
+        if (isset($data['departureDate']) && isset($data['departureTime'])) {
+            $departureDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $data['departureDate'] . ' ' . $data['departureTime']);
+            if ($departureDateTime !== false) {
+                $carpooling->setDepartureDate($departureDateTime);
+                $carpooling->setDepartureTime($departureDateTime);
+            }
+        }
+        if (isset($data['arrivalDate']) && isset($data['arrivalTime'])) {
+            $arrivalDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $data['arrivalDate'] . ' ' . $data['arrivalTime']);
+            if ($arrivalDateTime !== false) {
+                $carpooling->setArrivalDate($arrivalDateTime);
+                $carpooling->setArrivalTime($arrivalDateTime);
+            }
+        }
+
+        // Mise à jour des autres champs manuellement ou avec le sérialiseur pour les autres
+        // Si tu veux que le sérialiseur gère le reste, tu peux le faire ainsi:
         $this->serializer->deserialize(
             $request->getContent(),
             Carpooling::class,
             'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $carpooling]
+            [
+                AbstractNormalizer::OBJECT_TO_POPULATE => $carpooling,
+                // Ignorer les champs de date/heure car nous les gérons manuellement
+                AbstractNormalizer::IGNORED_ATTRIBUTES => ['departureDate', 'departureTime', 'arrivalDate', 'arrivalTime', 'car']
+            ]
         );
+        // Assure-toi de re-setter la voiture si elle peut être changée, ou ignorée si elle ne l'est pas
+        if (isset($data['car'])) {
+            $car = $this->manager->getRepository(Car::class)->find($data['car']);
+            if ($car) {
+                $carpooling->setCar($car);
+            }
+        }
+        // Mise à jour des autres champs qui ne sont pas gérés par le sérialiseur (comme seatCount, pricePerPerson, etc.)
+        $carpooling->setDeparturePlace($data['departurePlace'] ?? $carpooling->getDeparturePlace());
+        $carpooling->setArrivalPlace($data['arrivalPlace'] ?? $carpooling->getArrivalPlace());
+        $carpooling->setSeatCount($data['availableSeats'] ?? $carpooling->getSeatCount());
+        $carpooling->setPricePerPerson($data['pricePerPassenger'] ?? $carpooling->getPricePerPerson());
+        $carpooling->setIsEco($data['isEco'] ?? $carpooling->isEco());
+        $carpooling->setStatus(CarpoolingStatus::tryFrom($data['status'] ?? $carpooling->getStatus()->value));
+
 
         $carpooling->setUpdatedAt(new \DateTimeImmutable());
 

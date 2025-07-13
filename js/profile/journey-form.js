@@ -228,14 +228,19 @@ const handleJourneySubmission = async (event) => {
         return;
     }
 
-    const departureDateTime = `${departureDateInput.value} ${departureTimeInput.value}:00`;
-    const arrivalDateTime = `${arrivalDateInput.value} ${arrivalTimeInput.value}:00`;
+    // --- MODIFICATION ICI : Envoi des dates et heures séparément ---
+    const departureDate = departureDateInput.value; // Format YYYY-MM-DD
+    const departureTime = `${departureTimeInput.value}:00`; // Format HH:MM:SS (ajoute les secondes)
+    const arrivalDate = arrivalDateInput.value; // Format YYYY-MM-DD
+    const arrivalTime = `${arrivalTimeInput.value}:00`; // Format HH:MM:SS (ajoute les secondes)
 
     const journeyData = {
         departurePlace: departureCitySelect.value,
         arrivalPlace: arrivalCitySelect.value,
-        departureDateTime: departureDateTime,
-        arrivalDateTime: arrivalDateTime,
+        departureDate: departureDate, // Champ séparé
+        departureTime: departureTime, // Champ séparé
+        arrivalDate: arrivalDate,     // Champ séparé
+        arrivalTime: arrivalTime,     // Champ séparé
         car: selectedCarId,
         pricePerPassenger: priceValue,
         availableSeats: availableSeats
@@ -245,7 +250,7 @@ const handleJourneySubmission = async (event) => {
 
     try {
         const response = await fetchApi(
-            `${API_BASE_URL}/api/carpooling/`,
+            `${API_BASE_URL}/api/carpoolings`, // Correction de l'URL si nécessaire (pas de slash final)
             'POST',
             journeyData,
             { 'X-AUTH-TOKEN': userToken }
