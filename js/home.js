@@ -60,7 +60,7 @@ const checkLogoutSuccess = () => {
             if (arrivalPlace) searchParams.append('arrivalPlace', arrivalPlace);
             if (departureDate) searchParams.append('departureDate', departureDate);
 
-            const redirectToUrl = `/covoiturages?${searchParams.toString()}`;
+            const redirectToUrl = `/carpooling?${searchParams.toString()}`;
 
             console.log("URL de redirection construite dans home.js :", redirectToUrl);
 

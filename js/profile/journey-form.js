@@ -151,7 +151,8 @@ const fetchAndPopulateVehicles = async () => {
             userVehicles.forEach(car => {
                 const option = document.createElement('option');
                 option.value = car.id;
-                option.textContent = `${car.brand.name} ${car.model} (${car.registration})`;
+                const brandName = car.brand && car.brand.label ? car.brand.label : 'Marque inconnue';
+                option.textContent = `${brandName} ${car.model} (${car.licencePlate})`;
                 carSelect.appendChild(option);
             });
             console.log("Véhicules chargés et sélecteur activé.");

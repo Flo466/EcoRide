@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CarpoolingUserRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: CarpoolingUserRepository::class)]
 class CarpoolingUser
@@ -17,7 +18,8 @@ class CarpoolingUser
 
     #[ORM\ManyToOne(inversedBy: 'carpoolingUsers')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['carpooling:read'])] // Uniformisé avec le deux-points
+    #[Groups(['carpooling:read'])]
+    #[MaxDepth(1)]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolingUsers')]
