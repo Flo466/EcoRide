@@ -10,7 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -38,7 +37,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string
      */
     #[ORM\Column]
-    // #[Groups(['user:read'])] // NE PAS METTRE DE GROUPE ICI !
     private ?string $password = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -84,7 +82,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user:read'])] // L'API token peut être sérialisé si nécessaire
+    #[Groups(['user:read'])]
     private ?string $apiToken = null;
 
     /**
@@ -99,7 +97,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Configuration::class, mappedBy: 'user', orphanRemoval: true)]
     #[Groups(['user:read'])]
-    #[MaxDepth(1)]
     private Collection $configurations;
 
     /**
@@ -107,29 +104,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user', orphanRemoval: true)]
     #[Groups(['user:read'])]
-    #[MaxDepth(1)]
     private Collection $reviews;
 
     /**
      * @var Collection<int, Car>
      */
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
-    // #[Groups(['user:read'])]
-    // #[MaxDepth(1)]
     private Collection $cars;
 
     /**
      * @var Collection<int, CarpoolingUser>
      */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: CarpoolingUser::class, orphanRemoval: true)]
-    // #[Groups(['user:read'])]
-    // #[MaxDepth(1)]
     private Collection $carpoolingUsers;
 
     #[ORM\ManyToOne(targetEntity: Car::class)]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(['user:read', 'carpooling:read'])]
-    #[MaxDepth(1)]
     private ?Car $usedCar = null;
 
     /** @throws \Exception */
@@ -293,6 +284,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->photo = $photo;
 
         return $this;
+    }
+
+    // MODIFICATION ICI : Ajout de fseek pour rembobiner le flux
+    #[Groups(['user:read', 'carpooling:read'])]
+    public function getPhotoBase64(): ?string
+    {
+        if ($this->photo === null) {
+            return null;
+        }
+
+        $photoContent = null;
+        if (is_resource($this->photo)) {
+            // Rembobine le pointeur du flux au début avant de lire
+            fseek($this->photo, 0);
+            $photoContent = stream_get_contents($this->photo);
+        } elseif (is_string($this->photo)) {
+            // Si c'est déjà une chaîne (par exemple, si Doctrine a déjà hydraté le BLOB en string)
+            $photoContent = $this->photo;
+        }
+
+        if ($photoContent === false || $photoContent === '') {
+            return null;
+        }
+
+        $mimeType = $this->photoMimeType ?? 'image/jpeg';
+
+        return 'data:' . $mimeType . ';base64,' . base64_encode($photoContent);
     }
 
     public function getPhotoMimeType(): ?string

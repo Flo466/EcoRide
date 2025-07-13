@@ -22,7 +22,7 @@ export function createCarpoolDriverCardElement(data) {
         <div class="card-body pb-0">
           <h2 class="mb-3 text-start user-card-title">Trajet proposé par</h2>
           <div class="d-flex align-items-center mb-3 driver-info-row">
-              <img class="driver-img-detail" src="${data.driver.photo || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || FALLBACK_DRIVER_NAME}">
+              <img class="driver-img-detail" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || FALLBACK_DRIVER_NAME}">
               <div class="driver-name-rating">
                   <p class="mb-0 fs-5">${data.driver.userName}</p>
                   <p class="mb-0 driver-rating"><span class="fs-5">☆ 5</span></p>

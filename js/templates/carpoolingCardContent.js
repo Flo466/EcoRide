@@ -41,7 +41,7 @@ export function createCarpoolCardElement(data, formatTime) {
         </div>
 
         <div class="driver-section">
-            <img class="driver-img-detail" src="${data.driver.photo || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || FALLBACK_DRIVER_NAME}">
+            <img class="driver-img-detail" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || FALLBACK_DRIVER_NAME}">
             <div>
                 <p class="mb-0 fs-5">${data.driver.userName || FALLBACK_DRIVER_NAME}</p>
                 <div>☆ 5</div>
