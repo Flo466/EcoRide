@@ -46,7 +46,7 @@ final class CarpoolingController extends AbstractController
 
         return $this->json($carpoolings, Response::HTTP_OK, [], [
             'groups' => 'carpooling:read',
-            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
+            // 'enable_max_depth' => true // Supprimé car les groupes sont plus précis et suffisent
         ]);
     }
 
@@ -115,7 +115,16 @@ final class CarpoolingController extends AbstractController
         $carpooling->setArrivalPlace($data['arrivalPlace'] ?? null);
         $carpooling->setSeatCount($data['availableSeats'] ?? null);
         $carpooling->setPricePerPerson($data['pricePerPassenger'] ?? null);
-        $carpooling->setIsEco($data['isEco'] ?? false);
+        // $carpooling->setIsEco($data['isEco'] ?? false); // Ligne d'origine
+
+        // NOUVELLE LOGIQUE : Définit isEco en fonction de l'énergie de la voiture
+        if ($car->getEnergy() === 'Électrique') {
+            $carpooling->setIsEco(true);
+        } else {
+            // Si l'énergie n'est pas électrique, utilise la valeur fournie ou false par défaut
+            $carpooling->setIsEco($data['isEco'] ?? false);
+        }
+
         $carpooling->setStatus(CarpoolingStatus::tryFrom($data['status'] ?? CarpoolingStatus::OPEN->value));
 
         // Utilisateur authentifié
@@ -135,7 +144,6 @@ final class CarpoolingController extends AbstractController
 
         $responseData = $this->serializer->normalize($carpooling, 'json', [
             'groups' => 'carpooling:read',
-            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
         ]);
 
         $location = $this->urlGenerator->generate(
@@ -164,7 +172,6 @@ final class CarpoolingController extends AbstractController
                     'brand:read',
                     'user:read'
                 ],
-                'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
             ]);
             return new JsonResponse($responseData, status: Response::HTTP_OK);
         }
@@ -192,7 +199,6 @@ final class CarpoolingController extends AbstractController
 
         return $this->json($results, 200, [], [
             'groups' => 'carpooling:read',
-            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
         ]);
     }
 
@@ -225,13 +231,21 @@ final class CarpoolingController extends AbstractController
         $carpooling->setDeparturePlace($data['departurePlace'] ?? $carpooling->getDeparturePlace());
         $carpooling->setArrivalPlace($data['arrivalPlace'] ?? $carpooling->getArrivalPlace());
         $carpooling->setPricePerPerson($data['pricePerPassenger'] ?? $carpooling->getPricePerPerson());
-        $carpooling->setIsEco($data['isEco'] ?? $carpooling->getIsEco());
+
+        // Logique pour isEco dans la méthode edit
+        // Récupère la voiture associée au covoiturage
+        $car = $carpooling->getCar();
+        if ($car && $car->getEnergy() === 'Électrique') {
+            $carpooling->setIsEco(true);
+        } else {
+            // Si l'énergie n'est pas électrique, utilise la valeur fournie dans la requête ou la valeur existante
+            $carpooling->setIsEco($data['isEco'] ?? $carpooling->getIsEco());
+        }
 
         $this->manager->flush();
 
         $responseData = $this->serializer->normalize($carpooling, 'json', [
             'groups' => 'carpooling:read',
-            'enable_max_depth' => true // ← Ajout ici pour gérer la profondeur
         ]);
 
         return new JsonResponse($responseData, status: Response::HTTP_OK);
