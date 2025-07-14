@@ -12,6 +12,12 @@ export function createCarpoolCardElement(data, formatTime) {
     const arrTimeFormatted = formatTime(data.arrivalTime) || "";
     const depPlaceFormatted = data.departurePlace || "";
     const arrPlaceFormatted = data.arrivalPlace || "";
+    let ratingHtml = '';
+    if (data.driver.averageRating && data.driver.averageRating > 0) {
+        ratingHtml = `<span class="fs-5">${data.driver.averageRating.toFixed(1)}</span> <i class="bi bi-star-fill text-warning"></i>`;
+    } else {
+        ratingHtml = "Ce chauffeur n'a pas encore de note";
+    }
 
     wrapper.dataset.id = data.id;
     wrapper.addEventListener('click', () => {
@@ -44,7 +50,7 @@ export function createCarpoolCardElement(data, formatTime) {
             <img class="driver-img-detail" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || FALLBACK_DRIVER_NAME}">
             <div>
                 <p class="mb-0 fs-5">${data.driver.userName || FALLBACK_DRIVER_NAME}</p>
-                <div>☆ 5</div>
+                <p class="driver-rating">${ratingHtml}</p>
             </div>
         </div>
     `;

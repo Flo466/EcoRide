@@ -1,9 +1,9 @@
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
-import Car from '../models/Car.js';
+import Carpooling from '../models/Carpooling.js';
 
 // --- DOM Elements ---
-const vehicleListContainer = document.querySelector('.vehicule-list');
+const vehicleListContainer = document.querySelector('.journey-list');
 const messageDisplay = document.getElementById('messageDisplay');
 const loadingMessageDisplay = document.getElementById('loadingMessageDisplay');
 
@@ -67,7 +67,6 @@ const hideMessage = (targetDisplay) => {
 };
 
 /**
- * Deletes a vehicle via the API.
  * Handles user token validation, API call, and displays success/error messages.
  * @param {number} vehicleId - The ID of the vehicle to delete.
  */

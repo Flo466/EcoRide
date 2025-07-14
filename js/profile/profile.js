@@ -15,24 +15,9 @@ const driverModeMessage = document.getElementById('driverModeMessage'); // Élé
 const enterJourneyFormBtn = document.getElementById('enterJourneyFormBtn');
 const enterVehicleFormBtn = document.getElementById('enterVehicleFormBtn');
 
-// AJOUTÉ : Élément pour le lien "Mes véhicules"
-// Sélectionne le 2ème <li> avec la classe .profile-list-item
+// Links
 const myVehiclesLink = document.querySelector('ul.list-group-flush > li:nth-child(2)');
-
-
-// --- DÉBOGAGE : Vérification des éléments DOM au chargement du script ---
-console.log('DOM Element Check: userNameDisplay', userNameDisplay);
-console.log('DOM Element Check: userCreditsDisplay', userCreditsDisplay);
-console.log('DOM Element Check: addPhotoBtn', addPhotoBtn);
-console.log('DOM Element Check: avatarInput', avatarInput);
-console.log('DOM Element Check: profileAvatarPlaceholder', profileAvatarPlaceholder);
-console.log('DOM Element Check: messageDisplay', messageDisplay);
-console.log('DOM Element Check: driverSwitch', driverSwitch);
-console.log('DOM Element Check: driverModeMessage', driverModeMessage);
-console.log('DOM Element Check: enterJourneyFormBtn', enterJourneyFormBtn);
-console.log('DOM Element Check: enterVehicleFormBtn', enterVehicleFormBtn);
-console.log('DOM Element Check: myVehiclesLink', myVehiclesLink); // DÉBOGAGE : Vérification du lien Mes véhicules
-
+const myJourneysLink = document.querySelector('ul.list-group-flush > li:nth-child(1)');
 
 // Global variable to store the previous object URL, to revoke it and avoid memory leaks
 let currentAvatarObjectURL = null;
@@ -393,8 +378,14 @@ if (enterJourneyFormBtn) {
 if (myVehiclesLink) {
     myVehiclesLink.addEventListener('click', (event) => {
         event.preventDefault(); // Empêche le comportement par défaut du lien si c'est un <a>
-        console.log("Clic sur 'Mes véhicules'. Redirection vers /my-vehicules.");
-        window.location.href = '/my-vehicules'; // Redirige vers la page des véhicules
+        window.location.href = '/my-vehicles'; // Redirige vers la page des véhicules
+    });
+}
+
+if (myJourneysLink) {
+    myJourneysLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.location.href = '/my-journeys'
     });
 }
 

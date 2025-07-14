@@ -12552,17 +12552,17 @@ select:focus {
   color: #00ce0a;
 }
 
-.vehicule-list {
+.vehicle-list {
   padding: 20px;
 }
-.vehicule-list h5, .vehicule-list .h5 {
+.vehicle-list h5, .vehicle-list .h5 {
   color: #00ce0a;
 }
-.vehicule-list strong {
+.vehicle-list strong {
   font-weight: 600;
 }
 
-.vehicule-list .card {
+.vehicle-list .card {
   border-radius: 2rem;
   margin-left: auto;
   margin-right: auto;

@@ -2,6 +2,7 @@ import { User } from './User.js';
 import { createCarpoolCardElement } from '../templates/carpoolingCardContent.js';
 import { createCarpoolDetailCardElement } from '../templates/carpoolingDetailCardContent.js';
 import { createCarpoolDriverCardElement } from '../templates/carpoolingDriverCardContent.js';
+import { createJourneyCardElement } from '../templates/myJourneysCardContent.js';
 import { formatTime, formatDateToFrench } from '../utils/formatters.js';
 
 export class Carpooling {
@@ -40,5 +41,9 @@ export class Carpooling {
 
   toDriverCardElement() {
     return createCarpoolDriverCardElement(this);
+  }
+
+  toJourneyCardElement() {
+    return createJourneyCardElement(this, formatDateToFrench, formatTime)
   }
 }

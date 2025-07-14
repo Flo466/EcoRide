@@ -17,6 +17,12 @@ export function createCarpoolDriverCardElement(data) {
     const carBrandLabel = data.car && data.car.brand ? data.car.brand.label : "Non renseignée";
     const carModel = data.car ? data.car.model : "";
     const carEnergy = data.car ? data.car.energy : "";
+    let ratingHtml = '';
+    if (data.driver.averageRating && data.driver.averageRating > 0) {
+        ratingHtml = `<span class="fs-"6>${data.driver.averageRating.toFixed(1)}</span> <i class="bi bi-star-fill"></i>`;
+    } else {
+        ratingHtml = "Ce chauffeur n'a pas encore de note";
+    }
 
     driverCard.innerHTML = `
         <div class="card-body pb-0">
@@ -25,7 +31,7 @@ export function createCarpoolDriverCardElement(data) {
               <img class="driver-img-detail" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || FALLBACK_DRIVER_NAME}">
               <div class="driver-name-rating">
                   <p class="mb-0 fs-5">${data.driver.userName}</p>
-                  <p class="mb-0 driver-rating"><span class="fs-5">☆ 5</span></p>
+                   <p class="mb-0 driver-rating">${ratingHtml} </p>
               </div>
           </div>
           <div class="driver-car-details mb-4">

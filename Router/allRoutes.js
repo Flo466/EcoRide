@@ -8,8 +8,9 @@ export const allRoutes = [
     new Route("/signup", "SignUp", "pages/profile/signup.html", "js/profile/signup.js"),
     new Route("/profile", "My acocunt", "pages/profile/profile.html", "js/profile/profile.js"),
     new Route("/car-form", "Car", "pages/profile/car-form.html", "js/profile/car-form.js"),
-    new Route("/my-vehicules", "My vehicules", "pages/profile/my-vehicules.html", "js/profile/my-vehicules.js"),
+    new Route("/my-vehicles", "My vehicles", "pages/profile/my-vehicles.html", "js/profile/my-items-loader.js"),
     new Route("/journey-form", "Journey", "pages/profile/journey-form.html", "js/profile/journey-form.js"),
+    new Route("/my-journeys", "My journeys", "pages/profile/my-journeys.html", "js/profile/my-items-loader.js"),
 ];
 
 export const websiteName = "EcoRide";
