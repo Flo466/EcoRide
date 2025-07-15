@@ -55,8 +55,10 @@ if (loginForm && submitButton && emailInput && passwordInput) {
             const data = await fetchApi(loginUrl, 'POST', { email, password });
 
             console.log('Connexion réussie:', data);
+
+
             localStorage.setItem('userToken', data.apiToken);
-            localStorage.setItem('userId', data.id);
+            localStorage.setItem('currentUserId', data.id);
             localStorage.setItem('userEmail', data.email);
             localStorage.setItem('userRoles', JSON.stringify(data.roles));
 
@@ -73,9 +75,8 @@ if (loginForm && submitButton && emailInput && passwordInput) {
             } else if (error.message.includes('Network request failed') || error.message.includes('Failed to fetch')) {
                 userFriendlyMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion internet ou réessayez plus tard.';
             }
-            // Tu peux ajouter d'autres conditions si tu as d'autres messages d'erreur spécifiques de ton API.
 
-            showErrorMessage(userFriendlyMessage); // Affiche le message plus convivial
+            showErrorMessage(userFriendlyMessage);
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Se connecter';

@@ -15,20 +15,24 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        main:
+        # ⭐ NOUVEAU FIREWALL POUR L'API ⭐
+        api:
+            pattern: ^/api/ # Capture toutes les routes qui commencent par /api/
+            stateless: true # Indispensable pour les APIs sans session
+            provider: app_user_provider # Utilise ton fournisseur d'utilisateurs
+            custom_authenticators:
+                - App\Security\ApiTokenAuthenticator # Ton authenticator pour le token API
+
+        main: # Ce firewall gère le reste de ton application, potentiellement avec des sessions
             lazy: true
             provider: app_user_provider
-            # It's recommended to use a list for 'custom_authenticators' even if there's only one
-            custom_authenticators:
-                - App\Security\ApiTokenAuthenticator
-
-            stateless: true
-
-            # Activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            # Si 'main' ne gère pas les APIs, il ne doit pas inclure l'ApiTokenAuthenticator
+            # Si tu as une partie "front-office" ou "admin" avec des formulaires de login,
+            # c'est ici que tu configurerais 'form_login' ou autres.
+            # Pour l'instant, pas de pattern défini, il attrapera tout ce que 'api' ne prend pas.
+            # custom_authenticators:
+            #     - App\Security\ApiTokenAuthenticator # <-- C'est cette ligne qu'on retire d'ici !
+            # stateless: true # Retire ceci si 'main' utilise des sessions
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
@@ -49,7 +53,6 @@ security:
         # Public access for GET requests on review routes
         - { path: ^/api/review, roles: PUBLIC_ACCESS, methods: [GET] }
 
-        # ✨ AJOUTE CETTE LIGNE POUR RENDRE LA LISTE DES MARQUES PUBLIQUE
         # Adapte le 'path' si ta route est différente (ex: ^/api/brand)
         - { path: ^/api/brands, roles: PUBLIC_ACCESS, methods: [GET] }
 

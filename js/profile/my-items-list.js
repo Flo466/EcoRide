@@ -6,8 +6,7 @@ import Car from '../models/Car.js';
 import { Carpooling } from '../models/Carpooling.js'; // Importe la classe Carpooling
 
 // --- DOM Elements ---
-// On utilise un sélecteur plus générique si les deux pages utilisent le même conteneur
-const itemsListContainer = document.querySelector('.items-list-container'); // Renomme le conteneur dans tes HTML
+const itemsListContainer = document.querySelector('.items-list-container');
 const messageDisplay = document.getElementById('messageDisplay');
 const loadingMessageDisplay = document.getElementById('loadingMessageDisplay');
 
@@ -73,7 +72,7 @@ const deleteItem = async (itemId, itemType, reloadFunction) => {
         endpoint = `${API_BASE_URL}/api/car/${itemId}`;
         successMessage = "Véhicule supprimé avec succès.";
     } else if (itemType === 'journey') {
-        endpoint = `${API_BASE_URL}/api/carpooling/delete/${itemId}`; // Adapte cette route à ton API pour supprimer un covoiturage
+        endpoint = `${API_BASE_URL}/api/carpooling/${itemId}`;
         successMessage = "Covoiturage supprimé avec succès.";
     } else {
         console.error('deleteItem: Type d\'élément inconnu :', itemType);
@@ -82,12 +81,25 @@ const deleteItem = async (itemId, itemType, reloadFunction) => {
     }
 
     try {
+        console.log('Jeton envoyé:', userToken);
+        // Important: Si ton API Symfony renvoie une erreur JSON avec un message,
         await fetchApi(endpoint, 'DELETE', null, { 'X-AUTH-TOKEN': userToken });
         displayMessage(successMessage, 'success');
-        reloadFunction(); // Recharge la liste appropriée
+        reloadFunction();
     } catch (error) {
         console.error(`Erreur lors de la suppression du ${itemType}:`, error);
-        displayMessage(`Erreur lors de la suppression du ${itemType} : ${error.message}`, 'danger');
+
+        if (error.statusCode === 409 && error.message.includes('foreign key constraint fails')) {
+            displayMessage(
+                "Ce véhicule ne peut pas être supprimé car il est utilisé dans un ou plusieurs covoiturages.",
+                'warning'
+            );
+        } else if (error.statusCode === 401 || error.message.includes('Missing credentials') || error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
+            displayMessage("Votre session a expiré ou n'est plus valide. Veuillez vous reconnecter.", 'danger');
+            setTimeout(() => { window.location.href = '/login'; }, 4000);
+        } else {
+            displayMessage(`Supression impossible : ${error.message}`, 'danger');
+        }
     }
 };
 
@@ -105,7 +117,7 @@ export const loadUserItems = async (type) => {
     }
 
     displayMessage(`Chargement en cours...`, 'info', loadingMessageDisplay);
-    itemsListContainer.innerHTML = ''; // Vide le contenu précédent
+    itemsListContainer.innerHTML = '';
 
     const userToken = localStorage.getItem('userToken');
     console.log('loadUserItems: User Token:', userToken ? 'Present' : 'Missing');
@@ -155,7 +167,6 @@ export const loadUserItems = async (type) => {
         if (itemsData && itemsData.length > 0) {
             itemsData.forEach(data => {
                 const item = new ItemClass(data);
-                // Passe la fonction de suppression appropriée
                 const itemCardElement = item[cardCreationMethod](displayMessage, (id) => deleteItem(id, itemTypeForDelete, () => loadUserItems(type)));
                 itemsListContainer.appendChild(itemCardElement);
             });

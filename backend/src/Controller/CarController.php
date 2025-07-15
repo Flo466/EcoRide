@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Car;
 use App\Repository\CarRepository;
+use App\Repository\CarpoolingRepository; // ⭐ NOUVEL IMPORT : Pour vérifier les covoiturages liés
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException; // ⭐ NOUVEL IMPORT : Pour capturer l'erreur spécifique
 use Symfony\Component\Security\Core\Security;
 use App\Repository\BrandRepository;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -28,6 +30,7 @@ final class CarController extends AbstractController
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator,
         private Security $security,
+        private CarpoolingRepository $carpoolingRepository, // ⭐ INJECTION : Ajoute le CarpoolingRepository
     ) {}
 
     /**
@@ -171,9 +174,25 @@ final class CarController extends AbstractController
             throw $this->createAccessDeniedException('Access denied to this vehicle.');
         }
 
-        $this->manager->remove($car);
-        $this->manager->flush();
+        // Vérifie si des covoiturages sont liés à cette voiture
+        $associatedCarpoolingsCount = $this->carpoolingRepository->count(['car' => $car]);
 
-        return new Jsonresponse(null, Response::HTTP_NO_CONTENT);
+        if ($associatedCarpoolingsCount > 0) {
+            return new JsonResponse(
+                ['message' => 'Ce véhicule ne peut pas être supprimé car il est utilisé dans un ou plusieurs covoiturages.'],
+                Response::HTTP_CONFLICT // Code 409 Conflict
+            );
+        }
+
+        // Si aucun covoiturage n'est lié, procéder à la suppression
+        try {
+            $this->manager->remove($car);
+            $this->manager->flush();
+
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        } catch (\Exception $e) {
+            // Pour toute autre erreur inattendue lors de la suppression
+            return new JsonResponse(['message' => 'Une erreur inattendue est survenue lors de la suppression du véhicule.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -23,6 +23,7 @@ export class Carpooling {
     this.status = data.status;
 
     this.driver = null;
+    this.isCurrentUserDriver = false;
     if (data.carpoolingUsers && Array.isArray(data.carpoolingUsers)) {
       const driverData = data.carpoolingUsers.find(cu => cu.isDriver);
       if (driverData && driverData.user) {

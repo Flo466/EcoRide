@@ -1,15 +1,16 @@
 export function createJourneyCardElement(data, formatDateToFrench, formatTime) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'col-12 col-md-6 mb-4 d-flex justify-content-center';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'col-12 col-md-6 mb-4 d-flex justify-content-center';
 
-    const card = document.createElement('div');
-    card.className = 'detail-card card shadow animated-fade-in';
+  const card = document.createElement('div');
+  card.className = 'detail-card card shadow-sm animate-fade-in';
+  card.style.width = '90%';
 
-    const departureDateFormatted = formatDateToFrench(data.departureDate);
-    const departureTimeFormatted = formatTime(data.departureTime);
-    const arrivalTimeFormatted = formatTime(data.arrivalTime);
+  const departureDateFormatted = formatDateToFrench(data.departureDate);
+  const departureTimeFormatted = formatTime(data.departureTime);
+  const arrivalTimeFormatted = formatTime(data.arrivalTime);
 
-    card.innerHTML = `
+  card.innerHTML = `
     <div class="card-body pb-0"> 
       <div class="mb-3 text-start">
           <h1 class="mb-0 ms-2 date">${departureDateFormatted}</h1>
@@ -29,6 +30,6 @@ export function createJourneyCardElement(data, formatDateToFrench, formatTime) {
     </div>
   `;
 
-    wrapper.appendChild(card);
-    return wrapper;
+  wrapper.appendChild(card);
+  return wrapper;
 }
