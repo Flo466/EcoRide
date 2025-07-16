@@ -34,12 +34,11 @@ if (loginForm && submitButton && emailInput && passwordInput) {
         event.preventDefault();
         event.stopPropagation();
 
-        hideErrorMessage(); // Cache tout message d'erreur précédent
+        hideErrorMessage();
 
         loginForm.classList.add('was-validated');
 
         if (!loginForm.checkValidity()) {
-            // Si la validation HTML/Bootstrap échoue, Bootstrap gère déjà les messages sous les champs.
             return;
         }
 

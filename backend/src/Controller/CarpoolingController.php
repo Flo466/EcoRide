@@ -32,12 +32,7 @@ final class CarpoolingController extends AbstractController
         private UrlGeneratorInterface $urlGenerator,
         private NormalizerInterface $normalizer,
         private Security $security
-    ) {
-        $this->repository = $repository;
-        $this->serializer = $serializer;
-        $this->security = $security;
-        $this->normalizer = $normalizer;
-    }
+    ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
     public function listAllCarpoolings(): JsonResponse
@@ -278,22 +273,19 @@ final class CarpoolingController extends AbstractController
     {
         $carpooling = $this->repository->find($id);
 
-        // 1. Vérifier si le covoiturage existe
         if (!$carpooling) {
             return new JsonResponse(['message' => 'Covoiturage non trouvé.'], Response::HTTP_NOT_FOUND);
         }
 
-        // 2. Vérifier l'utilisateur authentifié
         $user = $this->security->getUser();
         if (!$user) {
             return new JsonResponse(['message' => 'Authentification requise.'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // 3. Vérifier si l'utilisateur authentifié est le conducteur du covoiturage
         $isDriver = false;
-        $carpoolingUserToDelete = null; // Pour stocker l'objet CarpoolingUser du conducteur
+        $carpoolingUserToDelete = null;
         foreach ($carpooling->getCarpoolingUsers() as $carpoolingUser) {
-            if ($carpoolingUser->getUser() === $user && $carpoolingUser->getIsDriver()) {
+            if ($carpoolingUser->getUser() === $user && $carpoolingUser->isDriver()) {
                 $isDriver = true;
                 $carpoolingUserToDelete = $carpoolingUser;
                 break;
@@ -304,15 +296,13 @@ final class CarpoolingController extends AbstractController
             return new JsonResponse(['message' => 'Vous n\'êtes pas autorisé à supprimer ce covoiturage. Seul le conducteur peut le faire.'], Response::HTTP_FORBIDDEN);
         }
 
-        // 4. Supprimer l'entrée CarpoolingUser du conducteur (si trouvée)
         if ($carpoolingUserToDelete) {
             $this->manager->remove($carpoolingUserToDelete);
         }
 
-        // 5. Supprimer le covoiturage
         $this->manager->remove($carpooling);
         $this->manager->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT); // 204 No Content pour une suppression réussie
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }

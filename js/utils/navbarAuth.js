@@ -6,12 +6,9 @@ export const handleLogout = () => {
     localStorage.removeItem('userId');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userRoles');
-
-    // NOUVEAU : Ajoute un indicateur de succès de déconnexion dans localStorage
-    localStorage.setItem('logoutSuccess', 'true');
-
-    console.log('Utilisateur déconnecté. Redirection...');
-    window.location.href = '/'; // Redirige vers la page d'accueil
+    localStorage.removeItem('currentUserId');
+    localStorage.removeItem('apiToken');
+    window.location.href = '/login';
 };
 
 // Fonction pour mettre à jour l'affichage des liens de la navbar
@@ -22,7 +19,7 @@ export const updateNavbarAuthLinks = () => {
     const navLoginLink = document.getElementById('navLoginLink');
     const navMyAccountLink = document.getElementById('navMyAccountLink');
     const navLogoutLink = document.getElementById('navLogoutLink');
-    const logoutBtn = document.getElementById('logoutLink');
+    const logoutBtn = document.getElementById('logoutLink'); // Assure-toi que c'est bien l'ID de ton bouton
 
     if (userToken) {
         if (navLoginLink) navLoginLink.style.display = 'none';

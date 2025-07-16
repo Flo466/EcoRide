@@ -76,7 +76,7 @@ class Carpooling
     /**
      * @var Collection<int, CarpoolingUser>
      */
-    #[ORM\OneToMany(targetEntity: CarpoolingUser::class, mappedBy: 'carpooling')]
+    #[ORM\OneToMany(targetEntity: CarpoolingUser::class, mappedBy: 'carpooling', orphanRemoval: true, cascade: ['remove'])]
     #[Groups(['carpooling:read'])]
     private Collection $carpoolingUsers;
 
@@ -254,6 +254,7 @@ class Carpooling
     public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
     {
         if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
+            // set the owning side to null (unless already changed)
             if ($carpoolingUser->getCarpooling() === $this) {
                 $carpoolingUser->setCarpooling(null);
             }

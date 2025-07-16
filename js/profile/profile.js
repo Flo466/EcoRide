@@ -249,13 +249,11 @@ const loadUserProfile = async () => {
         } else {
             displayMessage("Impossible de charger vos informations de profil. Veuillez réessayer.", 'danger');
         }
-        // En cas d'erreur de chargement du profil, désactiver le switch et masquer les boutons
         if (driverSwitch) driverSwitch.disabled = true;
         updateDriverButtonsVisibility(false);
     }
 };
 
-// Event listener for the "Ajouter ou modifier une photo" button
 if (addPhotoBtn && avatarInput) {
     addPhotoBtn.addEventListener('click', () => {
         console.log("Clic sur le bouton 'Ajouter ou modifier une photo'.");

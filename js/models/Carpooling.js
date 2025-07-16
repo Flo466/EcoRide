@@ -1,3 +1,5 @@
+// src/models/Carpooling.js
+
 import { User } from './User.js';
 import { createCarpoolCardElement } from '../templates/carpoolingCardContent.js';
 import { createCarpoolDetailCardElement } from '../templates/carpoolingDetailCardContent.js';
@@ -6,7 +8,7 @@ import { createJourneyCardElement } from '../templates/myJourneysCardContent.js'
 import { formatTime, formatDateToFrench } from '../utils/formatters.js';
 
 export class Carpooling {
-  constructor(data) {
+  constructor(data, currentUserId = null) {
     this.id = data.id;
     this.departureDate = data.departureDate;
     this.departureTime = data.departureTime;
@@ -24,10 +26,15 @@ export class Carpooling {
 
     this.driver = null;
     this.isCurrentUserDriver = false;
+
     if (data.carpoolingUsers && Array.isArray(data.carpoolingUsers)) {
       const driverData = data.carpoolingUsers.find(cu => cu.isDriver);
       if (driverData && driverData.user) {
-        this.driver = new User(driverData.user);
+        this.driver = new User(driverData.user)
+
+        if (currentUserId !== null && this.driver !== null && this.driver.id === currentUserId) {
+          this.isCurrentUserDriver = true;
+        }
       }
     }
   }
@@ -45,6 +52,6 @@ export class Carpooling {
   }
 
   toJourneyCardElement() {
-    return createJourneyCardElement(this, formatDateToFrench, formatTime)
+    return createJourneyCardElement(this, formatDateToFrench, formatTime);
   }
 }

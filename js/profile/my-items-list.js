@@ -10,7 +10,7 @@ const itemsListContainer = document.querySelector('.items-list-container');
 const messageDisplay = document.getElementById('messageDisplay');
 const loadingMessageDisplay = document.getElementById('loadingMessageDisplay');
 
-// --- Message Display Utility (inchangé) ---
+// --- Message Display Utility ---
 const displayMessage = (message, type, targetDisplay = messageDisplay) => {
     if (targetDisplay) {
         targetDisplay.classList.remove('alert-success', 'alert-danger', 'alert-warning', 'alert-info', 'd-none');
@@ -56,9 +56,10 @@ const hideMessage = (targetDisplay) => {
  * Supprime un élément (véhicule ou covoiturage) via l'API.
  * @param {number} itemId - L'ID de l'élément à supprimer.
  * @param {'vehicle' | 'journey'} itemType - Le type d'élément ('vehicle' ou 'journey').
+ * @param {string} itemDisplayName - Le nom convivial de l'élément à afficher dans l'alerte.
  * @param {Function} reloadFunction - La fonction à appeler pour recharger la liste après suppression.
  */
-const deleteItem = async (itemId, itemType, reloadFunction) => {
+const deleteItem = async (itemId, itemType, itemDisplayName, reloadFunction) => {
     const userToken = localStorage.getItem('userToken');
     if (!userToken) {
         displayMessage("Jeton utilisateur manquant. Veuillez vous reconnecter.", 'danger');
@@ -72,7 +73,7 @@ const deleteItem = async (itemId, itemType, reloadFunction) => {
         endpoint = `${API_BASE_URL}/api/car/${itemId}`;
         successMessage = "Véhicule supprimé avec succès.";
     } else if (itemType === 'journey') {
-        endpoint = `${API_BASE_URL}/api/carpooling/${itemId}`;
+        endpoint = `${API_BASE_URL}/api/carpoolings/${itemId}`;
         successMessage = "Covoiturage supprimé avec succès.";
     } else {
         console.error('deleteItem: Type d\'élément inconnu :', itemType);
@@ -80,9 +81,12 @@ const deleteItem = async (itemId, itemType, reloadFunction) => {
         return;
     }
 
+    if (!confirm(`Es-tu sûr de vouloir supprimer ${itemDisplayName} ?`)) {
+        return;
+    }
+
     try {
-        console.log('Jeton envoyé:', userToken);
-        // Important: Si ton API Symfony renvoie une erreur JSON avec un message,
+        console.log(`Tentative de suppression de ${itemType} avec ID: ${itemId}`);
         await fetchApi(endpoint, 'DELETE', null, { 'X-AUTH-TOKEN': userToken });
         displayMessage(successMessage, 'success');
         reloadFunction();
@@ -98,7 +102,7 @@ const deleteItem = async (itemId, itemType, reloadFunction) => {
             displayMessage("Votre session a expiré ou n'est plus valide. Veuillez vous reconnecter.", 'danger');
             setTimeout(() => { window.location.href = '/login'; }, 4000);
         } else {
-            displayMessage(`Supression impossible : ${error.message}`, 'danger');
+            displayMessage(`Suppression impossible : ${error.message}`, 'danger');
         }
     }
 };
@@ -117,10 +121,18 @@ export const loadUserItems = async (type) => {
     }
 
     displayMessage(`Chargement en cours...`, 'info', loadingMessageDisplay);
-    itemsListContainer.innerHTML = '';
+    itemsListContainer.innerHTML = ''; // Nettoie le conteneur avant de charger
 
     const userToken = localStorage.getItem('userToken');
     console.log('loadUserItems: User Token:', userToken ? 'Present' : 'Missing');
+
+    // --- Débogage de currentUserId ---
+    const rawUserIdFromLocalStorage = localStorage.getItem('currentUserId');
+    console.log('loadUserItems: Raw currentUserId from localStorage (avant parseInt):', rawUserIdFromLocalStorage, 'Type:', typeof rawUserIdFromLocalStorage);
+
+    const currentUserId = parseInt(rawUserIdFromLocalStorage);
+    console.log('loadUserItems: currentUserId après parseInt:', currentUserId, 'Type:', typeof currentUserId);
+    // --- Fin Débogage ---
 
     if (!userToken) {
         hideMessage(loadingMessageDisplay);
@@ -129,11 +141,19 @@ export const loadUserItems = async (type) => {
         return;
     }
 
+    if (type === 'journeys' && (isNaN(currentUserId) || currentUserId === null)) {
+        console.error('loadUserItems: currentUserId est manquant ou invalide pour charger les covoiturages. Valeur:', currentUserId);
+        hideMessage(loadingMessageDisplay);
+        displayMessage("Impossible d'identifier l'utilisateur pour charger les voyages. Veuillez vous reconnecter.", 'danger');
+        setTimeout(() => { window.location.href = '/login'; }, 3000);
+        return;
+    }
+
     let endpoint = '';
     let emptyMessage = '';
     let frenchType = '';
     let ItemClass;
-    let cardCreationMethod; // Méthode pour créer la carte (ex: toCarCardElement, toCarpoolingCardElement)
+    let cardCreationMethod;
     let itemTypeForDelete; // 'vehicle' ou 'journey' pour la fonction deleteItem
 
     if (type === 'vehicles') {
@@ -166,9 +186,39 @@ export const loadUserItems = async (type) => {
 
         if (itemsData && itemsData.length > 0) {
             itemsData.forEach(data => {
-                const item = new ItemClass(data);
-                const itemCardElement = item[cardCreationMethod](displayMessage, (id) => deleteItem(id, itemTypeForDelete, () => loadUserItems(type)));
+                const userIdToPass = (type === 'journeys') ? currentUserId : null;
+                console.log('Avant instantiation ItemClass - userIdToPass:', userIdToPass, 'Type:', typeof userIdToPass);
+
+                const item = new ItemClass(data, userIdToPass);
+
+                if (type === 'journeys') {
+                    console.log('Après instantiation Carpooling - item.isCurrentUserDriver:', item.isCurrentUserDriver);
+                }
+
+                const itemCardElement = item[cardCreationMethod]();
+
                 itemsListContainer.appendChild(itemCardElement);
+
+                const deleteButton = itemCardElement.querySelector('.delete-item-btn');
+                if (deleteButton) {
+                    deleteButton.addEventListener('click', (event) => {
+                        event.preventDefault();
+
+                        const itemId = deleteButton.dataset.id;
+                        const typeToDelete = deleteButton.dataset.type;
+
+                        let itemDisplayName = '';
+                        if (typeToDelete === 'vehicle') {
+                            itemDisplayName = `le véhicule "${item.brand.name} ${item.model}"`;
+                        } else if (typeToDelete === 'journey') {
+                            const formattedDepartureDate = new Date(item.departureDate).toLocaleDateString('fr-FR');
+                            const formattedDepartureTime = item.departureTime.substring(0, 5);
+                            itemDisplayName = `le covoiturage du ${formattedDepartureDate} de ${item.departurePlace} vers ${item.arrivalPlace}`;
+                        }
+
+                        deleteItem(itemId, typeToDelete, itemDisplayName, () => loadUserItems(type));
+                    });
+                }
             });
             displayMessage(`Chargement de ${itemsData.length} ${frenchType} réussi.`, 'success');
         } else {

@@ -16,7 +16,7 @@ export function createCarpoolCardElement(data, formatTime) {
     if (data.driver.averageRating && data.driver.averageRating > 0) {
         ratingHtml = `<span class="fs-5">${data.driver.averageRating.toFixed(1)}</span> <i class="bi bi-star-fill text-warning"></i>`;
     } else {
-        ratingHtml = "Ce chauffeur n'a pas encore de note";
+        ratingHtml = "Aucune note.";
     }
 
     wrapper.dataset.id = data.id;

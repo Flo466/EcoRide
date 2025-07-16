@@ -21,7 +21,7 @@ export function createCarpoolDriverCardElement(data) {
     if (data.driver.averageRating && data.driver.averageRating > 0) {
         ratingHtml = `<span class="fs-"6>${data.driver.averageRating.toFixed(1)}</span> <i class="bi bi-star-fill"></i>`;
     } else {
-        ratingHtml = "Ce chauffeur n'a pas encore de note";
+        ratingHtml = "Aucune note";
     }
 
     driverCard.innerHTML = `
