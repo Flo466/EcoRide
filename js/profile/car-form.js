@@ -1,8 +1,14 @@
+// public/js/car-form.js
+
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
 import { sanitizeInput } from '../utils/sanitizer.js';
 
-// --- DOM Elements ---
+// =============================================================================
+// I. Constants and DOM Elements
+// =============================================================================
+
+// DOM Elements
 const carBrandSelect = document.getElementById('carBrand');
 const modelInput = document.getElementById('model');
 const colorInput = document.getElementById('color');
@@ -15,26 +21,34 @@ const seatNmbInvalidFeedback = seatNmbInput ? seatNmbInput.nextElementSibling : 
 const petFriendlySwitch = document.getElementById('petFriendlySwitch');
 const registrationForm = document.getElementById('registrationForm');
 const messageDisplay = document.getElementById('messageDisplay');
-const cancelButton = document.getElementById('cancelButton'); // Référence au bouton Annuler
+const cancelButton = document.getElementById('cancelButton');
 
-// --- Regex Patterns for License Plate Validation ---
-const REGEX_NEW_FORMAT = /^[A-Z]{2}\d{3}[A-Z]{2}$/i;
-const REGEX_OLD_FORMAT_NO_SPACE = /^\d{1,4}[A-Z]{1,2}\d{1,2}$/i;
+// Regex Patterns for License Plate Validation (French formats)
+const REGEX_NEW_FORMAT = /^[A-Z]{2}\d{3}[A-Z]{2}$/i; // e.g., AB123CD
+const REGEX_OLD_FORMAT_NO_SPACE = /^\d{1,4}[A-Z]{1,2}\d{1,2}$/i; // e.g., 1234AB56 or 123AB45
 
-// --- Message Display Utility ---
+// =============================================================================
+// II. Message Display Utility
+// =============================================================================
+
 /**
  * Displays a temporary message in the message box with a type indicator.
  * @param {string} message - Message content to display.
- * @param {'success' | 'danger'} type - Bootstrap alert type for styling.
+ * @param {'success' | 'danger' | 'warning'} type - Bootstrap alert type for styling.
  */
 const displayMessage = (message, type) => {
     if (messageDisplay) {
-        messageDisplay.classList.remove('alert-success', 'alert-danger', 'd-none');
+        messageDisplay.classList.remove('alert-success', 'alert-danger', 'alert-warning', 'd-none');
         messageDisplay.innerHTML = '';
 
-        let iconClass = type === 'success'
-            ? 'bi bi-check-circle-fill'
-            : 'bi bi-x-circle-fill';
+        let iconClass = '';
+        if (type === 'success') {
+            iconClass = 'bi bi-check-circle-fill';
+        } else if (type === 'danger') {
+            iconClass = 'bi bi-x-circle-fill';
+        } else if (type === 'warning') {
+            iconClass = 'bi bi-exclamation-triangle-fill';
+        }
 
         messageDisplay.classList.add(`alert-${type}`);
         messageDisplay.innerHTML = `<i class="${iconClass} me-2"></i>${message}`;
@@ -47,14 +61,18 @@ const displayMessage = (message, type) => {
     }
 };
 
-// --- Validation ---
+// =============================================================================
+// III. Validation Functions
+// =============================================================================
+
 /**
- * Validates the license plate string against accepted formats.
+ * Validates the license plate string against accepted French formats.
  * @param {string} immat - License plate input string.
  * @returns {boolean} - True if valid, false otherwise.
  */
 const validateImmatriculation = (immat) => {
     if (!immat) return false;
+    // Normalize: convert to uppercase and remove spaces/hyphens
     const normalizedImmat = immat.toUpperCase().replace(/[\s-]/g, '');
 
     return REGEX_NEW_FORMAT.test(normalizedImmat) ||
@@ -80,9 +98,10 @@ const handleImmatValidation = () => {
                 return true;
             }
         } else {
+            // If the field is empty, remove all validation styles and hide feedback
             immatInput.classList.remove('is-invalid', 'is-valid');
             immatInvalidFeedback.style.display = 'none';
-            return false;
+            return false; // Or true, depending on whether empty is considered valid by Bootstrap's 'required'
         }
     }
     return false;
@@ -90,6 +109,7 @@ const handleImmatValidation = () => {
 
 /**
  * Validates the number of seats input (1-10, digits only).
+ * Provides immediate feedback via Bootstrap classes.
  * @returns {boolean} - True if valid, false otherwise.
  */
 const validateSeatNumber = () => {
@@ -100,7 +120,7 @@ const validateSeatNumber = () => {
         if (value === '') {
             seatNmbInput.classList.remove('is-invalid', 'is-valid');
             seatNmbInvalidFeedback.style.display = 'none';
-            return false;
+            return false; // Consider empty invalid if 'required' is used in HTML
         }
 
         if (isNaN(numValue) || numValue < 1 || numValue > 10) {
@@ -119,43 +139,47 @@ const validateSeatNumber = () => {
     return false;
 };
 
-// --- Empêcher la saisie non numérique et limiter à 2 chiffres max pour le nombre de places ---
+// Event listeners for seat number input to ensure numeric input and limit length.
 if (seatNmbInput) {
     seatNmbInput.addEventListener('input', (event) => {
-        event.target.value = event.target.value.replace(/[^0-9]/g, '');
+        event.target.value = event.target.value.replace(/[^0-9]/g, ''); // Allow only digits
         if (event.target.value.length > 2) {
-            event.target.value = event.target.value.slice(0, 2);
+            event.target.value = event.target.value.slice(0, 2); // Limit to 2 digits max
         }
-        validateSeatNumber();
+        validateSeatNumber(); // Re-validate on each input
     });
 
     seatNmbInput.addEventListener('paste', (event) => {
         const pasteData = event.clipboardData.getData('text');
-        if (!/^\d*$/.test(pasteData)) {
+        if (!/^\d*$/.test(pasteData)) { // Prevent pasting non-numeric characters
             event.preventDefault();
         }
     });
 
-    seatNmbInput.addEventListener('blur', validateSeatNumber);
+    seatNmbInput.addEventListener('blur', validateSeatNumber); // Validate when input loses focus
 }
 
 /**
- * Formats a date string from YYYY-MM-DD to DD/MM/YYYY.
+ * Formats a date string from YYYY-MM-DD (ISO) to DD/MM/YYYY for backend compatibility.
  * @param {string} dateString - Date string in YYYY-MM-DD format.
- * @returns {string} - Date string in DD/MM/YYYY format, or empty string if invalid.
+ * @returns {string} - Formatted date string in DD/MM/YYYY format, or empty string if invalid.
  */
 const formatDateForBackend = (dateString) => {
     if (!dateString) return '';
-    const parts = dateString.split('-'); // [YYYY, MM, DD]
+    const parts = dateString.split('-'); // Splits "YYYY-MM-DD" into ["YYYY", "MM", "DD"]
     if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+        return `${parts[2]}/${parts[1]}/${parts[0]}`; // Re-arranges to "DD/MM/YYYY"
     }
     return '';
 };
 
-// --- Data Loading ---
+// =============================================================================
+// IV. Data Loading Functions
+// =============================================================================
+
 /**
  * Fetches and populates the car brand dropdown from the backend API.
+ * Requires a user token for authentication.
  */
 const loadCarBrands = async () => {
     try {
@@ -173,7 +197,7 @@ const loadCarBrands = async () => {
         );
 
         if (carBrandSelect) {
-            carBrandSelect.innerHTML = '<option value="" disabled selected>Sélectionnez une marque</option>';
+            carBrandSelect.innerHTML = '<option value="" disabled selected>Sélectionnez une marque</option>'; // Default option
             if (brands && brands.length > 0) {
                 brands.forEach(brand => {
                     const option = document.createElement('option');
@@ -186,16 +210,17 @@ const loadCarBrands = async () => {
             }
         }
     } catch (error) {
+        console.error("Error loading car brands:", error);
         displayMessage("Impossible de charger les marques de voiture.", 'danger');
     }
 };
 
 /**
- * Loads energy types from local JSON file and populates the select dropdown.
+ * Loads energy types from a local JSON file and populates the energy select dropdown.
  */
 const loadEnergyTypes = async () => {
     try {
-        const response = await fetch('js/energy/energy.json');
+        const response = await fetch('js/energy/energy.json'); // Path to the local JSON file
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -203,7 +228,7 @@ const loadEnergyTypes = async () => {
         const energies = await response.json();
 
         if (energySelect) {
-            energySelect.innerHTML = '<option value="" disabled selected>Sélectionnez une énergie</option>';
+            energySelect.innerHTML = '<option value="" disabled selected>Sélectionnez une énergie</option>'; // Default option
             if (energies && energies.length > 0) {
                 energies.forEach(energy => {
                     const option = document.createElement('option');
@@ -216,88 +241,102 @@ const loadEnergyTypes = async () => {
             }
         }
     } catch (error) {
+        console.error("Error loading energy types:", error);
         displayMessage("Impossible de charger les types d'énergie.", 'danger');
     }
 };
 
-// --- Form Submission ---
+// =============================================================================
+// V. Form Submission Handler
+// =============================================================================
+
+// Attach submit event listener to the registration form.
 if (registrationForm) {
     registrationForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
+        event.preventDefault(); // Prevent default form submission
+        event.stopPropagation(); // Stop event propagation
 
+        // Perform all validations
         const isImmatValid = handleImmatValidation();
         const isSeatNmbValid = validateSeatNumber();
 
-        registrationForm.classList.add('was-validated');
+        registrationForm.classList.add('was-validated'); // Trigger Bootstrap's built-in validation styling
 
+        // Check overall form validity, including custom validations
         if (!registrationForm.checkValidity() || !isImmatValid || !isSeatNmbValid) {
             displayMessage("Veuillez corriger les erreurs dans le formulaire.", 'danger');
-            return;
+            return; // Stop if form is invalid
         }
 
         const userToken = localStorage.getItem('userToken');
         if (!userToken) {
             displayMessage("Vous devez être connecté pour enregistrer un véhicule.", 'danger');
-            setTimeout(() => { window.location.href = '/login'; }, 3000);
+            setTimeout(() => { window.location.href = '/login'; }, 3000); // Redirect to login after a delay
             return;
         }
 
+        // Sanitize input values to prevent XSS.
         const sanitizedModel = sanitizeInput(modelInput.value);
         const sanitizedColor = sanitizeInput(colorInput.value);
         const sanitizedLicencePlate = sanitizeInput(immatInput.value);
 
+        // Prepare vehicle data payload.
         const vehicleData = {
             brand_id: carBrandSelect.value,
             model: sanitizedModel,
             color: sanitizedColor,
             energy: energySelect.value,
             licencePlate: sanitizedLicencePlate,
-            firstRegistrationDate: formatDateForBackend(firstImmatInput.value),
-            seats: parseInt(seatNmbInput.value, 10),
-            petsAllowed: petFriendlySwitch.checked,
+            firstRegistrationDate: formatDateForBackend(firstImmatInput.value), // Format date for backend
+            seats: parseInt(seatNmbInput.value, 10), // Ensure seats is an integer
+            petsAllowed: petFriendlySwitch.checked, // Boolean from checkbox
         };
 
         try {
+            // Send vehicle data to the API.
             const response = await fetchApi(
-                `${API_BASE_URL}/api/car/`,
+                `${API_BASE_URL}/api/car/`, // API endpoint for car registration
                 'POST',
                 vehicleData,
                 { 'X-AUTH-TOKEN': userToken }
             );
 
             displayMessage("Véhicule enregistré avec succès ! Redirection vers votre compte...", 'success');
-            registrationForm.reset();
-            registrationForm.classList.remove('was-validated');
-            handleImmatValidation();
-            validateSeatNumber();
+            registrationForm.reset(); // Clear the form
+            registrationForm.classList.remove('was-validated'); // Remove validation styles
+            handleImmatValidation(); // Reset immat validation feedback
+            validateSeatNumber(); // Reset seat number validation feedback
 
+            // Redirect to profile page after successful registration.
             setTimeout(() => {
                 window.location.href = '/profile';
             }, 2000);
 
         } catch (error) {
-            console.error("Erreur détaillée lors de l'enregistrement du véhicule:", error);
+            console.error("Detailed error during vehicle registration:", error);
             const errorMessage = error.message || "Une erreur inconnue est survenue.";
             displayMessage(`Erreur lors de l'enregistrement du véhicule : ${errorMessage}`, 'danger');
         }
     });
 }
 
-// --- Input Event Binding ---
+// =============================================================================
+// VI. Event Bindings and Initial Load
+// =============================================================================
+
+// Event listeners for real-time validation on license plate input.
 if (immatInput) {
-    immatInput.addEventListener('input', handleImmatValidation);
-    immatInput.addEventListener('blur', handleImmatValidation);
+    immatInput.addEventListener('input', handleImmatValidation); // Validate on every input change
+    immatInput.addEventListener('blur', handleImmatValidation);   // Validate when input loses focus
 }
 
-// --- Initial Data Load ---
+// Initial data load for dropdowns when the script runs.
 loadCarBrands();
 loadEnergyTypes();
 
-// Logique pour le bouton Annuler
+// Event listener for the Cancel button.
 if (cancelButton) {
     cancelButton.addEventListener('click', () => {
-        console.log("Clic sur le bouton Annuler. Redirection vers /profile.");
-        window.location.href = '/profile';
+        window.location.href = '/profile'; // Redirect to profile page
     });
 }

@@ -1,6 +1,14 @@
 import Car from './Car.js';
+// Assume Review class exists and is imported if reviews are mapped
+// import Review from './Review.js'; 
 
+/**
+ * Represents a User entity with properties initialized from provided data.
+ */
 class User {
+    /**
+     * @param {object} data - The data object to construct a User.
+     */
     constructor(data = {}) {
         this.id = data.id ?? null;
         this.email = data.email ?? null;
@@ -19,15 +27,20 @@ class User {
         this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : null;
         this.apiToken = data.apiToken ?? null;
 
+        // Relationships and nested objects
         this.configurations = data.configurations ?? [];
-        this.reviews = data.reviews ?? [];
+        // Ensure reviews are instances of Review, if Review class is available
         this.reviews = Array.isArray(data.reviews) ? data.reviews.map(reviewData => new Review(reviewData)) : [];
-        this.carpooling = data.carpooling ?? [];
-        this.cars = data.cars ?? [];
+        this.carpooling = data.carpooling ?? []; // Assuming this refers to carpooling instances
+        this.cars = data.cars ?? []; // Assuming this refers to car instances
 
-        this.carUsed = data.carUsed ? new Car(data.carUsed) : null;
+        this.carUsed = data.carUsed ? new Car(data.carUsed) : null; // Instance of Car model
     }
 
+    /**
+     * Calculates the average rating from user's reviews.
+     * @returns {number} - The average rating, or 0 if no reviews.
+     */
     get averageRating() {
         if (!this.reviews || this.reviews.length === 0) {
             return 0;
@@ -36,4 +49,5 @@ class User {
         return totalRating / this.reviews.length;
     }
 }
+
 export { User };

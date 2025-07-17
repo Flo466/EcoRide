@@ -59,10 +59,13 @@ final class SecurityController extends AbstractController
                 content: new OA\JsonContent(
                     type: "object",
                     properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
+                        new OA\Property(property: "email", type: "string", example: "adresse@email.com"),
                         new OA\Property(property: "user", type: "string", example: "Nom d'utilisateur"),
                         new OA\Property(property: "firstName", type: "string", example: "User fisrt name"),
                         new OA\Property(property: "lastName", type: "string", example: "User last name"),
                         new OA\Property(property: "apiToken", type: "string", example: "31a023e212f116124a36af14ea0c1c3806eb9378"),
+                        new OA\Property(property: "credits", type: "integer", example: 20),
                         new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string", example: "ROLE_USER")),
                     ]
                 )
@@ -125,8 +128,11 @@ final class SecurityController extends AbstractController
                 content: new OA\JsonContent(
                     type: "object",
                     properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
                         new OA\Property(property: "user", type: "string", example: "Nom d'utilisateur"),
+                        new OA\Property(property: "email", type: "string", example: "adresse@email.com"),
                         new OA\Property(property: "apiToken", type: "string", example: "31a023e212f116124a36af14ea0c1c3806eb9378"),
+                        new OA\Property(property: "credits", type: "integer", example: 50),
                         new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string", example: "ROLE_USER")),
                     ]
                 )
@@ -151,16 +157,21 @@ final class SecurityController extends AbstractController
             return new JsonResponse(['message' => 'Incorrect credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
+        // Force user entity refresh to ensure latest data, especially credits
+        $this->manager->refresh($user);
+
         return new JsonResponse([
             'id' => $user->getId(),
             'user' => $user->getUserIdentifier(),
             'email' => $user->getEmail(),
             'apiToken' => $user->getApiToken(),
+            'credits' => $user->getCredits(), // Ajouté ici
             'roles' => $user->getRoles(),
         ], Response::HTTP_OK);
     }
 
     // Account/me route / API Doc
+    // Cette route sert de "check-auth" car elle est protégée par IsGranted et retourne les infos de l'utilisateur
     #[Route('/account/me', name: 'me', methods: ['GET'])]
     #[OA\Get(
         path: "/api/account/me",
@@ -179,6 +190,7 @@ final class SecurityController extends AbstractController
                 new OA\Property(property: "createdAt", type: "string", format: "date-time"),
                 new OA\Property(property: "updatedAt", type: "string", format: "date-time"),
                 new OA\Property(property: "apiToken", type: "string", example: "abcdef1234567890"),
+                new OA\Property(property: "credits", type: "integer", example: 50), // Ajouté ici
                 new OA\Property(property: "hasAvatar", type: "boolean", example: true),
                 new OA\Property(property: "isDriver", type: "boolean", example: false),
             ]
@@ -189,18 +201,22 @@ final class SecurityController extends AbstractController
         description: "Unauthorized"
     )]
 
-    // Me function
+    // Me function (serves as check-auth)
     #[IsGranted('ROLE_USER')]
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
-            return new JsonResponse(['message' => 'Missing credentials'], Response::HTTP_UNAUTHORIZED);
+            // Cette condition est techniquement redondante avec #[IsGranted('ROLE_USER')]
+            // car si l'utilisateur n'est pas trouvé par #[CurrentUser], IsGranted aurait déjà renvoyé 401.
+            // Cependant, la laisser ne fait pas de mal pour la clarté.
+            return new JsonResponse(['message' => 'Missing credentials or user not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Force user entity refresh to ensure latest data
+        // Force user entity refresh to ensure latest data (très important pour les crédits !)
         $this->manager->refresh($user);
 
         // Ensure 'user:read' group is defined on properties to expose in User entity
+        // Tu devras t'assurer que 'credits' est exposé dans ce groupe de sérialisation si tu utilises des groupes.
         $userData = json_decode(
             $this->serializer->serialize(
                 $user,
@@ -210,9 +226,13 @@ final class SecurityController extends AbstractController
             true
         );
 
+        // Ajout explicite des crédits si non inclus par les groupes de sérialisation
+        if (!isset($userData['credits'])) {
+            $userData['credits'] = $user->getCredits();
+        }
+
         $userData['hasAvatar'] = $user->getPhoto() !== null;
         $userData['isDriver'] = $user->isDriver();
-
 
         return new JsonResponse(
             $userData,
@@ -407,6 +427,7 @@ final class SecurityController extends AbstractController
                 new OA\Property(property: "createdAt", type: "string", format: "date-time"),
                 new OA\Property(property: "updatedAt", type: "string", format: "date-time"),
                 new OA\Property(property: "apiToken", type: "string", example: "abcdef1234567890"),
+                new OA\Property(property: "credits", type: "integer", example: 50), // Ajouté ici
             ]
         )
     )]
@@ -434,15 +455,21 @@ final class SecurityController extends AbstractController
 
         $this->manager->flush();
 
-        return new JsonResponse(
-            json_decode(
-                $this->serializer->serialize(
-                    $user,
-                    'json',
-                    ['groups' => ['user:read']]
-                ),
-                true
+        // Ajout explicite des crédits si non inclus par les groupes de sérialisation
+        $serializedUserData = json_decode(
+            $this->serializer->serialize(
+                $user,
+                'json',
+                ['groups' => ['user:read']]
             ),
+            true
+        );
+        if (!isset($serializedUserData['credits'])) {
+            $serializedUserData['credits'] = $user->getCredits();
+        }
+
+        return new JsonResponse(
+            $serializedUserData,
             Response::HTTP_OK
         );
     }

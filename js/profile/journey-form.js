@@ -1,9 +1,13 @@
-// js/journey-form.js
+// public/js/journey-form.js
 
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
 
-// --- DOM Elements ---
+// =============================================================================
+// I. Constants and DOM Elements
+// =============================================================================
+
+// DOM Elements
 const registrationForm = document.getElementById('registrationForm');
 const departureCitySelect = document.getElementById('departureCity');
 const departureDateInput = document.getElementById('departureDate');
@@ -17,10 +21,10 @@ const enterVehicleFormBtn = document.getElementById('enterVehicleFormBtn');
 const cancelButton = document.getElementById('cancelButton');
 const messageDisplay = document.getElementById('messageDisplay');
 
-// --- Global variable to store fetched vehicles ---
+// Global variable to store fetched vehicles.
 let userVehicles = [];
 
-// --- Constants ---
+// User-facing messages (kept in French)
 const MESSAGES = {
     FORM_VALIDATION_ERROR: "Veuillez corriger les erreurs dans le formulaire.",
     PRICE_RANGE_ERROR: "Le prix doit être un chiffre entre 1 et 50.",
@@ -31,71 +35,68 @@ const MESSAGES = {
     JOURNEY_CREATION_ERROR: (msg) => `Erreur lors de la proposition du voyage : ${msg}`,
     AUTH_REQUIRED: "Vous devez être connecté pour proposer un voyage. Redirection...",
     TOKEN_MISSING: "Jeton utilisateur manquant. Redirection vers la page de connexion.",
-    SERVER_ERROR: "Erreur serveur. Veuillez réessayer plus tard."
+    SERVER_ERROR: "Erreur serveur. Veuillez réessayer plus tard.",
+    INVALID_CAR_SELECTED: "Veuillez sélectionner un véhicule valide.",
+    SEATS_NOT_DETERMINED: "Impossible de déterminer le nombre de places pour le véhicule sélectionné. Veuillez réessayer."
 };
 
-// --- Fonctions utilitaires ---
+// =============================================================================
+// II. Utility Functions
+// =============================================================================
 
 /**
- * Affiche un message temporaire dans la boîte dédiée.
- * @param {string} message Le message texte à afficher.
- * @param {'success' | 'danger' | 'info'} type The type of message ('success' for green, 'danger' for red, 'info' for blue).
- * @param {HTMLElement} targetDisplay L'élément DOM où afficher le message (par défaut messageDisplay).
+ * Displays a temporary message in the dedicated box.
+ * @param {string} message - The text message to display.
+ * @param {'success' | 'danger' | 'info'} type - The type of message.
+ * @param {HTMLElement} targetDisplay - The DOM element to display the message (defaults to messageDisplay).
  */
 const displayMessage = (message, type, targetDisplay = messageDisplay) => {
-    if (targetDisplay) {
-        targetDisplay.classList.remove('alert-success', 'alert-danger', 'alert-info', 'd-none');
-        targetDisplay.innerHTML = '';
-
-        let iconClass = '';
-        if (type === 'success') {
-            targetDisplay.classList.add('alert-success');
-            iconClass = 'bi bi-check-circle-fill';
-        } else if (type === 'danger') {
-            targetDisplay.classList.add('alert-danger');
-            iconClass = 'bi bi-x-circle-fill';
-        } else if (type === 'info') {
-            targetDisplay.classList.add('alert-info');
-            iconClass = 'bi bi-info-circle-fill';
-        }
-
-        targetDisplay.innerHTML = `<i class="${iconClass} me-2"></i>${message}`;
-        targetDisplay.classList.remove('d-none');
-
-        setTimeout(() => {
-            targetDisplay.classList.add('d-none');
-            targetDisplay.innerHTML = '';
-        }, 5000);
-    } else {
-        console.error('displayMessage: targetDisplay est null ou undefined. Message:', message);
+    if (!targetDisplay) {
+        console.error('displayMessage: targetDisplay is null or undefined. Message:', message);
+        return;
     }
+
+    targetDisplay.classList.remove('alert-success', 'alert-danger', 'alert-info', 'd-none');
+    targetDisplay.innerHTML = '';
+
+    let iconClass = '';
+    if (type === 'success') {
+        targetDisplay.classList.add('alert-success');
+        iconClass = 'bi bi-check-circle-fill';
+    } else if (type === 'danger') {
+        targetDisplay.classList.add('alert-danger');
+        iconClass = 'bi bi-x-circle-fill';
+    } else if (type === 'info') {
+        targetDisplay.classList.add('alert-info');
+        iconClass = 'bi bi-info-circle-fill';
+    }
+
+    targetDisplay.innerHTML = `<i class="${iconClass} me-2"></i>${message}`;
+    targetDisplay.classList.remove('d-none');
+
+    setTimeout(() => {
+        targetDisplay.classList.add('d-none');
+        targetDisplay.innerHTML = '';
+    }, 5000);
 };
 
-// --- Fonctions de chargement des données ---
+// =============================================================================
+// III. Data Loading Functions
+// =============================================================================
 
 /**
- * Récupère les villes depuis le fichier JSON local et peuple les éléments de sélection.
+ * Fetches cities from a local JSON file and populates the city select elements.
  */
 const fetchAndPopulateCities = async () => {
     try {
         const response = await fetch('/js/cities/cities.json');
         if (!response.ok) {
-            throw new Error(`Erreur HTTP ! Statut: ${response.status}`);
+            throw new Error(`HTTP Error! Status: ${response.status}`);
         }
-        let cities = await response.json(); // Utilise 'let' car nous allons modifier ce tableau
+        let cities = await response.json();
 
-        // --- Tri alphabétique des villes ---
-        cities.sort((a, b) => {
-            const nameA = a.nom.toUpperCase(); // Convertit en majuscules pour un tri insensible à la casse
-            const nameB = b.nom.toUpperCase();
-            if (nameA < nameB) {
-                return -1;
-            }
-            if (nameA > nameB) {
-                return 1;
-            }
-            return 0; // Noms identiques
-        });
+        // Sort cities alphabetically.
+        cities.sort((a, b) => a.nom.localeCompare(b.nom));
 
         if (cities && cities.length > 0) {
             cities.forEach(city => {
@@ -110,19 +111,19 @@ const fetchAndPopulateCities = async () => {
                 arrivalCitySelect.appendChild(optionArr);
             });
         } else {
-            console.warn("Aucune ville trouvée ou format de réponse invalide.");
+            console.warn("No cities found or invalid response format.");
             displayMessage(MESSAGES.FETCH_CITIES_ERROR, 'danger');
         }
     } catch (error) {
-        console.error("Erreur lors du chargement des villes:", error);
+        console.error("Error loading cities:", error);
         displayMessage(MESSAGES.FETCH_CITIES_ERROR, 'danger');
     }
 };
 
 /**
- * Récupère les véhicules enregistrés par l'utilisateur et peuple l'élément de sélection des véhicules.
- * Active/désactive le sélecteur et le bouton en fonction de la disponibilité des véhicules.
- * Stocke les véhicules récupérés dans `userVehicles`.
+ * Fetches user's registered vehicles and populates the vehicle select element.
+ * Enables/disables the selector and button based on vehicle availability.
+ * Stores fetched vehicles in `userVehicles` global variable.
  */
 const fetchAndPopulateVehicles = async () => {
     const userToken = localStorage.getItem('userToken');
@@ -140,13 +141,12 @@ const fetchAndPopulateVehicles = async () => {
             { 'X-AUTH-TOKEN': userToken }
         );
 
-        userVehicles = vehicles;
+        userVehicles = vehicles; // Store fetched vehicles.
 
         if (userVehicles && userVehicles.length > 0) {
             carSelect.disabled = false;
             enterVehicleFormBtn.classList.add('d-none');
-
-            carSelect.innerHTML = '<option value="" disabled selected>Sélectionnez un véhicule</option>';
+            carSelect.innerHTML = '<option value="" disabled selected>Sélectionnez un véhicule</option>'; // Default option
 
             userVehicles.forEach(car => {
                 const option = document.createElement('option');
@@ -155,16 +155,14 @@ const fetchAndPopulateVehicles = async () => {
                 option.textContent = `${brandName} ${car.model} (${car.licencePlate})`;
                 carSelect.appendChild(option);
             });
-            console.log("Véhicules chargés et sélecteur activé.");
         } else {
             carSelect.disabled = true;
             carSelect.innerHTML = '<option value="" disabled selected>Aucun véhicule enregistré</option>';
             enterVehicleFormBtn.classList.remove('d-none');
             displayMessage(MESSAGES.NO_VEHICLES_REGISTERED, 'info');
-            console.log("Aucun véhicule enregistré. Sélecteur désactivé, bouton 'Saisir un véhicule' activé.");
         }
     } catch (error) {
-        console.error("Erreur lors du chargement des véhicules:", error);
+        console.error("Error loading vehicles:", error);
         displayMessage(MESSAGES.FETCH_VEHICLES_ERROR, 'danger');
         carSelect.disabled = true;
         enterVehicleFormBtn.classList.remove('d-none');
@@ -174,10 +172,12 @@ const fetchAndPopulateVehicles = async () => {
     }
 };
 
-// --- Gestion du formulaire ---
+// =============================================================================
+// IV. Form Submission Handling
+// =============================================================================
 
 /**
- * Gère la soumission du formulaire pour ajouter un nouveau voyage.
+ * Handles the form submission for adding a new journey.
  */
 const handleJourneySubmission = async (event) => {
     event.preventDefault();
@@ -197,60 +197,49 @@ const handleJourneySubmission = async (event) => {
         return;
     }
 
-    // --- Validation explicite du prix ---
+    // Explicit price validation.
     const priceValue = parseFloat(priceInput.value);
     if (isNaN(priceValue) || priceValue < 1 || priceValue > 50) {
-        // Applique les classes d'erreur de Bootstrap pour le champ prix
         priceInput.classList.add('is-invalid');
-        priceInput.nextElementSibling.textContent = MESSAGES.PRICE_RANGE_ERROR; // Met à jour le message d'erreur
+        priceInput.nextElementSibling.textContent = MESSAGES.PRICE_RANGE_ERROR;
         displayMessage(MESSAGES.PRICE_RANGE_ERROR, 'danger');
         return;
     } else {
-        // Réinitialise les classes d'erreur si la validation passe
         priceInput.classList.remove('is-invalid');
         priceInput.classList.add('is-valid');
     }
-    // --- Fin validation explicite du prix ---
-
 
     const selectedCarId = parseInt(carSelect.value, 10);
     const selectedCar = userVehicles.find(car => car.id === selectedCarId);
 
     if (!selectedCar) {
-        displayMessage("Veuillez sélectionner un véhicule valide.", 'danger');
+        displayMessage(MESSAGES.INVALID_CAR_SELECTED, 'danger');
         return;
     }
 
     const availableSeats = selectedCar.seats || selectedCar.numberOfSeats;
     if (typeof availableSeats === 'undefined' || availableSeats === null) {
-        console.error("Le véhicule sélectionné n'a pas de propriété 'seats' ou 'numberOfSeats'.", selectedCar);
-        displayMessage("Impossible de déterminer le nombre de places pour le véhicule sélectionné. Veuillez réessayer.", 'danger');
+        console.error("Selected vehicle does not have 'seats' or 'numberOfSeats' property.", selectedCar);
+        displayMessage(MESSAGES.SEATS_NOT_DETERMINED, 'danger');
         return;
     }
 
-    // --- MODIFICATION ICI : Envoi des dates et heures séparément ---
-    const departureDate = departureDateInput.value; // Format YYYY-MM-DD
-    const departureTime = `${departureTimeInput.value}:00`; // Format HH:MM:SS (ajoute les secondes)
-    const arrivalDate = arrivalDateInput.value; // Format YYYY-MM-DD
-    const arrivalTime = `${arrivalTimeInput.value}:00`; // Format HH:MM:SS (ajoute les secondes)
-
+    // Prepare journey data for API.
     const journeyData = {
         departurePlace: departureCitySelect.value,
         arrivalPlace: arrivalCitySelect.value,
-        departureDate: departureDate, // Champ séparé
-        departureTime: departureTime, // Champ séparé
-        arrivalDate: arrivalDate,     // Champ séparé
-        arrivalTime: arrivalTime,     // Champ séparé
+        departureDate: departureDateInput.value,
+        departureTime: `${departureTimeInput.value}:00`, // Add seconds for HH:MM:SS format
+        arrivalDate: arrivalDateInput.value,
+        arrivalTime: `${arrivalTimeInput.value}:00`, // Add seconds for HH:MM:SS format
         car: selectedCarId,
         pricePerPassenger: priceValue,
         availableSeats: availableSeats
     };
 
-    console.log('Données du voyage soumises:', journeyData);
-
     try {
         const response = await fetchApi(
-            `${API_BASE_URL}/api/carpoolings`, // Correction de l'URL si nécessaire (pas de slash final)
+            `${API_BASE_URL}/api/carpoolings`,
             'POST',
             journeyData,
             { 'X-AUTH-TOKEN': userToken }
@@ -265,18 +254,19 @@ const handleJourneySubmission = async (event) => {
             const errorMessage = response.message || MESSAGES.SERVER_ERROR;
             displayMessage(MESSAGES.JOURNEY_CREATION_ERROR(errorMessage), 'danger');
         }
-
     } catch (error) {
-        console.error("Erreur lors de la création du voyage:", error);
+        console.error("Error creating journey:", error);
         const apiErrorMessage = error.message || MESSAGES.SERVER_ERROR;
         displayMessage(MESSAGES.JOURNEY_CREATION_ERROR(apiErrorMessage), 'danger');
     }
 };
 
-// --- Gestion des dates ---
+// =============================================================================
+// V. Date Handling Functions
+// =============================================================================
 
 /**
- * Définit la date minimale pour le départ et l'arrivée à aujourd'hui.
+ * Sets the minimum date for departure and arrival inputs to today's date.
  */
 const setMinDates = () => {
     const today = new Date();
@@ -289,9 +279,8 @@ const setMinDates = () => {
     arrivalDateInput.min = minDate;
 };
 
-
 /**
- * Écouteur d'événement pour le changement de la date de départ afin de s'assurer que la date d'arrivée n'est pas antérieure à la date de départ.
+ * Event listener for departure date change to ensure arrival date is not earlier than departure date.
  */
 const handleDepartureDateChange = () => {
     arrivalDateInput.min = departureDateInput.value;
@@ -301,7 +290,7 @@ const handleDepartureDateChange = () => {
 };
 
 /**
- * Écouteur d'événement pour le changement de la date d'arrivée afin de s'assurer que la date de départ n'est pas postérieure à la date d'arrivée.
+ * Event listener for arrival date change to ensure departure date is not later than arrival date.
  */
 const handleArrivalDateChange = () => {
     if (departureDateInput.value > arrivalDateInput.value) {
@@ -310,24 +299,20 @@ const handleArrivalDateChange = () => {
     departureDateInput.max = arrivalDateInput.value;
 };
 
+// =============================================================================
+// VI. Initialization
+// =============================================================================
 
-// --- Initialisation ---
-// Utilisation d'une fonction asynchrone auto-exécutante pour remplacer DOMContentLoaded
+// Self-executing async function for initialization when the script loads.
 (async () => {
     setMinDates();
-    await fetchAndPopulateCities(); // Utilise await car c'est une opération asynchrone
-    await fetchAndPopulateVehicles(); // Utilise await car c'est une opération asynchrone
+    await fetchAndPopulateCities();
+    await fetchAndPopulateVehicles();
 
+    // Event listeners.
     registrationForm.addEventListener('submit', handleJourneySubmission);
-
-    cancelButton.addEventListener('click', () => {
-        window.location.href = '/profile';
-    });
-
-    enterVehicleFormBtn.addEventListener('click', () => {
-        window.location.href = '/car-form';
-    });
-
+    cancelButton.addEventListener('click', () => { window.location.href = '/profile'; });
+    enterVehicleFormBtn.addEventListener('click', () => { window.location.href = '/car-form'; });
     departureDateInput.addEventListener('change', handleDepartureDateChange);
     arrivalDateInput.addEventListener('change', handleArrivalDateChange);
 })();
