@@ -1,4 +1,3 @@
-// public/js/utils/sanitizer.js
 
 /**
  * Cleans a string to reduce the risk of basic XSS injection.

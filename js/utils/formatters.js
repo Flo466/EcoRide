@@ -1,5 +1,3 @@
-// public/js/utils/date-formatter.js
-
 /**
  * Formats an ISO 8601 string to a French time string (HH:MM).
  * @param {string} isoString - The ISO 8601 date string (e.g., "2025-07-17T10:30:00Z").

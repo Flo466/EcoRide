@@ -1,4 +1,3 @@
-// src/templates/myJourneysCardContent.js
 
 // =============================================================================
 // I. Constants and Messages
@@ -6,9 +5,9 @@
 
 // User-facing messages
 const MESSAGES = {
-  DRIVER_BADGE: 'Chauffeur',
-  PASSENGER_BADGE: 'Passager',
-  DELETE_BUTTON_TEXT: 'Supprimer'
+    DRIVER_BADGE: 'Chauffeur',
+    PASSENGER_BADGE: 'Passager',
+    DELETE_BUTTON_TEXT: 'Supprimer'
 };
 
 // =============================================================================
@@ -26,26 +25,26 @@ const MESSAGES = {
  * @returns {HTMLElement} The wrapper div containing the journey card.
  */
 export function createJourneyCardElement(carpooling, formatDateToFrench, formatTime) {
-  // Console logs for debugging the carpooling object and user role.
-  console.log('Carpooling object received in createJourneyCardElement:', carpooling);
-  console.log('Value of isCurrentUserDriver:', carpooling.isCurrentUserDriver);
+    // Console logs for debugging the carpooling object and user role.
+    console.log('Carpooling object received in createJourneyCardElement:', carpooling);
+    console.log('Value of isCurrentUserDriver:', carpooling.isCurrentUserDriver);
 
-  // Create the main wrapper for the card, ensuring proper layout.
-  const wrapper = document.createElement('div');
-  wrapper.className = 'col-12 col-md-6 mb-4 d-flex justify-content-center';
+    // Create the main wrapper for the card, ensuring proper layout.
+    const wrapper = document.createElement('div');
+    wrapper.className = 'col-12 col-md-6 mb-4 d-flex justify-content-center';
 
-  // Create the card element itself with styling.
-  const card = document.createElement('div');
-  card.className = 'detail-card card shadow-sm animate-fade-in';
-  card.style.width = '90%';
+    // Create the card element itself with styling.
+    const card = document.createElement('div');
+    card.className = 'detail-card card shadow-sm animate-fade-in';
+    card.style.width = '90%';
 
-  // Format date and time strings using the provided utility functions.
-  const departureDateFormatted = formatDateToFrench(carpooling.departureDate);
-  const departureTimeFormatted = formatTime(carpooling.departureTime);
-  const arrivalTimeFormatted = formatTime(carpooling.arrivalTime);
+    // Format date and time strings using the provided utility functions.
+    const departureDateFormatted = formatDateToFrench(carpooling.departureDate);
+    const departureTimeFormatted = formatTime(carpooling.departureTime);
+    const arrivalTimeFormatted = formatTime(carpooling.arrivalTime);
 
-  // Determine the user's role (driver or passenger) and set the corresponding badge HTML.
-  const driverIndicator = carpooling.isCurrentUserDriver ? `
+    // Determine the user's role (driver or passenger) and set the corresponding badge HTML.
+    const driverIndicator = carpooling.isCurrentUserDriver ? `
         <span class="badge bg-primary driver-badge">
             ${MESSAGES.DRIVER_BADGE}
         </span>` : `
@@ -53,9 +52,9 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
             ${MESSAGES.PASSENGER_BADGE}
         </span>`;
 
-  // Set the inner HTML of the card using a template literal for easy content insertion.
-  // This includes formatted dates/times, driver/passenger indicator, and action buttons.
-  card.innerHTML = `
+    // Set the inner HTML of the card using a template literal for easy content insertion.
+    // This includes formatted dates/times, driver/passenger indicator, and action buttons.
+    card.innerHTML = `
         <div class="card-body pb-0">
             <div class="mb-2 text-start d-flex align-items-center">
                 <h1 class="mb-0 ms-2 date">${departureDateFormatted}</h1>
@@ -82,7 +81,7 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
         </div>
     `;
 
-  // Append the created card to the wrapper and return the wrapper.
-  wrapper.appendChild(card);
-  return wrapper; // Event listeners for buttons will be attached externally.
+    // Append the created card to the wrapper and return the wrapper.
+    wrapper.appendChild(card);
+    return wrapper; // Event listeners for buttons will be attached externally.
 }

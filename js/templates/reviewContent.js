@@ -1,4 +1,3 @@
-// public/js/utils/review-display.js
 
 // =============================================================================
 // I. Constants and Messages

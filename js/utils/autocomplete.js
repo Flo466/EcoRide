@@ -1,5 +1,3 @@
-// public/js/utils/autocomplete.js
-
 /**
  * Sets up autocomplete functionality for a given input element.
  * Displays suggestions from a provided data array as the user types.

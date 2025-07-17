@@ -1,5 +1,3 @@
-// public/js/detail-carpooling.js
-
 import { fetchApi } from './api/fetch.js';
 import { API_BASE_URL } from './config.js';
 import { Carpooling } from './models/Carpooling.js';

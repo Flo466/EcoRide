@@ -1,5 +1,3 @@
-// public/js/home.js
-
 import { sanitizeInput } from '../js/utils/sanitizer.js';
 import { setupAutocomplete } from './utils/autocomplete.js';
 

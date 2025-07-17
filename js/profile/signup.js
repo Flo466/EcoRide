@@ -1,4 +1,3 @@
-// public/js/account/signup.js
 
 import { fetchApi } from '../api/fetch.js';
 import { sanitizeInput } from '../utils/sanitizer.js';

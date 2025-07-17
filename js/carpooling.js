@@ -1,4 +1,3 @@
-// public/js/search-carpooling.js
 
 import { fetchApi } from './api/fetch.js';
 import { API_BASE_URL } from './config.js';

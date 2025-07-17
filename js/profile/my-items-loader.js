@@ -1,4 +1,3 @@
-// src/js/profile/my-items-loader.js
 
 import { loadUserItems } from './my-items-list.js';
 

@@ -1,4 +1,3 @@
-// src/templates/carpoolingDetailCardContent.js
 
 // =============================================================================
 // I. Constants and Messages
