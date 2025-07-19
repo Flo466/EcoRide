@@ -459,20 +459,38 @@ select:focus {
 }
 
 .driver-name-rating {
+  // Par défaut (mobile), les éléments sont en colonne.
+  // Géré par flex-column dans le HTML (via JS).
   display: flex;
+  /* Toujours display flex pour que flex-direction s'applique */
   flex-direction: column;
+  /* Force la colonne sur mobile */
   justify-content: center;
+  /* Centre le contenu horizontalement en mode colonne */
+  align-items: flex-start;
+  /* Aligne le texte au début sur mobile pour éviter le centrage par flexbox si besoin */
+  gap: 0;
+  /* Pas de gap entre les lignes sur mobile par défaut */
 }
 
 @media (min-width: 992px) {
 
   .driver-name-rating {
+    // Sur desktop, les éléments sont en ligne.
+    // Géré par flex-md-row dans le HTML (via JS).
     flex-direction: row;
-    align-items: center;
+    /* Force la ligne sur desktop */
+    align-items: baseline;
+    /* Important pour aligner texte et chiffre/icône sur la même ligne de base */
+    gap: 0.5rem;
+    /* Ajout d'un petit espacement entre le nom et la note sur desktop */
   }
 
   .driver-rating {
-    margin-left: 40px;
+    // La marge est maintenant gérée par `ms-md-2` dans le JS
+    // ou par le `gap` du parent.
+    // On s'assure qu'il n'y a pas de marge résiduelle ici.
+    margin-left: 0 !important;
   }
 
   .driver-car-details {

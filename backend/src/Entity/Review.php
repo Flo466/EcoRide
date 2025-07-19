@@ -38,7 +38,7 @@ class Review
     private ?User $user = null;
 
     // User who receives the review (target, e.g., driver)
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'receivedReviews')]
     #[ORM\JoinColumn(name: "reviewed_user_id", referencedColumnName: "id", nullable: false)]
     #[Groups(['review:read', 'review:write'])]
     #[MaxDepth(1)]

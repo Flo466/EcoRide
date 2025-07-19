@@ -55,7 +55,7 @@ export function createCarpoolDetailCardElement(data, formatDateToFrench, formatT
                     </div>
                 </div>
                 <div class="d-flex justify-content-end align-items-center">
-                    <div class="detail-price">${data.pricePerPerson.toFixed(2)}</div>
+                    <div class="detail-price">${data.pricePerPerson}</div>
                     <div class="detail-currency-icon"><i class="bi bi-coin"></i></div>
                 </div>
             </div>

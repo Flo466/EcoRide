@@ -12383,17 +12383,28 @@ select:focus {
 
 .driver-name-rating {
   display: flex;
+  /* Toujours display flex pour que flex-direction s'applique */
   flex-direction: column;
+  /* Force la colonne sur mobile */
   justify-content: center;
+  /* Centre le contenu horizontalement en mode colonne */
+  align-items: flex-start;
+  /* Aligne le texte au début sur mobile pour éviter le centrage par flexbox si besoin */
+  gap: 0;
+  /* Pas de gap entre les lignes sur mobile par défaut */
 }
 
 @media (min-width: 992px) {
   .driver-name-rating {
     flex-direction: row;
-    align-items: center;
+    /* Force la ligne sur desktop */
+    align-items: baseline;
+    /* Important pour aligner texte et chiffre/icône sur la même ligne de base */
+    gap: 0.5rem;
+    /* Ajout d'un petit espacement entre le nom et la note sur desktop */
   }
   .driver-rating {
-    margin-left: 40px;
+    margin-left: 0 !important;
   }
   .driver-car-details {
     display: flex;

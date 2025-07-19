@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\DBAL\Types\Types;
+use App\Enum\ReviewStatus;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -85,9 +86,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read'])]
     private ?string $apiToken = null;
 
-    /**
-     * NOUVEAU CHAMP : Pour le statut de chauffeur
-     */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     #[Groups(['user:read', 'user:write'])]
     private ?bool $isDriver = false;
@@ -103,8 +101,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Review>
      */
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user', orphanRemoval: true)]
-    #[Groups(['user:read'])]
     private Collection $reviews;
+
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(mappedBy: 'reviewedUser', targetEntity: Review::class)]
+    private Collection $receivedReviews;
 
     /**
      * @var Collection<int, Car>
@@ -128,6 +131,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->configurations = new ArrayCollection();
         $this->reviews = new ArrayCollection();
+        $this->receivedReviews = new ArrayCollection();
         $this->cars = new ArrayCollection();
         $this->carpoolingUsers = new ArrayCollection();
         $this->createdAt = new DateTimeImmutable();
@@ -152,31 +156,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // ensure they all have at least ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -184,9 +176,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -199,14 +188,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
-    public function eraseCredentials(): void
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
-    }
+    public function eraseCredentials(): void {}
 
     public function getLastName(): ?string
     {
@@ -286,7 +268,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // MODIFICATION ICI : Ajout de fseek pour rembobiner le flux
     #[Groups(['user:read', 'carpooling:read'])]
     public function getPhotoBase64(): ?string
     {
@@ -296,11 +277,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         $photoContent = null;
         if (is_resource($this->photo)) {
-            // Rembobine le pointeur du flux au début avant de lire
             fseek($this->photo, 0);
             $photoContent = stream_get_contents($this->photo);
         } elseif (is_string($this->photo)) {
-            // Si c'est déjà une chaîne (par exemple, si Doctrine a déjà hydraté le BLOB en string)
             $photoContent = $this->photo;
         }
 
@@ -348,7 +327,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
 
     public function getCredits(): ?int
     {
@@ -431,7 +409,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeConfiguration(Configuration $configuration): static
     {
         if ($this->configurations->removeElement($configuration)) {
-            // set the owning side to null (unless already changed)
             if ($configuration->getUser() === $this) {
                 $configuration->setUser(null);
             }
@@ -461,9 +438,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeReview(Review $review): static
     {
         if ($this->reviews->removeElement($review)) {
-            // set the owning side to null (unless already changed)
             if ($review->getUser() === $this) {
                 $review->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReceivedReviews(): Collection
+    {
+        return $this->receivedReviews;
+    }
+
+    public function addReceivedReview(Review $review): static
+    {
+        if (!$this->receivedReviews->contains($review)) {
+            $this->receivedReviews->add($review);
+            $review->setReviewedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceivedReview(Review $review): static
+    {
+        if ($this->receivedReviews->removeElement($review)) {
+            if ($review->getReviewedUser() === $this) {
+                $review->setReviewedUser(null);
             }
         }
 
@@ -491,7 +496,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCar(Car $car): static
     {
         if ($this->cars->removeElement($car)) {
-            // set the owning side to null (unless already changed)
             if ($car->getUser() === $this) {
                 $car->setUser(null);
             }
@@ -521,12 +525,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
     {
         if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
-            // set the owning side to null (unless already changed)
             if ($carpoolingUser->getUser() === $this) {
                 $carpoolingUser->setUser(null);
             }
         }
 
         return $this;
+    }
+
+    #[Groups(['user:read', 'carpooling:read', 'review:read'])]
+    public function getAverageRating(): ?float
+    {
+        $approvedReviews = $this->receivedReviews->filter(function (Review $review) {
+            return $review->getStatus() === \App\Enum\ReviewStatus::APPROVED;
+        });
+
+        if ($approvedReviews->isEmpty()) {
+            return null;
+        }
+
+        $totalRating = array_sum(
+            $approvedReviews->map(fn(Review $review) => $review->getRatting())->toArray()
+        );
+
+        return round($totalRating / $approvedReviews->count(), 1);
     }
 }

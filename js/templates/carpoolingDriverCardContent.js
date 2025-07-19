@@ -1,4 +1,3 @@
-
 // =============================================================================
 // I. Constants and Messages
 // =============================================================================
@@ -9,7 +8,7 @@ const FALLBACK_DRIVER_NAME = 'Conducteur';
 const MESSAGES = {
     JOURNEY_PROPOSED_BY: 'Trajet proposé par',
     CAR_BRAND_NOT_SPECIFIED: 'Non renseignée',
-    NO_RATING: 'Aucune note',
+    NO_RATING: 'Non noté',
     VEHICLE: 'Véhicule'
 };
 
@@ -43,12 +42,11 @@ export function createCarpoolDriverCardElement(data) {
     const carModel = data.car ? data.car.model : '';
     const carEnergy = data.car ? data.car.energy : '';
 
-    // Determine the rating HTML based on driver's average rating.
     let ratingHtml = '';
-    if (data.driver.averageRating && data.driver.averageRating > 0) {
-        ratingHtml = `<span class="fs-"6>${data.driver.averageRating.toFixed(1)}</span> <i class="bi bi-star-fill"></i>`;
+    if (data.driver && typeof data.driver.averageRating === 'number' && data.driver.averageRating !== null) {
+        ratingHtml = `<span class="fs-6">${data.driver.averageRating}</span> <i class="bi bi-star-fill text-warning"></i>`;
     } else {
-        ratingHtml = MESSAGES.NO_RATING;
+        ratingHtml = `<span class="fs-6 text-muted">${MESSAGES.NO_RATING}</span>`;
     }
 
     // Set the inner HTML of the driver card using a template literal.
