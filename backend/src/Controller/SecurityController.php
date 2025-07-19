@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use OpenApi\Attributes as OA;
 use App\Service\TokenService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,48 +31,19 @@ final class SecurityController extends AbstractController
         private LoggerInterface $logger
     ) {}
 
-    // Registration Route / API doc
-    #[Route('/registration', name: 'registration', methods: ['POST'])]
-    #[OA\Post(
-        path: "/api/registration",
-        summary: "Registering a new user",
-        requestBody: new OA\RequestBody(
-            required: true,
-            description: "User data required for registration",
-            content: new OA\JsonContent(
-                type: "object",
-                properties: [
-                    new OA\Property(property: "firstName", type: "string", example: "Fisrt name"),
-                    new OA\Property(property: "lastName", type: "string", example: "Last name"),
-                    new OA\Property(property: "userName", type: "string", example: "User name"),
-                    new OA\Property(property: "email", type: "string", example: "adresse@email.com"),
-                    new OA\Property(property: "password", type: "string", example: "password")
-                ],
-                required: ["userName", "email", "password", "firstName", "lastName"],
-            )
-        ),
-        responses: [
-            new OA\Response(
-                response: 201,
-                description: "User successfully registered",
-                content: new OA\JsonContent(
-                    type: "object",
-                    properties: [
-                        new OA\Property(property: "id", type: "integer", example: 1),
-                        new OA\Property(property: "email", type: "string", example: "adresse@email.com"),
-                        new OA\Property(property: "user", type: "string", example: "Nom d'utilisateur"),
-                        new OA\Property(property: "firstName", type: "string", example: "User fisrt name"),
-                        new OA\Property(property: "lastName", type: "string", example: "User last name"),
-                        new OA\Property(property: "apiToken", type: "string", example: "31a023e212f116124a36af14ea0c1c3806eb9378"),
-                        new OA\Property(property: "credits", type: "integer", example: 20),
-                        new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string", example: "ROLE_USER")),
-                    ]
-                )
-            )
-        ]
-    )]
+    // =========================================================================
+    // I. Authentication Routes
+    // =========================================================================
 
-    // Registration function
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: User Registration
+     * /// FUNCTION: Registers a new user with provided credentials.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/registration', name: 'registration', methods: ['POST'])]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         $user = $this->serializer->deserialize(
@@ -104,43 +74,15 @@ final class SecurityController extends AbstractController
         ], status: Response::HTTP_CREATED);
     }
 
-    // Login route / API Doc
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: User Login
+     * /// FUNCTION: Authenticates a user and provides their data including API token.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/login', name: 'login', methods: ['POST'])]
-    #[OA\Post(
-        path: "/api/login",
-        summary: "Logging in a user",
-        requestBody: new OA\RequestBody(
-            required: true,
-            description: "User credentials for login",
-            content: new OA\JsonContent(
-                type: "object",
-                properties: [
-                    new OA\Property(property: "email", type: "string", example: "adresse@email.com"),
-                    new OA\Property(property: "password", type: "string", example: "Mot de passe")
-                ],
-                required: ["email", "password"]
-            )
-        ),
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "User successfully logged in",
-                content: new OA\JsonContent(
-                    type: "object",
-                    properties: [
-                        new OA\Property(property: "id", type: "integer", example: 1),
-                        new OA\Property(property: "user", type: "string", example: "Nom d'utilisateur"),
-                        new OA\Property(property: "email", type: "string", example: "adresse@email.com"),
-                        new OA\Property(property: "apiToken", type: "string", example: "31a023e212f116124a36af14ea0c1c3806eb9378"),
-                        new OA\Property(property: "credits", type: "integer", example: 50),
-                        new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string", example: "ROLE_USER")),
-                    ]
-                )
-            )
-        ]
-    )]
-
-    //Login function
     public function login(Request $request, UserPasswordHasherInterface $hasher): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -165,58 +107,34 @@ final class SecurityController extends AbstractController
             'user' => $user->getUserIdentifier(),
             'email' => $user->getEmail(),
             'apiToken' => $user->getApiToken(),
-            'credits' => $user->getCredits(), // Ajouté ici
+            'credits' => $user->getCredits(),
             'roles' => $user->getRoles(),
         ], Response::HTTP_OK);
     }
 
-    // Account/me route / API Doc
-    // Cette route sert de "check-auth" car elle est protégée par IsGranted et retourne les infos de l'utilisateur
-    #[Route('/account/me', name: 'me', methods: ['GET'])]
-    #[OA\Get(
-        path: "/api/account/me",
-        summary: "Get user data"
-    )]
-    #[OA\Response(
-        response: 200,
-        description: "Data successfully found",
-        content: new OA\JsonContent(
-            type: "object",
-            properties: [
-                new OA\Property(property: "id", type: "integer", example: 1),
-                new OA\Property(property: "firstName", type: "string", example: "first name"),
-                new OA\Property(property: "lastName", type: "string", example: "last name"),
-                new OA\Property(property: "email", type: "string", example: "user@example.com"),
-                new OA\Property(property: "createdAt", type: "string", format: "date-time"),
-                new OA\Property(property: "updatedAt", type: "string", format: "date-time"),
-                new OA\Property(property: "apiToken", type: "string", example: "abcdef1234567890"),
-                new OA\Property(property: "credits", type: "integer", example: 50), // Ajouté ici
-                new OA\Property(property: "hasAvatar", type: "boolean", example: true),
-                new OA\Property(property: "isDriver", type: "boolean", example: false),
-            ]
-        )
-    )]
-    #[OA\Response(
-        response: 401,
-        description: "Unauthorized"
-    )]
+    // =========================================================================
+    // II. User Account Routes
+    // =========================================================================
 
-    // Me function (serves as check-auth)
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Get User Profile
+     * /// FUNCTION: Retrieves the authenticated user's profile information.
+     * ///             Serves as an authentication check.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/account/me', name: 'me', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
-            // Cette condition est techniquement redondante avec #[IsGranted('ROLE_USER')]
-            // car si l'utilisateur n'est pas trouvé par #[CurrentUser], IsGranted aurait déjà renvoyé 401.
-            // Cependant, la laisser ne fait pas de mal pour la clarté.
             return new JsonResponse(['message' => 'Missing credentials or user not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Force user entity refresh to ensure latest data (très important pour les crédits !)
         $this->manager->refresh($user);
 
-        // Ensure 'user:read' group is defined on properties to expose in User entity
-        // Tu devras t'assurer que 'credits' est exposé dans ce groupe de sérialisation si tu utilises des groupes.
         $userData = json_decode(
             $this->serializer->serialize(
                 $user,
@@ -226,7 +144,7 @@ final class SecurityController extends AbstractController
             true
         );
 
-        // Ajout explicite des crédits si non inclus par les groupes de sérialisation
+        // Explicitly add credits if not included by serialization groups
         if (!isset($userData['credits'])) {
             $userData['credits'] = $user->getCredits();
         }
@@ -240,42 +158,16 @@ final class SecurityController extends AbstractController
         );
     }
 
-    // NEW ROUTE: Upload avatar (BLOB)
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Upload User Avatar
+     * /// FUNCTION: Uploads or updates the authenticated user's avatar (profile picture).
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/account/me/avatar', name: 'upload_avatar', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    #[OA\Post(
-        path: "/api/account/me/avatar",
-        summary: "Upload or update user avatar",
-        requestBody: new OA\RequestBody(
-            required: true,
-            description: "Avatar image file",
-            content: new OA\MediaType(
-                mediaType: "multipart/form-data",
-                schema: new OA\Schema(
-                    type: "object",
-                    properties: [
-                        new OA\Property(property: "avatar", type: "string", format: "binary", description: "The image file to upload")
-                    ]
-                )
-            )
-        ),
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Avatar uploaded successfully",
-                content: new OA\JsonContent(
-                    type: "object",
-                    properties: [
-                        new OA\Property(property: "message", type: "string", example: "Profile picture updated successfully."),
-                        new OA\Property(property: "hasAvatar", type: "boolean", example: true)
-                    ]
-                )
-            ),
-            new OA\Response(response: 400, description: "Bad request (e.g., no file, invalid type)"),
-            new OA\Response(response: 401, description: "Unauthorized"),
-            new OA\Response(response: 413, description: "Payload too large (file too big)")
-        ]
-    )]
     public function uploadAvatar(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
         $this->logger->info('Starting uploadAvatar method.');
@@ -341,23 +233,16 @@ final class SecurityController extends AbstractController
         }
     }
 
-    // NEW ROUTE: Retrieve avatar (BLOB)
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Retrieve User Avatar (BLOB)
+     * /// FUNCTION: Retrieves the authenticated user's avatar as a binary stream.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/account/me/avatar-blob', name: 'get_avatar_blob', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    #[OA\Get(
-        path: "/api/account/me/avatar-blob",
-        summary: "Get user avatar as a binary blob",
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Avatar image content",
-                content: new OA\MediaType(
-                    mediaType: "image/*",
-                    schema: new OA\Schema(type: "string", format: "binary")
-                )
-            )
-        ]
-    )]
     public function getAvatarBlob(#[CurrentUser] ?User $user): Response
     {
         $this->logger->info('Starting getAvatarBlob method.');
@@ -397,46 +282,15 @@ final class SecurityController extends AbstractController
         return $response;
     }
 
-    // Account/edit route / API Doc
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Edit User Account
+     * /// FUNCTION: Allows an authenticated user to update their account details.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/account/edit', name: 'edit', methods: ['PUT'])]
-    #[IsGranted('ROLE_USER')]
-    #[OA\Put(
-        path: "/api/account/edit",
-        summary: "Edit a user",
-        requestBody: new OA\RequestBody(
-            required: true,
-            description: "User data required for edition",
-            content: new OA\JsonContent(
-                type: "object",
-                properties: [
-                    new OA\Property(property: "firstName", type: "string", example: "Nouveau prénom")
-                ],
-            )
-        )
-    )]
-    #[OA\Response(
-        response: 200,
-        description: "User updated successfully",
-        content: new OA\JsonContent(
-            type: "object",
-            properties: [
-                new OA\Property(property: "id", type: "integer", example: 1),
-                new OA\Property(property: "email", type: "string", example: "user@example.com"),
-                new OA\Property(property: "firstName", type: "string", example: "first name"),
-                new OA\Property(property: "lastName", type: "string", example: "last name"),
-                new OA\Property(property: "createdAt", type: "string", format: "date-time"),
-                new OA\Property(property: "updatedAt", type: "string", format: "date-time"),
-                new OA\Property(property: "apiToken", type: "string", example: "abcdef1234567890"),
-                new OA\Property(property: "credits", type: "integer", example: 50), // Ajouté ici
-            ]
-        )
-    )]
-    #[OA\Response(
-        response: 401,
-        description: "Unauthorized"
-    )]
-
-    // Edit function
     #[IsGranted('ROLE_USER')]
     public function edit(#[CurrentUser] ?User $user, Request $request): JsonResponse
     {
@@ -455,7 +309,7 @@ final class SecurityController extends AbstractController
 
         $this->manager->flush();
 
-        // Ajout explicite des crédits si non inclus par les groupes de sérialisation
+        // Explicitly add credits if not included by serialization groups
         $serializedUserData = json_decode(
             $this->serializer->serialize(
                 $user,
@@ -474,6 +328,18 @@ final class SecurityController extends AbstractController
         );
     }
 
+    // =========================================================================
+    // III. User Data Validation Routes
+    // =========================================================================
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Check Username Availability
+     * /// FUNCTION: Checks if a given username is already in use.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/check-userName', name: 'app_check_userName', methods: ['POST'])]
     public function checkUserName(Request $request): JsonResponse
     {
@@ -492,6 +358,14 @@ final class SecurityController extends AbstractController
         return new JsonResponse(['isAvailable' => true]);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Check Email Availability
+     * /// FUNCTION: Checks if a given email is already registered.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/check-email', name: 'app_check_email', methods: ['POST'])]
     public function checkEmail(Request $request): JsonResponse
     {
@@ -510,45 +384,20 @@ final class SecurityController extends AbstractController
         return new JsonResponse(['isAvailable' => true]);
     }
 
+    // =========================================================================
+    // IV. Driver Status Routes
+    // =========================================================================
+
     /**
-     * Updates the driver status of the authenticated user.
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Update Driver Status
+     * /// FUNCTION: Updates the driver status (isDriver) of the authenticated user.
+     * ////////////////////////////////////////////////////////////////////////
+     *
      */
     #[Route('/account/me/driver-status', name: 'update_driver_status', methods: ['PATCH'])]
     #[IsGranted('ROLE_USER')]
-    #[OA\Patch(
-        path: "/api/account/me/driver-status",
-        summary: "Update the driver status of the current user",
-        requestBody: new OA\RequestBody(
-            required: true,
-            description: "New driver status (boolean)",
-            content: new OA\JsonContent(
-                type: "object",
-                properties: [
-                    new OA\Property(property: "isDriver", type: "boolean", example: true)
-                ],
-                required: ["isDriver"]
-            )
-        )
-    )]
-    #[OA\Response(
-        response: 200,
-        description: "Driver status updated successfully",
-        content: new OA\JsonContent(
-            type: "object",
-            properties: [
-                new OA\Property(property: "message", type: "string", example: "Driver mode activated."),
-                new OA\Property(property: "isDriver", type: "boolean", example: true)
-            ]
-        )
-    )]
-    #[OA\Response(
-        response: 400,
-        description: "Bad Request (e.g., missing or invalid 'isDriver' value)"
-    )]
-    #[OA\Response(
-        response: 401,
-        description: "Unauthorized"
-    )]
     public function updateDriverStatus(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {

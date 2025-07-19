@@ -25,6 +25,18 @@ final class CarpoolingUserController extends AbstractController
         private SerializerInterface $serializer
     ) {}
 
+    // =========================================================================
+    // I. CarpoolingUser Management Routes
+    // =========================================================================
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Add Carpooling User
+     * /// FUNCTION: Adds a user to a specific carpooling (as driver or passenger).
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/', name: 'add_carpooling_user', methods: ['POST'])]
     public function addCarpoolingUser(Request $request): JsonResponse
     {
@@ -54,6 +66,14 @@ final class CarpoolingUserController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_CREATED);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Show Carpooling User
+     * /// FUNCTION: Retrieves details of a single CarpoolingUser entry by ID.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'show_carpooling_user', methods: ['GET'])]
     public function showCarpoolingUser(int $id): JsonResponse
     {
@@ -69,6 +89,14 @@ final class CarpoolingUserController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: List All Carpooling Users
+     * /// FUNCTION: Retrieves a list of all CarpoolingUser entries.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/', name: 'list_carpooling_users', methods: ['GET'])]
     public function listCarpoolingUsers(): JsonResponse
     {
@@ -80,6 +108,14 @@ final class CarpoolingUserController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Update Carpooling User
+     * /// FUNCTION: Updates an existing CarpoolingUser entry by ID.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'update_carpooling_user', methods: ['PUT'])]
     public function updateCarpoolingUser(int $id, Request $request): JsonResponse
     {
@@ -110,6 +146,14 @@ final class CarpoolingUserController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Delete Carpooling User
+     * /// FUNCTION: Deletes a CarpoolingUser entry by ID.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'delete_carpooling_user', methods: ['DELETE'])]
     public function deleteCarpoolingUser(int $id): JsonResponse
     {

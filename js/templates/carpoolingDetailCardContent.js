@@ -44,7 +44,6 @@ export function createCarpoolDetailCardElement(data, formatDateToFrench, formatT
             <div class="mb-3 text-start">
                 <h1 class="mb-0 ms-2 date">${departureDateFormatted}</h1>
             </div>
-
             <div class="d-flex justify-content-between">
                 <div class="d-flex">
                     <div class="mt-1">

@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: CarpoolingUserRepository::class)]
+#[ORM\UniqueConstraint(fields: ["user", "carpooling"])] // <-- Ajoute cette ligne
 class CarpoolingUser
 {
     #[ORM\Id]

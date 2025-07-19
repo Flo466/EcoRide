@@ -31,6 +31,18 @@ final class ReviewController extends AbstractController
         private UserRepository $userRepository
     ) {}
 
+    // =========================================================================
+    // I. Review Management Routes
+    // =========================================================================
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Create New Review
+     * /// FUNCTION: Creates a new review.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
@@ -74,6 +86,14 @@ final class ReviewController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_CREATED);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Show Review Details
+     * /// FUNCTION: Retrieves a single review by its ID.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
@@ -88,6 +108,14 @@ final class ReviewController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Get Reviews for Reviewed User
+     * /// FUNCTION: Retrieves approved reviews for a specific reviewed user.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/user/{reviewedUserId}/target', name: 'get_for_reviewed_user', methods: ['GET'])]
     public function getReviewsForReviewedUser(int $reviewedUserId): JsonResponse
     {
@@ -100,6 +128,14 @@ final class ReviewController extends AbstractController
     }
 
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Edit Review
+     * /// FUNCTION: Updates an existing review. Accessible to the review's author or ADMIN.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'edit', methods: ['PUT'])]
     public function edit(int $id, Request $request): JsonResponse
     {
@@ -136,6 +172,14 @@ final class ReviewController extends AbstractController
     }
 
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Update Review Status
+     * /// FUNCTION: Updates the status of a review. Accessible only to ADMIN role.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}/status', name: 'update_status', methods: ['PATCH'])]
     public function updateStatus(int $id, Request $request): JsonResponse
     {
@@ -153,7 +197,6 @@ final class ReviewController extends AbstractController
         if (!$this->isGranted('ROLE_ADMIN')) {
             return new JsonResponse(['message' => 'Unauthorized to update status of this review'], Response::HTTP_FORBIDDEN);
         }
-
 
         $data = json_decode($request->getContent(), true);
         $statusValue = $data['status'] ?? null;
@@ -177,6 +220,14 @@ final class ReviewController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Delete Review
+     * /// FUNCTION: Deletes a review. Accessible to the review's author or ADMIN.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {

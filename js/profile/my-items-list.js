@@ -1,31 +1,31 @@
-
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
 import Car from '../models/Car.js';
 import { Carpooling } from '../models/Carpooling.js';
 
-// =============================================================================
-// I. Constants and DOM Elements
-// =============================================================================
-
-// User-facing messages (kept in French)
+// User-facing messages
 const MESSAGES = {
     TOKEN_MISSING_GENERIC: "Jeton utilisateur manquant. Veuillez vous reconnecter.",
-    UNKNOWN_ITEM_TYPE_DELETE: "Erreur: Type d'élément inconnu pour la suppression.",
-    CONFIRM_DELETE_ITEM: (displayName) => `Es-tu sûr de vouloir supprimer ${displayName} ?`,
+    UNKNOWN_ITEM_TYPE_DELETE: "Erreur : Type d'élément inconnu pour la suppression.",
+    CONFIRM_DELETE_ITEM: (displayName) => `Êtes-vous sûr(e) de vouloir supprimer ${displayName} ?`,
     VEHICLE_DELETE_SUCCESS: "Véhicule supprimé avec succès.",
     JOURNEY_DELETE_SUCCESS: "Covoiturage supprimé avec succès.",
     DELETE_ERROR_FOREIGN_KEY: "Ce véhicule ne peut pas être supprimé car il est utilisé dans un ou plusieurs covoiturages.",
     SESSION_EXPIRED: "Votre session a expiré ou n'est plus valide. Veuillez vous reconnecter.",
     DELETE_ERROR_GENERIC: (message) => `Suppression impossible : ${message}`,
     LOADING_IN_PROGRESS: "Chargement en cours...",
-    TOKEN_REQUIRED_VIEW_ITEMS: "Vous devez être connecté pour voir vos éléments.",
+    TOKEN_REQUIRED_VIEW_ITEMS: "Vous devez être connecté(e) pour voir vos éléments.",
     USER_ID_MISSING_JOURNEYS: "Impossible d'identifier l'utilisateur pour charger les voyages. Veuillez vous reconnecter.",
     UNKNOWN_DATA_TYPE_LOAD: "Erreur : Type de données inconnu à charger.",
     LOAD_SUCCESS: (count, type) => `Chargement de ${count} ${type} réussi.`,
     EMPTY_VEHICLES: "Vous n'avez pas encore de véhicule enregistré.",
     EMPTY_JOURNEYS: "Vous n'avez pas encore de voyage enregistré.",
     LOAD_ERROR_GENERIC: (type, message) => `Impossible de charger vos ${type} : ${message}`,
+    CONFIRM_CANCEL_CARPOOLING: (displayName) => `Êtes-vous sûr(e) de vouloir annuler le covoiturage du ${displayName} ? Tous les passagers inscrits seront remboursés.`,
+    CONFIRM_LEAVE_CARPOOLING: (displayName) => `Êtes-vous sûr(e) de vouloir annuler votre participation au covoiturage ${displayName} ? Vos crédits vous seront remboursés.`,
+    CANCEL_CARPOOLING_SUCCESS: "Covoiturage annulé avec succès. Tous les passagers ont été remboursés.",
+    LEAVE_CARPOOLING_SUCCESS: "Votre participation a été annulée avec succès. Vos crédits ont été remboursés.",
+    ACTION_ERROR_GENERIC: (action, message) => `Impossible d'effectuer l'action "${action}" : ${message}`,
 };
 
 // DOM elements
@@ -34,23 +34,9 @@ const messageDisplay = document.getElementById('messageDisplay');
 const loadingMessageDisplay = document.getElementById('loadingMessageDisplay');
 const backButton = document.getElementById('back-button');
 
-// =============================================================================
-// II. Message Display Utilities
-// =============================================================================
-
-/**
- * Displays a temporary message in the dedicated box.
- * @param {string} message - The text message to display.
- * @param {'success' | 'danger' | 'warning' | 'info'} type - The type of message.
- * @param {HTMLElement} targetDisplay - The DOM element where the message will be displayed (defaults to messageDisplay).
- */
+/** Displays a temporary message. */
 const displayMessage = (message, type, targetDisplay = messageDisplay) => {
-    if (!targetDisplay) {
-        console.error('displayMessage: targetDisplay is null or undefined. Message:', message);
-        return;
-    }
-
-    // Clear previous classes and content
+    if (!targetDisplay) return;
     targetDisplay.classList.remove('alert-success', 'alert-danger', 'alert-warning', 'alert-info', 'd-none');
     targetDisplay.innerHTML = '';
 
@@ -77,7 +63,6 @@ const displayMessage = (message, type, targetDisplay = messageDisplay) => {
     targetDisplay.innerHTML = `<i class="${iconClass} me-2"></i>${message}`;
     targetDisplay.classList.remove('d-none');
 
-    // Hide message after 5 seconds, unless it's the loading message
     if (targetDisplay !== loadingMessageDisplay) {
         setTimeout(() => {
             hideMessage(targetDisplay);
@@ -85,10 +70,7 @@ const displayMessage = (message, type, targetDisplay = messageDisplay) => {
     }
 };
 
-/**
- * Hides a message in a specified display container.
- * @param {HTMLElement} targetDisplay - The DOM element whose message should be hidden.
- */
+/** Hides a message. */
 const hideMessage = (targetDisplay) => {
     if (targetDisplay) {
         targetDisplay.classList.add('d-none');
@@ -96,18 +78,8 @@ const hideMessage = (targetDisplay) => {
     }
 };
 
-// =============================================================================
-// III. Item Management Functions
-// =============================================================================
-
-/**
- * Deletes an item (vehicle or journey) via API.
- * @param {number} itemId - The ID of the item to delete.
- * @param {'vehicle' | 'journey'} itemType - The type of item ('vehicle' or 'journey').
- * @param {string} itemDisplayName - The user-friendly name of the item for confirmation alerts.
- * @param {Function} reloadFunction - The function to call to reload the list after deletion.
- */
-const deleteItem = async (itemId, itemType, itemDisplayName, reloadFunction) => {
+/** Handles carpooling actions (cancel/leave). */
+const handleJourneyAction = async (journeyId, actionType, journeyDisplayName, reloadFunction) => {
     const userToken = localStorage.getItem('userToken');
     if (!userToken) {
         displayMessage(MESSAGES.TOKEN_MISSING_GENERIC, 'danger');
@@ -116,30 +88,60 @@ const deleteItem = async (itemId, itemType, itemDisplayName, reloadFunction) => 
     }
 
     let endpoint = '';
+    let confirmMessage = '';
     let successMessage = '';
-    if (itemType === 'vehicle') {
-        endpoint = `${API_BASE_URL}/api/car/${itemId}`;
-        successMessage = MESSAGES.VEHICLE_DELETE_SUCCESS;
-    } else if (itemType === 'journey') {
-        endpoint = `${API_BASE_URL}/api/carpoolings/${itemId}`;
-        successMessage = MESSAGES.JOURNEY_DELETE_SUCCESS;
+    let errorMessageAction = '';
+
+    if (actionType === 'cancel_carpooling') {
+        endpoint = `${API_BASE_URL}/api/carpoolings/${journeyId}/cancel`;
+        confirmMessage = MESSAGES.CONFIRM_CANCEL_CARPOOLING(journeyDisplayName);
+        successMessage = MESSAGES.CANCEL_CARPOOLING_SUCCESS;
+        errorMessageAction = "annuler le covoiturage";
+    } else if (actionType === 'leave_carpooling') {
+        endpoint = `${API_BASE_URL}/api/carpoolings/${journeyId}/leave`;
+        confirmMessage = MESSAGES.CONFIRM_LEAVE_CARPOOLING(journeyDisplayName);
+        successMessage = MESSAGES.LEAVE_CARPOOLING_SUCCESS;
+        errorMessageAction = "annuler ta participation";
     } else {
-        console.error('deleteItem: Unknown item type:', itemType);
         displayMessage(MESSAGES.UNKNOWN_ITEM_TYPE_DELETE, 'danger');
         return;
     }
 
-    if (!confirm(MESSAGES.CONFIRM_DELETE_ITEM(itemDisplayName))) {
+    if (!confirm(confirmMessage)) return;
+
+    try {
+        await fetchApi(endpoint, 'POST', null, { 'X-AUTH-TOKEN': userToken });
+        displayMessage(successMessage, 'success');
+        reloadFunction();
+    } catch (error) {
+        if (error.statusCode === 401 || error.message.includes('Missing credentials') || error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
+            displayMessage(MESSAGES.SESSION_EXPIRED, 'danger');
+            setTimeout(() => { window.location.href = '/login'; }, 4000);
+        } else {
+            displayMessage(MESSAGES.ACTION_ERROR_GENERIC(errorMessageAction, error.message), 'danger');
+        }
+    }
+};
+
+/** Deletes a vehicle. */
+const deleteVehicle = async (itemId, itemDisplayName, reloadFunction) => {
+    const userToken = localStorage.getItem('userToken');
+    if (!userToken) {
+        displayMessage(MESSAGES.TOKEN_MISSING_GENERIC, 'danger');
+        setTimeout(() => { window.location.href = '/login'; }, 3000);
         return;
     }
+
+    const endpoint = `${API_BASE_URL}/api/car/${itemId}`;
+    const successMessage = MESSAGES.VEHICLE_DELETE_SUCCESS;
+
+    if (!confirm(MESSAGES.CONFIRM_DELETE_ITEM(itemDisplayName))) return;
 
     try {
         await fetchApi(endpoint, 'DELETE', null, { 'X-AUTH-TOKEN': userToken });
         displayMessage(successMessage, 'success');
-        reloadFunction(); // Reload the list on success
+        reloadFunction();
     } catch (error) {
-        console.error(`Error deleting ${itemType}:`, error);
-
         if (error.statusCode === 409 && error.message.includes('foreign key constraint fails')) {
             displayMessage(MESSAGES.DELETE_ERROR_FOREIGN_KEY, 'warning');
         } else if (error.statusCode === 401 || error.message.includes('Missing credentials') || error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
@@ -151,18 +153,12 @@ const deleteItem = async (itemId, itemType, itemDisplayName, reloadFunction) => 
     }
 };
 
-/**
- * Loads user's items (vehicles or journeys) from the API and displays them.
- * @param {'vehicles' | 'journeys'} type - The type of items to load.
- */
+/** Loads and displays user's items (vehicles or journeys). */
 export const loadUserItems = async (type) => {
-    if (!itemsListContainer) {
-        console.error(`loadUserItems: .items-list-container not found for ${type}.`);
-        return;
-    }
+    if (!itemsListContainer) return;
 
     displayMessage(MESSAGES.LOADING_IN_PROGRESS, 'info', loadingMessageDisplay);
-    itemsListContainer.innerHTML = ''; // Clear container before loading
+    itemsListContainer.innerHTML = '';
 
     const userToken = localStorage.getItem('userToken');
     if (!userToken) {
@@ -174,7 +170,6 @@ export const loadUserItems = async (type) => {
 
     const currentUserId = parseInt(localStorage.getItem('currentUserId'));
     if (type === 'journeys' && (isNaN(currentUserId) || currentUserId === null)) {
-        console.error('loadUserItems: currentUserId is missing or invalid for loading journeys. Value:', currentUserId);
         hideMessage(loadingMessageDisplay);
         displayMessage(MESSAGES.USER_ID_MISSING_JOURNEYS, 'danger');
         setTimeout(() => { window.location.href = '/login'; }, 3000);
@@ -186,25 +181,23 @@ export const loadUserItems = async (type) => {
     let frenchType = '';
     let ItemClass;
     let cardCreationMethod;
-    let itemTypeForDelete;
 
-    // Configure loading parameters based on item type.
     if (type === 'vehicles') {
         endpoint = `${API_BASE_URL}/api/all-cars`;
         emptyMessage = MESSAGES.EMPTY_VEHICLES;
         ItemClass = Car;
         frenchType = 'véhicules';
-        cardCreationMethod = 'toCarCardElement';
-        itemTypeForDelete = 'vehicle';
+        cardCreationMethod = (car) => car.toCarCardElement(displayMessage, (vehicleId) => {
+            const itemDisplayName = car.getFullName();
+            deleteVehicle(vehicleId, itemDisplayName, () => loadUserItems(type));
+        });
     } else if (type === 'journeys') {
         endpoint = `${API_BASE_URL}/api/carpoolings/list-by-user`;
         emptyMessage = MESSAGES.EMPTY_JOURNEYS;
         ItemClass = Carpooling;
         frenchType = 'voyages';
-        cardCreationMethod = 'toJourneyCardElement';
-        itemTypeForDelete = 'journey';
+        cardCreationMethod = (carpooling) => carpooling.toJourneyCardElement(currentUserId);
     } else {
-        console.error('loadUserItems: Unknown data type:', type);
         hideMessage(loadingMessageDisplay);
         displayMessage(MESSAGES.UNKNOWN_DATA_TYPE_LOAD, 'danger');
         return;
@@ -215,43 +208,71 @@ export const loadUserItems = async (type) => {
         hideMessage(loadingMessageDisplay);
 
         if (itemsData && itemsData.length > 0) {
+            let itemsDisplayedCount = 0;
             itemsData.forEach(data => {
-                // Pass currentUserId only if it's for journey and it's a valid ID for the Carpooling constructor
-                const userIdToPass = (type === 'journeys' && !isNaN(currentUserId)) ? currentUserId : null;
+                const item = new ItemClass(data, currentUserId);
 
-                const item = new ItemClass(data, userIdToPass);
-                const itemCardElement = item[cardCreationMethod](); // Dynamically call card creation method
+                // Carpooling filtering logic
+                if (type === 'journeys') {
+                    // Don't display if the carpooling is not 'open'
+                    if (item.getStatus() !== 'open') return;
 
-                itemsListContainer.appendChild(itemCardElement);
+                    // Filter based on the *latest* user participation status
+                    const userParticipations = data.carpoolingUsers.filter(cu => cu.user.id === currentUserId);
+                    let isCurrentlyParticipating = false;
 
-                // Attach delete event listener to the button on the created card.
-                const deleteButton = itemCardElement.querySelector('.delete-item-btn');
-                if (deleteButton) {
-                    deleteButton.addEventListener('click', (event) => {
-                        event.preventDefault();
-                        const itemId = deleteButton.dataset.id;
-                        const typeToDelete = deleteButton.dataset.type;
+                    // Check if ANY of the user's participations for this carpooling is NOT cancelled.
+                    // This handles cases where a user cancels and then re-registers.
+                    if (userParticipations.length > 0) {
+                        isCurrentlyParticipating = userParticipations.some(cu => !cu.isCancelled);
+                    }
 
-                        // Determine display name for confirmation message.
-                        let itemDisplayName = '';
-                        if (typeToDelete === 'vehicle') {
-                            itemDisplayName = `le véhicule "${item.brand.name} ${item.model}"`;
-                        } else if (typeToDelete === 'journey') {
-                            const formattedDepartureDate = new Date(item.departureDate).toLocaleDateString('fr-FR');
-                            const formattedDepartureTime = item.departureTime.substring(0, 5);
-                            itemDisplayName = `le covoiturage du ${formattedDepartureDate} de ${item.departurePlace} vers ${item.arrivalPlace}`;
-                        }
-                        deleteItem(itemId, typeToDelete, itemDisplayName, () => loadUserItems(type));
-                    });
+                    if (!isCurrentlyParticipating) return; // Don't display if no active participation found
+
+                    // Don't display if departure date has passed
+                    const departureDateTime = new Date(`${item.departureDate}T${item.departureTime}`);
+                    if (departureDateTime < new Date()) return;
+                }
+
+                const itemCardElement = cardCreationMethod(item);
+
+                if (itemCardElement) {
+                    itemsListContainer.appendChild(itemCardElement);
+                    itemsDisplayedCount++;
+
+                    const actionButton = itemCardElement.querySelector('.action-button');
+                    if (actionButton) {
+                        actionButton.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            const itemId = actionButton.dataset.id;
+                            const actionType = actionButton.dataset.actionType;
+
+                            let itemDisplayName = '';
+                            if (type === 'vehicles') {
+                                itemDisplayName = `le véhicule "${item.brand.name} ${item.model}"`;
+                                deleteVehicle(itemId, itemDisplayName, () => loadUserItems(type));
+                            } else if (type === 'journeys') {
+                                const formattedDepartureDate = new Date(item.departureDate).toLocaleDateString('fr-FR');
+                                const formattedDepartureTime = item.departureTime.substring(0, 5);
+                                itemDisplayName = `${formattedDepartureDate} de ${item.departurePlace} vers ${item.arrivalPlace}`;
+                                handleJourneyAction(itemId, actionType, itemDisplayName, () => loadUserItems(type));
+                            }
+                        });
+                    }
                 }
             });
-            displayMessage(MESSAGES.LOAD_SUCCESS(itemsData.length, frenchType), 'success');
+
+            if (itemsDisplayedCount > 0) {
+                displayMessage(MESSAGES.LOAD_SUCCESS(itemsDisplayedCount, frenchType), 'success');
+            } else {
+                displayMessage(emptyMessage, 'info');
+            }
+
         } else {
             displayMessage(emptyMessage, 'info');
         }
     } catch (error) {
         hideMessage(loadingMessageDisplay);
-        console.error(`Error loading user ${type}:`, error);
         if (error.statusCode === 401 || error.message.includes('Missing credentials') || error.message.includes('Unauthorized')) {
             displayMessage(MESSAGES.SESSION_EXPIRED, 'danger');
             setTimeout(() => { window.location.href = '/login'; }, 3000);
@@ -261,11 +282,7 @@ export const loadUserItems = async (type) => {
     }
 };
 
-// =============================================================================
-// IV. Event Listeners and Initialization
-// =============================================================================
-
-// Event listener for the back button.
+// Back button listener
 if (backButton) {
     backButton.addEventListener('click', (event) => {
         event.preventDefault();

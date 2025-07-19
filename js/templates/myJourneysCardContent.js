@@ -1,4 +1,3 @@
-
 // =============================================================================
 // I. Constants and Messages
 // =============================================================================
@@ -7,7 +6,9 @@
 const MESSAGES = {
     DRIVER_BADGE: 'Chauffeur',
     PASSENGER_BADGE: 'Passager',
-    DELETE_BUTTON_TEXT: 'Supprimer'
+    // Nouveaux messages pour les boutons d'action
+    CANCEL_CARPOOLING_BUTTON_TEXT: 'Annuler le covoiturage',
+    LEAVE_CARPOOLING_BUTTON_TEXT: 'Annuler ma participation'
 };
 
 // =============================================================================
@@ -52,6 +53,26 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
             ${MESSAGES.PASSENGER_BADGE}
         </span>`;
 
+    // Determine the button to display based on the user's role
+    let actionButtonHTML = '';
+    if (carpooling.isCurrentUserDriver) {
+        // Driver sees "Annuler le covoiturage"
+        actionButtonHTML = `
+            <button class="btn btn-sm btn-outline-danger rounded-pill action-button" 
+                    data-id="${carpooling.id}" data-action-type="cancel_carpooling">
+                <i class="bi bi-x-circle"></i> ${MESSAGES.CANCEL_CARPOOLING_BUTTON_TEXT}
+            </button>
+        `;
+    } else {
+        // Passenger sees "Annuler ma participation"
+        actionButtonHTML = `
+            <button class="btn btn-sm btn-outline-warning rounded-pill action-button" 
+                    data-id="${carpooling.id}" data-action-type="leave_carpooling">
+                <i class="bi bi-person-x"></i> ${MESSAGES.LEAVE_CARPOOLING_BUTTON_TEXT}
+            </button>
+        `;
+    }
+
     // Set the inner HTML of the card using a template literal for easy content insertion.
     // This includes formatted dates/times, driver/passenger indicator, and action buttons.
     card.innerHTML = `
@@ -74,9 +95,7 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
                 </div>
             </div>
             <div class="d-flex justify-content-center mt-2 mb-3">
-                <button class="btn btn-sm btn-outline-danger rounded-pill delete-item-btn" data-id="${carpooling.id}" data-type="journey">
-                    <i class="bi bi-trash"></i> ${MESSAGES.DELETE_BUTTON_TEXT}
-                </button>
+                ${actionButtonHTML}
             </div>
         </div>
     `;

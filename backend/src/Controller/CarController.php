@@ -4,10 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Car;
 use App\Repository\CarRepository;
-use App\Repository\CarpoolingRepository; // ⭐ NOUVEL IMPORT : Pour vérifier les covoiturages liés
+use App\Repository\CarpoolingRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException; // ⭐ NOUVEL IMPORT : Pour capturer l'erreur spécifique
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Symfony\Component\Security\Core\Security;
 use App\Repository\BrandRepository;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -30,12 +30,22 @@ final class CarController extends AbstractController
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator,
         private Security $security,
-        private CarpoolingRepository $carpoolingRepository, // ⭐ INJECTION : Ajoute le CarpoolingRepository
+        private CarpoolingRepository $carpoolingRepository,
     ) {}
 
+    // =========================================================================
+    // I. Car Listing Routes
+    // =========================================================================
+
     /**
-     * Retrieves all vehicles for the authenticated user.
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: List All Cars for User
+     * /// FUNCTION: Retrieves all vehicles owned by the authenticated user.
+     * ////////////////////////////////////////////////////////////////////////
+     *
      */
+    #[Route('/all-cars', name: 'list_all_cars', methods: ['GET'])]
     public function listAllCars(CarRepository $carRepository, SerializerInterface $serializer): JsonResponse
     {
         $user = $this->security->getUser();
@@ -50,6 +60,18 @@ final class CarController extends AbstractController
         return new JsonResponse($jsonCars, Response::HTTP_OK, [], true);
     }
 
+    // =========================================================================
+    // II. Car Management Routes
+    // =========================================================================
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Create New Car
+     * /// FUNCTION: Creates a new car entry for the authenticated user.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
@@ -106,7 +128,14 @@ final class CarController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_CREATED, ['Location' => $location], true);
     }
 
-
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Show Car Details
+     * /// FUNCTION: Retrieves a single car by its ID, ensuring user ownership.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id, CarRepository $carRepository): JsonResponse
     {
@@ -126,6 +155,14 @@ final class CarController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK, [], true);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Edit Car
+     * /// FUNCTION: Updates an existing car, ensuring user ownership.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'edit', methods: ['PUT', 'PATCH'])]
     public function edit(int $id, Request $request, CarRepository $carRepository): JsonResponse
     {
@@ -160,6 +197,14 @@ final class CarController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK, ['Location' => $location], true);
     }
 
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Delete Car
+     * /// FUNCTION: Deletes a car, ensuring user ownership and no linked carpoolings.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id, CarRepository $carRepository): Response
     {
@@ -174,25 +219,25 @@ final class CarController extends AbstractController
             throw $this->createAccessDeniedException('Access denied to this vehicle.');
         }
 
-        // Vérifie si des covoiturages sont liés à cette voiture
+        // Check if any carpoolings are linked to this car
         $associatedCarpoolingsCount = $this->carpoolingRepository->count(['car' => $car]);
 
         if ($associatedCarpoolingsCount > 0) {
             return new JsonResponse(
-                ['message' => 'Ce véhicule ne peut pas être supprimé car il est utilisé dans un ou plusieurs covoiturages.'],
-                Response::HTTP_CONFLICT // Code 409 Conflict
+                ['message' => 'This vehicle cannot be deleted as it is used in one or more carpoolings.'],
+                Response::HTTP_CONFLICT // 409 Conflict
             );
         }
 
-        // Si aucun covoiturage n'est lié, procéder à la suppression
+        // If no carpoolings are linked, proceed with deletion
         try {
             $this->manager->remove($car);
             $this->manager->flush();
 
             return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
-            // Pour toute autre erreur inattendue lors de la suppression
-            return new JsonResponse(['message' => 'Une erreur inattendue est survenue lors de la suppression du véhicule.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            // Catch any unexpected errors during deletion
+            return new JsonResponse(['message' => 'An unexpected error occurred while deleting the vehicle.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

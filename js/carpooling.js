@@ -1,4 +1,3 @@
-
 import { fetchApi } from './api/fetch.js';
 import { API_BASE_URL } from './config.js';
 import { sanitizeInput } from '../js/utils/sanitizer.js';
@@ -83,16 +82,27 @@ function displayCarpoolingResults(data) {
     carpoolingResultsContainer.innerHTML = ''; // Clear previous results
 
     if (data && data.length > 0) {
-        data.forEach(item => {
-            const carpooling = new Carpooling(item); // Ensure Carpooling model is correctly imported
-            const cardElement = carpooling.toCardElement();
-            carpoolingResultsContainer.appendChild(cardElement);
+        const filteredData = data.filter(itemData => {
+            const carpooling = new Carpooling(itemData);
+            return carpooling.getStatus() === 'open';
         });
+
+        if (filteredData.length > 0) {
+            filteredData.forEach(itemData => {
+                const carpooling = new Carpooling(itemData);
+                const cardElement = carpooling.toCardElement();
+                carpoolingResultsContainer.appendChild(cardElement);
+            });
+        } else {
+            // If after filtering, no results are left, display the "no results" message
+            updateBanner(MESSAGES.INFO_NO_RESULTS, 'info', true);
+        }
     } else {
-        // No results found message is handled by executeSearch
-        carpoolingResultsContainer.innerHTML = '';
+        // No results from API, display the "no results" message
+        updateBanner(MESSAGES.INFO_NO_RESULTS, 'info', true);
     }
 }
+
 
 /**
  * Fetches the list of cities for autocomplete and sets it up.
@@ -148,12 +158,7 @@ async function executeSearch(depart, arrivee, date) {
     try {
         const result = await fetchApi(apiUrl);
         displayCarpoolingResults(result); // Call the integrated function
-
-        if (result.length === 0) {
-            updateBanner(MESSAGES.INFO_NO_RESULTS, 'info', true);
-        } else {
-            updateBanner('', 'info', false); // Hide banner if results are displayed
-        }
+        updateBanner('', 'info', false);
 
         // Update URL in browser history without reloading the page
         const currentUrlParams = new URLSearchParams(window.location.search);

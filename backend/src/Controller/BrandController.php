@@ -25,8 +25,17 @@ class BrandController extends AbstractController
         $this->logger = $logger;
     }
 
+    // =========================================================================
+    // I. Brand Listing Routes
+    // =========================================================================
+
     /**
-     * Retrieves all car brands from the database.
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Get All Brands
+     * /// FUNCTION: Retrieves all car brands from the database.
+     * ////////////////////////////////////////////////////////////////////////
+     *
      */
     #[Route('/brands', name: 'get_brands', methods: ['GET'])]
     public function getBrands(): JsonResponse

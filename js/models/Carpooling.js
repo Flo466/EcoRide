@@ -25,39 +25,58 @@ export class Carpooling {
     this.pricePerPerson = data.pricePerPerson;
     this.isEco = data.isEco;
 
-    this.car = data.car || null; // Car associated with the carpooling
+    this.car = data.car || null;
     this.status = data.status;
 
-    this.driver = null; // Will be an instance of User
-    this.passengers = []; // Will be an array of User instances
-    this.availableSeats = this.seatCount; // Initial available seats, before calculating actual passengers
-    this.isCurrentUserDriver = false; // Flag to check if current user is the driver
+    this.driver = null;
+    this.passengers = [];
+    // this.availableSeats = this.seatCount; // Cette ligne est redondante ou potentiellement source d'erreur avec le calcul plus bas.
 
-    // Process carpoolingUsers array to identify driver and passengers
+    this.isCurrentUserDriver = false;
+
     if (data.carpoolingUsers && Array.isArray(data.carpoolingUsers)) {
-      // Find the driver from carpoolingUsers
       const driverData = data.carpoolingUsers.find(cu => cu.isDriver);
       if (driverData && driverData.user) {
         this.driver = new User(driverData.user);
-        // Check if the current user is the driver
         if (currentUserId !== null && this.driver.id === currentUserId) {
           this.isCurrentUserDriver = true;
         }
       }
 
-      // Filter and map passengers (exclude driver and cancelled users)
       this.passengers = data.carpoolingUsers
         .filter(cu => !cu.isDriver && !cu.isCancelled)
         .map(cu => new User(cu.user));
 
-      // Calculate available seats based on actual passengers
-      this.availableSeats = this.seatCount - this.passengers.length;
+      this.availableSeats = this.seatCount;
 
     } else {
-      // If no carpoolingUsers or invalid, assume no passengers initially
       this.passengers = [];
-      this.availableSeats = this.seatCount; // All seats are available
+      this.availableSeats = this.seatCount; // All seats are available if no carpoolingUsers
     }
+  }
+
+  /**
+   * Returns the status of the carpooling.
+   * @returns {string} The status of the carpooling (e.g., 'OPEN', 'CANCELLED', 'COMPLETED').
+   */
+  getStatus() {
+    return this.status;
+  }
+
+  /**
+   * Returns the departure date of the carpooling.
+   * @returns {string} The departure date in 'YYYY-MM-DD' format.
+   */
+  getDepartureDate() {
+    return this.departureDate;
+  }
+
+  /**
+   * Returns the departure time of the carpooling.
+   * @returns {string} The departure time in 'HH:MM:SS' format.
+   */
+  getDepartureTime() {
+    return this.departureTime;
   }
 
   /**
@@ -65,7 +84,7 @@ export class Carpooling {
    * @returns {HTMLElement} - The HTML element for the carpooling card.
    */
   toCardElement() {
-    return createCarpoolCardElement(this, formatTime);
+    return createCarpoolCardElement(this, formatDateToFrench, formatTime);
   }
 
   /**

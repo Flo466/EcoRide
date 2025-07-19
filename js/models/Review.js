@@ -20,7 +20,7 @@ export class Review {
     constructor(data) {
         this.id = data.id || null;
         this.comment = data.comment || '';
-        this.rating = data.ratting || 0; // Note: 'ratting' might be a typo for 'rating'
+        this.rating = data.ratting || 0;
         this.status = data.status || ReviewStatus.PENDING;
 
         // Ensure user is an instance of User, or create one if raw data is provided.

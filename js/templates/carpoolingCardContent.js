@@ -22,7 +22,7 @@ const MESSAGES = {
  * @param {function(string): string} formatTime - Utility function to format an ISO string to a time string.
  * @returns {HTMLElement} The wrapper div containing the carpooling card.
  */
-export function createCarpoolCardElement(data, formatTime) {
+export function createCarpoolCardElement(data, formatDateToFrench, formatTime) {
     // Create the main wrapper for the card.
     const wrapper = document.createElement('div');
     wrapper.className = 'mb-4 w-100 px-2';
@@ -32,6 +32,7 @@ export function createCarpoolCardElement(data, formatTime) {
     card.className = 'carpool-card card shadow w-100';
 
     // Format departure and arrival times and places, providing defaults if needed.
+    const departureDateFormatted = formatDateToFrench(data.departureDate);
     const depTimeFormatted = formatTime(data.departureTime) || '';
     const arrTimeFormatted = formatTime(data.arrivalTime) || '';
     const depPlaceFormatted = data.departurePlace || '';
@@ -51,6 +52,10 @@ export function createCarpoolCardElement(data, formatTime) {
 
     // Set the inner HTML of the card using a template literal.
     card.innerHTML = `
+    <div class="card-body pb-0">
+            <div class=" text-start">
+                <h1 class="mb-0 ms-2 date">${departureDateFormatted}</h1>
+            </div>
         <div class="card-body d-flex justify-content-between">
             <div class="d-flex">
                 <div class="mt-1">
@@ -73,12 +78,13 @@ export function createCarpoolCardElement(data, formatTime) {
         </div>
 
         <div class="driver-section">
-            <img class="driver-img-detail" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || MESSAGES.FALLBACK_DRIVER_NAME}">
+            <img class="driver-img" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || MESSAGES.FALLBACK_DRIVER_NAME}">
             <div>
-                <p class="mb-0 fs-5">${data.driver.userName || MESSAGES.FALLBACK_DRIVER_NAME}</p>
+                <p class="mb-0 fs-6">${data.driver.userName || MESSAGES.FALLBACK_DRIVER_NAME}</p>
                 <p class="driver-rating">${ratingHtml}</p>
             </div>
         </div>
+    </div>
     `;
 
     // Append the created card to the wrapper and return it.
