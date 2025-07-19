@@ -5,9 +5,11 @@ namespace App\Controller;
 use App\Entity\Car;
 use App\Entity\Carpooling;
 use App\Entity\CarpoolingUser;
+use App\Entity\User; // Assurez-vous que User est importé
 use App\Enum\CarpoolingStatus;
 use OpenApi\Attributes as OA;
 use App\Repository\CarpoolingRepository;
+use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,18 +23,26 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use DateTime;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface; // Added for parameters
 
 #[Route('api/carpoolings', name: 'app_api_carpooling_')]
 final class CarpoolingController extends AbstractController
 {
+    private int $platformUserId; // Property to store platform user ID
+
     public function __construct(
         private EntityManagerInterface $manager,
         private CarpoolingRepository $repository,
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator,
         private NormalizerInterface $normalizer,
-        private Security $security
-    ) {}
+        private Security $security,
+        private UserRepository $userRepository,
+        ParameterBagInterface $params // Inject ParameterBagInterface
+    ) {
+        // Get the platform user ID from parameters
+        $this->platformUserId = $params->get('platform_user_id');
+    }
 
     #[Route('', name: 'list', methods: ['GET'])]
     public function listAllCarpoolings(): JsonResponse
@@ -50,23 +60,20 @@ final class CarpoolingController extends AbstractController
     #[Route('/list-by-user', name: 'list_by_user', methods: ['GET'])]
     public function listCarpoolingsByUser(): JsonResponse
     {
-        // Get the currently authenticated user
         $user = $this->security->getUser();
 
-        // If no user is authenticated, return an unauthorized response
         if (!$user) {
             return new JsonResponse(['message' => 'Authentification requise pour accéder à vos covoiturages.'], Response::HTTP_UNAUTHORIZED);
         }
 
         $carpoolings = $this->repository->findByUser($user);
 
-        // Serialize the carpooling data
         return $this->json($carpoolings, Response::HTTP_OK, [], [
             'groups' => [
                 'carpooling:read',
-                'car:read',      // Include car details
-                'brand:read',    // Include car brand details
-                'user:read'      // Include user details (for driver/passengers)
+                'car:read',
+                'brand:read',
+                'user:read'
             ],
         ]);
     }
@@ -132,12 +139,10 @@ final class CarpoolingController extends AbstractController
         $carpooling->setCreatedAt(new DateTimeImmutable());
         $carpooling->setStatus(CarpoolingStatus::OPEN);
 
-        // Autres champs
         $carpooling->setDeparturePlace($data['departurePlace'] ?? null);
         $carpooling->setArrivalPlace($data['arrivalPlace'] ?? null);
         $carpooling->setSeatCount($data['availableSeats'] ?? null);
         $carpooling->setPricePerPerson($data['pricePerPassenger'] ?? null);
-        // $carpooling->setIsEco($data['isEco'] ?? false); // Ligne d'origine
 
         if ($car->getEnergy() === 'Électrique') {
             $carpooling->setIsEco(true);
@@ -147,7 +152,6 @@ final class CarpoolingController extends AbstractController
 
         $carpooling->setStatus(CarpoolingStatus::tryFrom($data['status'] ?? CarpoolingStatus::OPEN->value));
 
-        // Utilisateur authentifié
         $user = $this->security->getUser();
         if (!$user) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
@@ -267,6 +271,121 @@ final class CarpoolingController extends AbstractController
 
         return new JsonResponse($responseData, status: Response::HTTP_OK);
     }
+
+    /**
+     * Handles user participation in a carpooling.
+     */
+    #[Route('/{id}/participate', name: 'participate', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function participate(int $id, Request $request): JsonResponse
+    {
+        $carpooling = $this->repository->find($id);
+
+        if (!$carpooling) {
+            return new JsonResponse(['message' => 'Covoiturage non trouvé.'], Response::HTTP_NOT_FOUND);
+        }
+
+        /** @var User $user */
+        $user = $this->security->getUser();
+        if (!$user) {
+            return new JsonResponse(['message' => 'Authentification requise.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Check if the user is the driver
+        foreach ($carpooling->getCarpoolingUsers() as $carpoolingUser) {
+            if ($carpoolingUser->getUser() === $user && $carpoolingUser->isDriver()) {
+                return new JsonResponse(['message' => 'Vous êtes le conducteur de ce covoiturage, vous ne pouvez pas y participer en tant que passager.'], Response::HTTP_BAD_REQUEST);
+            }
+        }
+
+        // Check if the user is already a passenger
+        $isAlreadyPassenger = false;
+        foreach ($carpooling->getCarpoolingUsers() as $carpoolingUser) {
+            if ($carpoolingUser->getUser() === $user && !$carpoolingUser->isDriver()) {
+                $isAlreadyPassenger = true;
+                break;
+            }
+        }
+
+        if ($isAlreadyPassenger) {
+            return new JsonResponse(['message' => 'Vous êtes déjà inscrit à ce covoiturage.'], Response::HTTP_CONFLICT);
+        }
+
+        // Check available seats
+        $currentPassengers = 0;
+        foreach ($carpooling->getCarpoolingUsers() as $carpoolingUser) {
+            if (!$carpoolingUser->isDriver() && !$carpoolingUser->isCancelled()) {
+                $currentPassengers++;
+            }
+        }
+
+        if ($currentPassengers >= $carpooling->getSeatCount()) {
+            return new JsonResponse(['message' => 'Ce covoiturage est complet.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $pricePerPerson = $carpooling->getPricePerPerson();
+        $platformFee = 2; // Fixed platform fee
+
+        // Check user credits (must cover the full price)
+        if ($user->getCredits() < $pricePerPerson) {
+            return new JsonResponse(['message' => 'Crédits insuffisants pour participer à ce covoiturage.'], Response::HTTP_PAYMENT_REQUIRED);
+        }
+
+        // Deduct credits from passenger
+        $user->setCredits($user->getCredits() - $pricePerPerson);
+        $this->manager->persist($user);
+
+        // Get the platform user
+        /** @var User|null $platformUser */
+        $platformUser = $this->userRepository->find($this->platformUserId);
+        if (!$platformUser) {
+            // This should ideally not happen if setup correctly, but good to check
+            return new JsonResponse(['message' => 'Erreur interne: Utilisateur plateforme non trouvé.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        // Credit platform fee to platform user
+        $platformUser->setCredits($platformUser->getCredits() + $platformFee);
+        $this->manager->persist($platformUser);
+
+        // Credit remaining amount to the driver
+        /** @var User|null $driver */
+        $driver = null;
+        foreach ($carpooling->getCarpoolingUsers() as $carpoolingUser) {
+            if ($carpoolingUser->isDriver()) {
+                $driver = $carpoolingUser->getUser();
+                break;
+            }
+        }
+
+        if (!$driver) {
+            return new JsonResponse(['message' => 'Erreur interne: Conducteur non trouvé pour ce covoiturage.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        $driverReceiveAmount = $pricePerPerson - $platformFee;
+        if ($driverReceiveAmount < 0) {
+            $driverReceiveAmount = 0; // Ensure driver doesn't get negative credits if fee is higher than price
+        }
+
+        $driver->setCredits($driver->getCredits() + $driverReceiveAmount);
+        $this->manager->persist($driver);
+
+        // Add user as a passenger
+        $carpoolingUser = new CarpoolingUser();
+        $carpoolingUser->setUser($user);
+        $carpoolingUser->setCarpooling($carpooling);
+        $carpoolingUser->setIsDriver(false);
+        $carpoolingUser->setIsCancelled(false);
+
+        $this->manager->persist($carpoolingUser);
+
+        $this->manager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Participation enregistrée avec succès.',
+            'newCredits' => $user->getCredits() // Return passenger's new credits
+        ], Response::HTTP_OK);
+    }
+
 
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     public function delete(int $id): JsonResponse

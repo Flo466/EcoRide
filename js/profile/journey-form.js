@@ -1,6 +1,6 @@
-
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
+import { sanitizeInput } from '../utils/sanitizer.js';
 
 // =============================================================================
 // I. Constants and DOM Elements
@@ -23,10 +23,11 @@ const messageDisplay = document.getElementById('messageDisplay');
 // Global variable to store fetched vehicles.
 let userVehicles = [];
 
-// User-facing messages (kept in French)
+// User-facing messages
 const MESSAGES = {
     FORM_VALIDATION_ERROR: "Veuillez corriger les erreurs dans le formulaire.",
     PRICE_RANGE_ERROR: "Le prix doit être un chiffre entre 1 et 50.",
+    PRICE_MIN_COMMISSION_ERROR: "Le prix ne peut pas être inférieur à 3 crédits (commission de 2 crédits incluse).",
     FETCH_CITIES_ERROR: "Impossible de charger les villes. Veuillez réessayer.",
     FETCH_VEHICLES_ERROR: "Impossible de charger vos véhicules. Veuillez vous reconnecter.",
     NO_VEHICLES_REGISTERED: "Vous n'avez pas de véhicule enregistré. Veuillez d'abord en ajouter un.",
@@ -45,9 +46,6 @@ const MESSAGES = {
 
 /**
  * Displays a temporary message in the dedicated box.
- * @param {string} message - The text message to display.
- * @param {'success' | 'danger' | 'info'} type - The type of message.
- * @param {HTMLElement} targetDisplay - The DOM element to display the message (defaults to messageDisplay).
  */
 const displayMessage = (message, type, targetDisplay = messageDisplay) => {
     if (!targetDisplay) {
@@ -203,6 +201,14 @@ const handleJourneySubmission = async (event) => {
         priceInput.nextElementSibling.textContent = MESSAGES.PRICE_RANGE_ERROR;
         displayMessage(MESSAGES.PRICE_RANGE_ERROR, 'danger');
         return;
+    }
+
+    // Price validation: minimum 3 credits due to commission.
+    if (priceValue < 3) {
+        priceInput.classList.add('is-invalid');
+        priceInput.nextElementSibling.textContent = MESSAGES.PRICE_MIN_COMMISSION_ERROR;
+        displayMessage(MESSAGES.PRICE_MIN_COMMISSION_ERROR, 'danger');
+        return;
     } else {
         priceInput.classList.remove('is-invalid');
         priceInput.classList.add('is-valid');
@@ -223,14 +229,14 @@ const handleJourneySubmission = async (event) => {
         return;
     }
 
-    // Prepare journey data for API.
+    // Prepare journey data for API with sanitized inputs.
     const journeyData = {
-        departurePlace: departureCitySelect.value,
-        arrivalPlace: arrivalCitySelect.value,
-        departureDate: departureDateInput.value,
-        departureTime: `${departureTimeInput.value}:00`, // Add seconds for HH:MM:SS format
-        arrivalDate: arrivalDateInput.value,
-        arrivalTime: `${arrivalTimeInput.value}:00`, // Add seconds for HH:MM:SS format
+        departurePlace: sanitizeInput(departureCitySelect.value),
+        arrivalPlace: sanitizeInput(arrivalCitySelect.value),
+        departureDate: sanitizeInput(departureDateInput.value),
+        departureTime: sanitizeInput(`${departureTimeInput.value}:00`),
+        arrivalDate: sanitizeInput(arrivalDateInput.value),
+        arrivalTime: sanitizeInput(`${arrivalTimeInput.value}:00`),
         car: selectedCarId,
         pricePerPassenger: priceValue,
         availableSeats: availableSeats

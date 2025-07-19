@@ -48,7 +48,7 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
         <span class="badge bg-primary driver-badge">
             ${MESSAGES.DRIVER_BADGE}
         </span>` : `
-        <span class="badge bg-white text-primary passenger-badge">
+        <span class="badge bg-white text-primary border border-primary passenger-badge">
             ${MESSAGES.PASSENGER_BADGE}
         </span>`;
 

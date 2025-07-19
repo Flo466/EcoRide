@@ -142,7 +142,6 @@ const setupActiveNavLink = () => {
 
 (async () => {
     initializeMessageBanner();
-    checkLogoutSuccess();
     await setupCityAutocomplete();
 
     if (homeForm) {

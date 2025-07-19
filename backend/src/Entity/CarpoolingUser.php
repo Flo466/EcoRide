@@ -16,19 +16,22 @@ class CarpoolingUser
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolingUsers')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')] // <<< AJOUTÉ : onDelete: 'CASCADE'
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Groups(['carpooling:read'])]
     #[MaxDepth(1)]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'carpoolingUsers')]
     #[ORM\JoinColumn(nullable: false)]
-    // Pas de groupe ici pour éviter de boucler vers Carpooling
     private ?Carpooling $carpooling = null;
 
     #[ORM\Column]
     #[Groups(['carpooling:read'])]
     private ?bool $isDriver = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['carpooling:read'])]
+    private ?bool $isCancelled = false;
 
     public function getId(): ?int
     {
@@ -67,6 +70,18 @@ class CarpoolingUser
     public function setIsDriver(bool $isDriver): static
     {
         $this->isDriver = $isDriver;
+
+        return $this;
+    }
+
+    public function isCancelled(): ?bool
+    {
+        return $this->isCancelled;
+    }
+
+    public function setIsCancelled(bool $isCancelled): static
+    {
+        $this->isCancelled = $isCancelled;
 
         return $this;
     }
