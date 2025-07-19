@@ -10,16 +10,15 @@ main {
   margin-bottom: 150px;
 }
 
-// Body text
 body {
   font-family: $font-family-base;
   font-size: 1rem;
   line-height: 1.6;
   color: $light-black;
+  padding-bottom: 90px;
+
 }
 
-
-// Titles
 h1,
 h2,
 h3,
@@ -29,8 +28,10 @@ h6 {
   font-family: $font-family-headings;
 }
 
-// Animation
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Animations                                                                 */
+/* ========================================================================== */
+
 @keyframes fadeInSlideUp {
   0% {
     opacity: 0;
@@ -86,7 +87,6 @@ h6 {
   animation-fill-mode: forwards;
 }
 
-
 .delay-100 {
   animation-delay: 0.1s;
 }
@@ -107,8 +107,10 @@ h6 {
   animation-delay: 0.5s;
 }
 
-// NavBar style
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* NavBar Style                                                               */
+/* ========================================================================== */
+
 .navbar-light {
   background-color: white;
   border-bottom: 3px solid $light-brown;
@@ -125,7 +127,6 @@ h6 {
 
     &.active {
       color: $navbar-light-active-color;
-
     }
   }
 
@@ -149,8 +150,10 @@ h6 {
   }
 }
 
-// Footer
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Footer                                                                     */
+/* ========================================================================== */
+
 .footer.footer {
   color: $primary;
   padding: 15px;
@@ -162,8 +165,10 @@ h6 {
   background-color: $lighter;
 }
 
-// Hero scene
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Hero Scene                                                                 */
+/* ========================================================================== */
+
 .hero-scene {
   position: relative;
   margin-bottom: 15px;
@@ -193,8 +198,9 @@ h6 {
   }
 }
 
-// Search form
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Search Form                                                                */
+/* ========================================================================== */
 
 .border-switch {
   border: none;
@@ -270,7 +276,6 @@ select:focus {
   #carpooling-container-home {
     margin-top: -75px;
   }
-
 }
 
 #carpooling-container {
@@ -294,8 +299,9 @@ select:focus {
   }
 }
 
-// Autocompletion container
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Autocompletion Container                                                   */
+/* ========================================================================== */
 
 .autocomplete-items {
   position: absolute;
@@ -311,7 +317,6 @@ select:focus {
   overflow-y: auto;
   z-index: 1000;
 }
-
 
 .autocomplete-items div {
   padding: 10px;
@@ -329,8 +334,9 @@ select:focus {
   background-color: #e0e0e0;
 }
 
-// Carpooling card
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Carpooling Card                                                            */
+/* ========================================================================== */
 
 .carpool-card {
   background-color: $white;
@@ -385,8 +391,9 @@ select:focus {
   object-fit: cover;
 }
 
-// Carpooling detail card
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Carpooling Detail Card                                                     */
+/* ========================================================================== */
 
 .detail-card {
   background-color: $white;
@@ -437,8 +444,9 @@ select:focus {
   font-size: x-large;
 }
 
-// User detail card
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* User Detail Card                                                           */
+/* ========================================================================== */
 
 .user-card-title {
   font-size: x-large;
@@ -459,37 +467,21 @@ select:focus {
 }
 
 .driver-name-rating {
-  // Par défaut (mobile), les éléments sont en colonne.
-  // Géré par flex-column dans le HTML (via JS).
   display: flex;
-  /* Toujours display flex pour que flex-direction s'applique */
   flex-direction: column;
-  /* Force la colonne sur mobile */
   justify-content: center;
-  /* Centre le contenu horizontalement en mode colonne */
   align-items: flex-start;
-  /* Aligne le texte au début sur mobile pour éviter le centrage par flexbox si besoin */
   gap: 0;
-  /* Pas de gap entre les lignes sur mobile par défaut */
 }
 
 @media (min-width: 992px) {
-
   .driver-name-rating {
-    // Sur desktop, les éléments sont en ligne.
-    // Géré par flex-md-row dans le HTML (via JS).
     flex-direction: row;
-    /* Force la ligne sur desktop */
     align-items: baseline;
-    /* Important pour aligner texte et chiffre/icône sur la même ligne de base */
     gap: 0.5rem;
-    /* Ajout d'un petit espacement entre le nom et la note sur desktop */
   }
 
   .driver-rating {
-    // La marge est maintenant gérée par `ms-md-2` dans le JS
-    // ou par le `gap` du parent.
-    // On s'assure qu'il n'y a pas de marge résiduelle ici.
     margin-left: 0 !important;
   }
 
@@ -509,9 +501,10 @@ select:focus {
   }
 }
 
+/* ========================================================================== */
+/* Review                                                                     */
+/* ========================================================================== */
 
-// Review
-// -------------------------------------------------------------
 .review-list {
   border-bottom: 1px solid $primary;
 }
@@ -540,8 +533,9 @@ select:focus {
   background: darken($color: $primary, $amount: 8);
 }
 
-// Form create / connect account
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Form Create / Connect Account                                              */
+/* ========================================================================== */
 
 .form-account {
   border-color: $primary;
@@ -564,8 +558,9 @@ select:focus {
   font-weight: 600;
 }
 
-// My profile
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* My Profile                                                                 */
+/* ========================================================================== */
 
 .profile-header {
   border-bottom: solid;
@@ -662,12 +657,11 @@ select:focus {
   color: $primary;
 }
 
-
-// Car card
-// -------------------------------------------------------------
+/* ========================================================================== */
+/* Car Card                                                                   */
+/* ========================================================================== */
 
 .vehicle-list {
-
   padding: 20px;
 
   h5 {
@@ -683,4 +677,35 @@ select:focus {
   border-radius: 2rem;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* ========================================================================== */
+/* Fixed Bottom Button */
+/* ========================================================================== */
+
+.fixed-bottom-button-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1050;
+  padding: 15px 0;
+  background-color: white;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fixed-bottom-button-container .container {
+  width: 100%;
+  max-width: 960px;
+  padding: 0 15px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#participate-button {
+  width: 80%;
+  max-width: 500px;
 }

@@ -33,7 +33,8 @@ const MESSAGES = {
     BUTTON_FULL: 'Complet',
     BUTTON_INSUFFICIENT_CREDITS: (creditsNeeded) => `Crédit insuffisant (${creditsNeeded} requis)`,
     BUTTON_PARTICIPATE: (creditsNeeded) => `Participer (${creditsNeeded} crédits)`,
-    WARN_BANNER_PLACEHOLDER_MISSING: 'Le placeholder #detail-message-banner-placeholder n\'a pas été trouvé. La bannière est insérée en haut du corps.'
+    WARN_BANNER_PLACEHOLDER_MISSING: 'Le placeholder #detail-message-banner-placeholder n\'a pas été trouvé. La bannière est insérée en haut du corps.',
+    LOADING_MESSAGE: 'Chargement en cours, merci de patienter... ⏳'
 };
 
 const carpoolingContainer = document.getElementById('detail-carpooling-container');
@@ -62,7 +63,7 @@ const updateBanner = (message, type = 'info', isVisible = true, autoHide = true)
     mainMessageBanner.className = `alert alert-${type} text-center mt-3`;
     mainMessageBanner.style.display = isVisible ? 'block' : 'none';
 
-    if (isVisible && autoHide && type !== 'danger') {
+    if (isVisible && autoHide && type !== 'danger' && message !== MESSAGES.LOADING_MESSAGE) {
         setTimeout(() => {
             mainMessageBanner.style.display = 'none';
         }, 5000);
@@ -139,8 +140,17 @@ const checkAuthentication = async () => {
 // =============================================================================
 
 async function fetchCarpoolingDataAndRender() {
+    updateBanner(MESSAGES.LOADING_MESSAGE, 'info', true, false);
+
+    carpoolingContainer.style.display = 'none';
+    userContainer.style.display = 'none';
+    reviewContainer.style.display = 'none';
+
     const id = getCarpoolingIdFromUrl();
-    if (!id) return;
+    if (!id) {
+        updateBanner('', 'info', false);
+        return;
+    }
 
     try {
         const result = await fetchApi(`${API_BASE_URL}/api/carpoolings/${id}`);
@@ -202,6 +212,11 @@ async function fetchCarpoolingDataAndRender() {
         console.error("Error fetching carpooling data:", error);
         carpoolingContainer.innerHTML = `<p class="text-danger">Erreur lors du chargement du covoiturage.</p>`;
         updateBanner(MESSAGES.ERROR_FETCH_CARPOOLING, 'danger', true, false);
+    } finally {
+        updateBanner('', 'info', false);
+        carpoolingContainer.style.display = 'block';
+        userContainer.style.display = 'block';
+        reviewContainer.style.display = 'block';
     }
 }
 
@@ -343,6 +358,7 @@ async function handleParticipateClick() {
     setupBackButton();
 
     if (!checkRequiredDOMElements()) {
+        updateBanner('', 'info', false);
         return;
     }
     await checkAuthentication();

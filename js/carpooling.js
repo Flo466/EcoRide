@@ -13,7 +13,7 @@ import { Carpooling } from './models/Carpooling.js';
 const MESSAGES = {
     WARN_BANNER_PLACEHOLDER_MISSING: 'Le conteneur #carpooling-results n\'a pas été trouvé. La bannière est insérée en haut du corps.',
     ERROR_LOAD_CITIES: '<strong>Erreur :</strong> Impossible de charger la liste des villes pour l\'autocomplétion.',
-    INFO_LOADING: '<strong>Chargement en cours...</strong> Merci de patienter.',
+    INFO_LOADING: 'Chargement en cours, merci de patienter... ⏳',
     WARN_SEARCH_EMPTY: '<strong>Erreur :</strong> Veuillez entrer au moins un point de départ et une destination.',
     INFO_NO_RESULTS: '<strong>Information :</strong> Aucun covoiturage trouvé pour votre recherche.',
     ERROR_SEARCH_FAILED: '<strong>Désolé, une erreur est survenue lors de la recherche des covoiturages.</strong> Veuillez réessayer plus tard.',
