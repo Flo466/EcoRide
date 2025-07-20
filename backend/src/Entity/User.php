@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\DBAL\Types\Types;
-use App\Enum\ReviewStatus;
+use App\Enum\ReviewStatus; // Ensure ReviewStatus is still used if the enum exists
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -91,13 +91,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?bool $isDriver = false;
 
     /**
-     * @var Collection<int, Configuration>
-     */
-    #[ORM\OneToMany(targetEntity: Configuration::class, mappedBy: 'user', orphanRemoval: true)]
-    #[Groups(['user:read'])]
-    private Collection $configurations;
-
-    /**
      * @var Collection<int, Review>
      */
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user', orphanRemoval: true)]
@@ -129,7 +122,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @throws \Exception */
     public function __construct()
     {
-        $this->configurations = new ArrayCollection();
         $this->reviews = new ArrayCollection();
         $this->receivedReviews = new ArrayCollection();
         $this->cars = new ArrayCollection();
@@ -384,35 +376,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDriver(bool $isDriver): static
     {
         $this->isDriver = $isDriver;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Configuration>
-     */
-    public function getConfigurations(): Collection
-    {
-        return $this->configurations;
-    }
-
-    public function addConfiguration(Configuration $configuration): static
-    {
-        if (!$this->configurations->contains($configuration)) {
-            $this->configurations->add($configuration);
-            $configuration->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeConfiguration(Configuration $configuration): static
-    {
-        if ($this->configurations->removeElement($configuration)) {
-            if ($configuration->getUser() === $this) {
-                $configuration->setUser(null);
-            }
-        }
 
         return $this;
     }
