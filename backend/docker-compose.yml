@@ -1,8 +1,11 @@
 services:
+  ##########################################################################
+  #                          DATABASE SERVICE - MYSQL                      #
+  ##########################################################################
   ecoride_db:
     image: mysql:8.0
-    ports:
-      - "3306:3306"
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -10,23 +13,42 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - symfony
-
+  ##########################################################################
+  #                        BACKEND SERVICE - SYMFONY                       #
+  ##########################################################################
   symfony_backend:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: symfony_backend
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     volumes:
       - .:/var/www/html
       - symfony_vendor_cache:/var/www/html/vendor
       - symfony_var_cache:/var/www/html/var
+    environment:
+      MYSQL_HOST: ecoride_db
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
     depends_on:
-      - ecoride_db
-    command: php -S 0.0.0.0:8000 -t public
+      ecoride_db:
+        condition: service_healthy
     networks:
       - symfony
 

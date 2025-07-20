@@ -1,24 +1,31 @@
 FROM php:8.3-fpm
 
-# Installe les dépendances nécessaires
-RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev zip git && \
+# Install required dependencies and MySQL client
+RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev zip git default-mysql-client && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd pdo pdo_mysql
+    docker-php-ext-install gd pdo pdo_mysql && \
+    rm -rf /var/lib/apt/lists/*
 
-# Installer Composer
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Répertoire de travail
+# Set working directory
 WORKDIR /var/www/html
 
-# Copier les fichiers du projet
+# Copy project files
 COPY . /var/www/html
 
-# Exécuter composer install pour installer les dépendances
-RUN composer install
+# Install PHP dependencies
+RUN composer install --no-interaction --prefer-dist
 
-# Exposer le port
+# Make init script executable
+RUN chmod +x /var/www/html/init_db.sh
+
+# Expose Symfony server port
 EXPOSE 8000
 
-# Démarrer le serveur Symfony
-CMD ["php-fpm"]
+# Run init script
+ENTRYPOINT ["./init_db.sh"]
+
+# Default command
+CMD []
