@@ -14,25 +14,16 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-
-        # ⭐ NOUVEAU FIREWALL POUR L'API ⭐
         api:
-            pattern: ^/api/ # Capture toutes les routes qui commencent par /api/
-            stateless: true # Indispensable pour les APIs sans session
-            provider: app_user_provider # Utilise ton fournisseur d'utilisateurs
+            pattern: ^/api/
+            stateless: true
+            provider: app_user_provider
             custom_authenticators:
-                - App\Security\ApiTokenAuthenticator # Ton authenticator pour le token API
+                - App\Security\ApiTokenAuthenticator
 
-        main: # Ce firewall gère le reste de ton application, potentiellement avec des sessions
+        main:
             lazy: true
             provider: app_user_provider
-            # Si 'main' ne gère pas les APIs, il ne doit pas inclure l'ApiTokenAuthenticator
-            # Si tu as une partie "front-office" ou "admin" avec des formulaires de login,
-            # c'est ici que tu configurerais 'form_login' ou autres.
-            # Pour l'instant, pas de pattern défini, il attrapera tout ce que 'api' ne prend pas.
-            # custom_authenticators:
-            #     - App\Security\ApiTokenAuthenticator # <-- C'est cette ligne qu'on retire d'ici !
-            # stateless: true # Retire ceci si 'main' utilise des sessions
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
@@ -40,7 +31,6 @@ security:
         # -------------------------------------------------------------
         # Place specific PUBLIC_ACCESS rules first
         # -------------------------------------------------------------
-        # Routes pour le live check du pseudo et de l'email
         - { path: ^/api/check-userName, roles: PUBLIC_ACCESS }
         - { path: ^/api/check-email, roles: PUBLIC_ACCESS }
 
