@@ -107,7 +107,7 @@ Launch Live Server from VS Code:
 - At the root of the project
 - Click left `index.html`, then click the **"PHP Server"** icon in the top-right bar
 
-  ![Image](assets\images\image-1.png)
+  ![Image](assets/images/image-1.png)
 
 ---
 
