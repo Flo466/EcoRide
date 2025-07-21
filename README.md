@@ -36,12 +36,12 @@ Make sure you have the following installed on your machine:
 
 ## Installation and Launching the Application
 
-### 1. Clone the Repository and Switch to `developement` Branch
+### 1. Clone the Repository and Switch to `development` Branch
 
 ```bash
 git clone https://github.com/Flo466/EcoRide.git
 cd ecoride
-git checkout developement
+git checkout development
 ```
 ---
 
