@@ -45,7 +45,7 @@ git checkout developement
 ```
 ---
 
-### 2. Backend Setup and Launch
+### 2. Backend Setup
 
 Navigate to the backend directory:
 
@@ -53,7 +53,7 @@ Navigate to the backend directory:
 cd backend
 ```
 
-In VS Code create a file named `.env` with the following content:
+In VS Code, at the root of the backend folder, create a file named `.env` with the following content:
 
 ```env
 APP_ENV=dev
@@ -82,11 +82,10 @@ If you are on Windows, ensure the backend/init_db.sh file is saved with LF (Line
 
 Open init_db.sh at the root of the backend folder in VS Code.
 
-Look at the bottom right of the VS Code status bar (it might show "CRLF").
+Look at the bottom right of the VS Code status bar it might show "CRLF" (but if it already shows "LF", it's all good).
 
-Click on "CRLF" and select "LF" from the pop-up menu.
+Click on "CRLF" and select "LF" from the pop-up menu and save the file.
 
-Save the file.
 This step is crucial to prevent "no such file or directory" errors in the Linux-based Docker container.
 
 
@@ -95,7 +94,7 @@ This step is crucial to prevent "no such file or directory" errors in the Linux-
 
 ### 4. Launch Docker services
 
-Then launch the services:
+Then launch the services (make sure you're still at the root of the backend folder in your terminal):
 
 ```bash
 docker-compose up --build -d
