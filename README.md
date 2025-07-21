@@ -102,7 +102,7 @@ Run the following command to install all necessary dependencies:
 npm install
 ```
 
-Launch Live Server from VS Code:
+Launch PHP Server from VS Code:
 
 - At the root of the project
 - Click left `index.html`, then click the **"PHP Server"** icon in the top-right bar
