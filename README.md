@@ -15,7 +15,7 @@
 
 - **Backend**: Symfony 6.4 (PHP 8.3)
 - **Database**: MySQL 8.0
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3 (SCSS), Bootstrap 5
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3 (SCSS), Bootstrap 5.3
 - **Containerization**: Docker, Docker Compose
 
 ## Prerequisites
@@ -41,7 +41,7 @@ Make sure you have the following installed on your machine:
 ```bash
 git clone https://github.com/Flo466/EcoRide.git
 cd EcoRide
-git checkout development
+git checkout developement
 ```
 ---
 
@@ -107,7 +107,7 @@ Launch Live Server from VS Code:
 - At the root of the project
 - Click left `index.html`, then click the **"PHP Server"** icon in the top-right bar
 
-  ![alt text](assets\images\image-1.png)
+  ![Image](assets\images\image-1.png)
 
 ---
 
