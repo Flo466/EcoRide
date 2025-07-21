@@ -40,7 +40,7 @@ Make sure you have the following installed on your machine:
 
 ```bash
 git clone https://github.com/Flo466/EcoRide.git
-cd EcoRide
+cd ecoride
 git checkout developement
 ```
 ---
@@ -53,7 +53,7 @@ Navigate to the backend directory:
 cd backend
 ```
 
-In VS Code, at the root of the backend folder, create a file named `.env` with the following content:
+In VS Code, at the root of the backend directory, create a file named `.env` with the following content:
 
 ```env
 APP_ENV=dev
@@ -61,10 +61,10 @@ APP_SECRET=your_symfony_secret_here (generate a key)
 
 DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@ecoride_db:3306/${MYSQL_DATABASE}?serverVersion=8.0.32&charset=utf8mb4"
 
-MYSQL_ROOT_PASSWORD=root_password_ecoride (use you own password)
+MYSQL_ROOT_PASSWORD=root_password_ecoride (use your own password)
 MYSQL_DATABASE=ecoride
-MYSQL_USER=ecoride_user (use you own user name)
-MYSQL_PASSWORD=ecoride_password (use you own password)
+MYSQL_USER=ecoride_user (use your own user name)
+MYSQL_PASSWORD=ecoride_password (use your own password)
 
 CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
 ```
@@ -76,11 +76,12 @@ php -r "echo bin2hex(random_bytes(32));"
 
 ```
 
+
 ### 3. Verify init_db.sh Line Endings (Windows Users):
 
 If you are on Windows, ensure the backend/init_db.sh file is saved with LF (Line Feed) line endings.
 
-Open init_db.sh at the root of the backend folder in VS Code.
+Open the init_db.sh file at the root of the backend directory in VS Code.
 
 Look at the bottom right of the VS Code status bar it might show "CRLF" (but if it already shows "LF", it's all good).
 
@@ -94,7 +95,7 @@ This step is crucial to prevent "no such file or directory" errors in the Linux-
 
 ### 4. Launch Docker services
 
-Then launch the services (make sure you're still at the root of the backend folder in your terminal):
+Then launch the services (make sure you're still at the root of the backend directory in your terminal):
 
 ```bash
 docker-compose up --build -d
@@ -112,6 +113,12 @@ Look for:
 ---
 
 ### 5. Frontend Launch
+
+Navigate at he root of the project (ecoride directory):
+
+```bash
+cd ..
+```
 
 The frontend is located in the root directory of the project EcoRide.
 Run the following command to install all necessary dependencies:
