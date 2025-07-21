@@ -53,7 +53,7 @@ Navigate to the backend directory:
 cd backend
 ```
 
-Create a file named `.env` with the following content:
+In VS Code create a file named `.env` with the following content:
 
 ```env
 APP_ENV=dev
@@ -76,6 +76,25 @@ php -r "echo bin2hex(random_bytes(32));"
 
 ```
 
+### 3. Verify init_db.sh Line Endings (Windows Users):
+
+If you are on Windows, ensure the backend/init_db.sh file is saved with LF (Line Feed) line endings.
+
+Open init_db.sh at the root of the backend folder in VS Code.
+
+Look at the bottom right of the VS Code status bar (it might show "CRLF").
+
+Click on "CRLF" and select "LF" from the pop-up menu.
+
+Save the file.
+This step is crucial to prevent "no such file or directory" errors in the Linux-based Docker container.
+
+
+  ![Image](assets/images/screen1.png)
+
+
+### 4. Launch Docker services
+
 Then launch the services:
 
 ```bash
@@ -93,7 +112,7 @@ Look for:
 
 ---
 
-### 3. Frontend Launch
+### 5. Frontend Launch
 
 The frontend is located in the root directory of the project EcoRide.
 Run the following command to install all necessary dependencies:
@@ -111,7 +130,7 @@ Launch PHP Server from VS Code:
 
 ---
 
-### 4. Access the Application
+### 6. Access the Application
 
 - **Frontend**: `http://localhost:3000`
 
