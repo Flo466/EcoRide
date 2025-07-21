@@ -36,7 +36,7 @@ Make sure you have the following installed on your machine:
 
 ## Installation and Launching the Application
 
-### 1. Clone the Repository and Switch to `development` Branch
+### 1. Clone the Repository and Switch to `developement` Branch
 
 ```bash
 git clone https://github.com/Flo466/EcoRide.git
@@ -57,16 +57,23 @@ Create a file named `.env` with the following content:
 
 ```env
 APP_ENV=dev
-APP_SECRET=your_symfony_secret_here
+APP_SECRET=your_symfony_secret_here (generate a key)
 
 DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@ecoride_db:3306/${MYSQL_DATABASE}?serverVersion=8.0.32&charset=utf8mb4"
 
-MYSQL_ROOT_PASSWORD=root_password_ecoride
+MYSQL_ROOT_PASSWORD=root_password_ecoride (use you own password)
 MYSQL_DATABASE=ecoride
-MYSQL_USER=ecoride_user
-MYSQL_PASSWORD=ecoride_password
+MYSQL_USER=ecoride_user (use you own user name)
+MYSQL_PASSWORD=ecoride_password (use you own password)
 
 CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+```
+
+You can generate a secure random string for APP_SECRET using the following command:
+
+```bash
+php -r "echo bin2hex(random_bytes(32));"
+
 ```
 
 Then launch the services:
