@@ -43,16 +43,16 @@ INSERT INTO `user` (
     `photo`, `photo_mime_type`, `user_name`, `credits`, `created_at`, `updated_at`, `api_token`, `is_driver`, `used_car_id`
 ) VALUES
 -- 10 Drivers / Passengers
-('john.doe@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Doe', 'John', '0700000001', '10 Elm Street, London', '1985-01-15 00:00:00', NULL, NULL, 'JohnD', 50, NOW(), NULL, 'Tkn_johndoe_123abc456def7890', TRUE, NULL),
-('jane.smith@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Smith', 'Jane', '0700000002', '22 Oak Avenue, Manchester', '1990-03-20 00:00:00', NULL, NULL, 'JaneS', 50, NOW(), NULL, 'Tkn_janesmith_abc123def456789', TRUE, NULL),
-('mike.brown@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Brown', 'Mike', '0700000003', '33 Pine Lane, Birmingham', '1988-07-01 00:00:00', NULL, NULL, 'MikeB', 50, NOW(), NULL, 'Tkn_mikebrown_456ghi789jkl0123', TRUE, NULL),
-('sarah.white@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'White', 'Sarah', '0700000004', '44 Cedar Road, Leeds', '1992-11-10 00:00:00', NULL, NULL, 'SarahW', 50, NOW(), NULL, 'Tkn_sarahwhite_mno789pqr012345', TRUE, NULL),
-('chris.green@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Green', 'Chris', '0700000005', '55 Birch Street, Glasgow', '1983-04-25 00:00:00', NULL, NULL, 'ChrisG', 50, NOW(), NULL, 'Tkn_chrisgreen_stu456vwx789012', TRUE, NULL),
-('emily.black@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Black', 'Emily', '0700000006', '66 Willow Drive, Edinburgh', '1995-09-05 00:00:00', NULL, NULL, 'EmilyB', 50, NOW(), NULL, 'Tkn_emilyblack_yza012bcd345678', TRUE, NULL),
-('daniel.grey@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Grey', 'Daniel', '0700000007', '77 Spruce Court, Bristol', '1987-02-28 00:00:00', NULL, NULL, 'DanielG', 50, NOW(), NULL, 'Tkn_danielgrey_efg901hij234567', TRUE, NULL),
-('olivia.blue@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Blue', 'Olivia', '0700000008', '88 Poplar Place, Cardiff', '1991-06-12 00:00:00', NULL, NULL, 'OliviaB', 50, NOW(), NULL, 'Tkn_oliviablu_klm890nop123456', TRUE, NULL),
-('william.red@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Red', 'William', '0700000009', '99 Ash Street, Belfast', '1984-10-03 00:00:00', NULL, NULL, 'WilliamR', 50, NOW(), NULL, 'Tkn_williamred_qrs789tuv012345', TRUE, NULL),
-('sophia.yellow@example.com', '["ROLE_USER", "ROLE_DRIVER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Yellow', 'Sophia', '0700000010', '100 Beach Road, Brighton', '1993-08-18 00:00:00', NULL, NULL, 'SophiaY', 50, NOW(), NULL, 'Tkn_sophiayellow_wxy678zab90123', TRUE, NULL),
+('john.doe@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Doe', 'John', '0700000001', '10 Elm Street, London', '1985-01-15 00:00:00', NULL, NULL, 'JohnD', 50, NOW(), NULL, 'Tkn_johndoe_123abc456def7890', TRUE, NULL),
+('jane.smith@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Smith', 'Jane', '0700000002', '22 Oak Avenue, Manchester', '1990-03-20 00:00:00', NULL, NULL, 'JaneS', 50, NOW(), NULL, 'Tkn_janesmith_abc123def456789', TRUE, NULL),
+('mike.brown@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Brown', 'Mike', '0700000003', '33 Pine Lane, Birmingham', '1988-07-01 00:00:00', NULL, NULL, 'MikeB', 50, NOW(), NULL, 'Tkn_mikebrown_456ghi789jkl0123', TRUE, NULL),
+('sarah.white@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'White', 'Sarah', '0700000004', '44 Cedar Road, Leeds', '1992-11-10 00:00:00', NULL, NULL, 'SarahW', 50, NOW(), NULL, 'Tkn_sarahwhite_mno789pqr012345', TRUE, NULL),
+('chris.green@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Green', 'Chris', '0700000005', '55 Birch Street, Glasgow', '1983-04-25 00:00:00', NULL, NULL, 'ChrisG', 50, NOW(), NULL, 'Tkn_chrisgreen_stu456vwx789012', TRUE, NULL),
+('emily.black@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Black', 'Emily', '0700000006', '66 Willow Drive, Edinburgh', '1995-09-05 00:00:00', NULL, NULL, 'EmilyB', 50, NOW(), NULL, 'Tkn_emilyblack_yza012bcd345678', TRUE, NULL),
+('daniel.grey@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Grey', 'Daniel', '0700000007', '77 Spruce Court, Bristol', '1987-02-28 00:00:00', NULL, NULL, 'DanielG', 50, NOW(), NULL, 'Tkn_danielgrey_efg901hij234567', TRUE, NULL),
+('olivia.blue@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Blue', 'Olivia', '0700000008', '88 Poplar Place, Cardiff', '1991-06-12 00:00:00', NULL, NULL, 'OliviaB', 50, NOW(), NULL, 'Tkn_oliviablu_klm890nop123456', TRUE, NULL),
+('william.red@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Red', 'William', '0700000009', '99 Ash Street, Belfast', '1984-10-03 00:00:00', NULL, NULL, 'WilliamR', 50, NOW(), NULL, 'Tkn_williamred_qrs789tuv012345', TRUE, NULL),
+('sophia.yellow@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Yellow', 'Sophia', '0700000010', '100 Beach Road, Brighton', '1993-08-18 00:00:00', NULL, NULL, 'SophiaY', 50, NOW(), NULL, 'Tkn_sophiayellow_wxy678zab90123', TRUE, NULL),
 -- 10 Passengers
 ('liam.jones@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Jones', 'Liam', '0700000011', '111 River Street, Dublin', '1990-02-01 00:00:00', NULL, NULL, 'LiamJ', 20, NOW(), NULL, 'Tkn_liamjones_abc456def7890123', FALSE, NULL),
 ('chloe.davis@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Davis', 'Chloe', '0700000012', '122 Hillside Road, Cork', '1994-05-10 00:00:00', NULL, NULL, 'ChloeD', 20, NOW(), NULL, 'Tkn_chloedavis_ghi123jkl4567890', FALSE, NULL),
@@ -63,7 +63,9 @@ INSERT INTO `user` (
 ('james.anderson@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Anderson', 'James', '0700000017', '177 Garden Path, Sligo', '1982-07-29 00:00:00', NULL, NULL, 'JamesA', 20, NOW(), NULL, 'Tkn_jamesanderson_klm890nop1234567', FALSE, NULL),
 ('ava.thomas@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Thomas', 'Ava', '0700000018', '188 Bridge Street, Ennis', '1996-10-05 00:00:00', NULL, NULL, 'AvaT', 20, NOW(), NULL, 'Tkn_avathomas_qrs789tuv01234567', FALSE, NULL),
 ('logan.jackson@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Jackson', 'Logan', '0700000019', '199 Old Road, Tralee', '1987-12-14 00:00:00', NULL, NULL, 'LoganJ', 20, NOW(), NULL, 'Tkn_loganjackson_wxy678zab9012345', FALSE, NULL),
-('sophie.harris@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Harris', 'Sophie', '0700000020', '200 New Street, Athlone', '1995-03-28 00:00:00', NULL, NULL, 'SophieH', 20, NOW(), NULL, 'Tkn_sophieharris_cde345fgh6789012', FALSE, NULL);
+('sophie.harris@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Harris', 'Sophie', '0700000020', '200 New Street, Athlone', '1995-03-28 00:00:00', NULL, NULL, 'SophieH', 20, NOW(), NULL, 'Tkn_sophieharris_cde345fgh6789012', FALSE, NULL),
+-- test user
+('test@test.com', '["ROLE_USER"]', '$2y$13$/ewjqhF8tGwz7sByjOwqoeBAzc5mIMPpzO8qeBr0IyBowd5OWEFNq', 'Testeur', 'Compte', '0700000020', '200 test Street, Test City', '1995-03-28 00:00:00', NULL, NULL, 'Test', 20, NOW(), NULL, 'Tkn_testeur_cde345fgh6789012', FALSE, NULL);
 
 --
 -- Insert 10 vehicles
@@ -93,7 +95,7 @@ INSERT INTO `carpooling` (
 ) VALUES
 -- Carpoolings for John Doe (User ID: 2, Car: Tesla Model 3) - Departing from Paris
 ((SELECT id FROM `car` WHERE user_id = 2 AND model = 'Model 3'), '2025-09-01', '07:30:00', 'Paris', '2025-09-01', '08:15:00', 'Boulogne-Billancourt', 3, 5.00, TRUE, NOW(), NULL, 'open'),
-((SELECT id FROM `car` WHERE user_id = 2 AND model = 'Model 3'), '2025-09-01', '09:00:00', 'Paris', '2025-09-01', '10:00:00', 'Saint-Denis', 3, 7.50, TRUE, NOW(), NULL, 'open'),
+((SELECT id FROM `car` WHERE user_id = 2 AND model = 'Model 3'), '2025-09-01', '09:00:00', 'Paris', '2025-09-01', '10:00:00', 'Saint-Denis', 3, 7.00, TRUE, NOW(), NULL, 'open'),
 ((SELECT id FROM `car` WHERE user_id = 2 AND model = 'Model 3'), '2025-09-01', '14:00:00', 'Paris', '2025-09-01', '15:30:00', 'Versailles', 3, 10.00, TRUE, NOW(), NULL, 'open'),
 
 -- Carpoolings for Jane Smith (User ID: 3, Car: Toyota Corolla) - Departing from Lyon
