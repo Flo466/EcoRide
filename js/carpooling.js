@@ -17,7 +17,6 @@ const MESSAGES = {
     WARN_SEARCH_EMPTY: '<strong>Erreur :</strong> Veuillez entrer au moins un point de départ et une destination.',
     INFO_NO_RESULTS: '<strong>Information :</strong> Aucun covoiturage trouvé pour votre recherche.',
     ERROR_SEARCH_FAILED: '<strong>Désolé, une erreur est survenue lors de la recherche des covoiturages.</strong> Veuillez réessayer plus tard.',
-    ERROR_RESULTS_CONTAINER_NOT_FOUND: 'Impossible de charger les résultats de la recherche.'
 };
 
 // Retrieving DOM elements
@@ -172,7 +171,7 @@ async function executeSearch(depart, arrivee, date) {
         console.error("Error searching for carpoolings:", error);
         updateBanner(MESSAGES.ERROR_SEARCH_FAILED, 'danger', true);
         if (carpoolingResultsContainer) {
-            carpoolingResultsContainer.innerHTML = `<p class="text-danger text-center">${MESSAGES.ERROR_RESULTS_CONTAINER_NOT_FOUND}</p>`;
+            carpoolingResultsContainer.innerHTML = `<p class="text-danger text-center">${''}</p>`;
         }
     }
 }

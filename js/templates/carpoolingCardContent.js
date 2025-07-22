@@ -18,7 +18,7 @@ export function createCarpoolCardElement(data, formatDateToFrench, formatTime) {
     wrapper.className = 'mb-4 w-100 px-2';
 
     const card = document.createElement('div');
-    card.className = 'carpool-card card shadow w-100';
+    card.className = 'carpool-card card shadow w-100 animate-fade-in-up';
 
     const departureDateFormatted = formatDateToFrench(data.departureDate);
     const depTimeFormatted = formatTime(data.departureTime) || '';

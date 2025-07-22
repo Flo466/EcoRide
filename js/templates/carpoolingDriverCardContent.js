@@ -35,7 +35,7 @@ export function createCarpoolDriverCardElement(data) {
 
     // Create the card element with styling.
     const driverCard = document.createElement('div');
-    driverCard.className = 'detail-card card shadow w-100';
+    driverCard.className = 'detail-card card shadow w-100 animate-fade-in-up';
 
     // Extract car details, providing default values if not available.
     const carBrandLabel = data.car && data.car.brand ? data.car.brand.label : MESSAGES.CAR_BRAND_NOT_SPECIFIED;

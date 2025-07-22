@@ -30,7 +30,7 @@ export function createCarpoolDetailCardElement(data, formatDateToFrench, formatT
 
     // Create the card element with styling.
     const card = document.createElement('div');
-    card.className = 'detail-card card shadow w-100';
+    card.className = 'detail-card card shadow w-100 animate-fade-in-up';
 
     // Format departure and arrival dates/times.
     const departureDateFormatted = formatDateToFrench(data.departureDate);
