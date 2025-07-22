@@ -299,6 +299,60 @@ select:focus {
   }
 }
 
+@media (min-width: 992px) {
+  .border-switch {
+    border-bottom: none;
+    border-right: 2px solid $primary;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .b-s-t {
+    margin-top: 0;
+  }
+
+  .search-form {
+    border-radius: 2rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .search-form .form-control,
+  .search-form .btn-search {
+    height: 55px;
+    border-radius: 0;
+  }
+
+  #departurePlace {
+    border-top-left-radius: 2rem;
+    border-bottom-left-radius: 2rem;
+  }
+
+  .search-form input:last-of-type {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .btn-search {
+    border-top-right-radius: 2rem;
+    border-bottom-right-radius: 2rem;
+    white-space: nowrap;
+  }
+
+  .search-form>div.d-flex {
+    min-height: 55px;
+  }
+
+  #carpooling-container-home {
+    margin-top: -75px;
+  }
+
+  .search-h1 {
+    display: none;
+  }
+}
+
 /* ========================================================================== */
 /* Autocompletion Container                                                   */
 /* ========================================================================== */

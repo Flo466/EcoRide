@@ -42,7 +42,7 @@ mainMessageBanner.style.display = 'none'; // Hidden by default
  */
 const updateBanner = (message, type = 'info', isVisible = true, autoHide = true) => {
     mainMessageBanner.innerHTML = message;
-    mainMessageBanner.className = `alert alert-${type} text-center mt-3`; // Add mt-3 class here
+    mainMessageBanner.className = `alert alert-${type} text-center mt-3`;
     mainMessageBanner.style.display = isVisible ? 'block' : 'none';
 
     if (isVisible && autoHide && type !== 'danger') {
