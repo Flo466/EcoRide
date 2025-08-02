@@ -3,7 +3,10 @@ import { API_BASE_URL } from '../config.js';
 import Car from '../models/Car.js';
 import { Carpooling } from '../models/Carpooling.js';
 
-// User-facing messages
+// =========================================================================
+// I. User-facing messages
+// =========================================================================
+
 const MESSAGES = {
     TOKEN_MISSING_GENERIC: "Jeton utilisateur manquant. Veuillez vous reconnecter.",
     UNKNOWN_ITEM_TYPE_DELETE: "Erreur : Type d'élément inconnu pour la suppression.",
@@ -20,6 +23,7 @@ const MESSAGES = {
     LOAD_SUCCESS: (count, type) => `Chargement de ${count} ${type} réussi.`,
     EMPTY_VEHICLES: "Vous n'avez pas encore de véhicule enregistré.",
     EMPTY_JOURNEYS: "Vous n'avez pas encore de voyage enregistré.",
+    EMPTY_HISTORY: "Vous n'avez pas encore d'historique de covoiturage.",
     LOAD_ERROR_GENERIC: (type, message) => `Impossible de charger vos ${type} : ${message}`,
     CONFIRM_CANCEL_CARPOOLING: (displayName) => `Êtes-vous sûr(e) de vouloir annuler le covoiturage du ${displayName} ? Tous les passagers inscrits seront remboursés.`,
     CONFIRM_LEAVE_CARPOOLING: (displayName) => `Êtes-vous sûr(e) de vouloir annuler votre participation au covoiturage ${displayName} ? Vos crédits vous seront remboursés.`,
@@ -28,7 +32,10 @@ const MESSAGES = {
     ACTION_ERROR_GENERIC: (action, message) => `Impossible d'effectuer l'action "${action}" : ${message}`,
 };
 
-// DOM elements
+// =========================================================================
+// II. DOM elements & Helpers
+// =========================================================================
+
 const itemsListContainer = document.querySelector('.items-list-container');
 const messageDisplay = document.getElementById('messageDisplay');
 const loadingMessageDisplay = document.getElementById('loadingMessageDisplay');
@@ -77,6 +84,10 @@ const hideMessage = (targetDisplay) => {
         targetDisplay.innerHTML = '';
     }
 };
+
+// =========================================================================
+// III. User Actions (Delete, Cancel, Leave)
+// =========================================================================
 
 /** Handles carpooling actions (cancel/leave). */
 const handleJourneyAction = async (journeyId, actionType, journeyDisplayName, reloadFunction) => {
@@ -153,7 +164,11 @@ const deleteVehicle = async (itemId, itemDisplayName, reloadFunction) => {
     }
 };
 
-/** Loads and displays user's items (vehicles or journeys). */
+// =========================================================================
+// IV. Main logic for loading items
+// =========================================================================
+
+/** Loads and displays user's items (vehicles, journeys or history). */
 export const loadUserItems = async (type) => {
     if (!itemsListContainer) return;
 
@@ -169,7 +184,7 @@ export const loadUserItems = async (type) => {
     }
 
     const currentUserId = parseInt(localStorage.getItem('currentUserId'));
-    if (type === 'journeys' && (isNaN(currentUserId) || currentUserId === null)) {
+    if ((type === 'journeys' || type === 'history') && (isNaN(currentUserId) || currentUserId === null)) {
         hideMessage(loadingMessageDisplay);
         displayMessage(MESSAGES.USER_ID_MISSING_JOURNEYS, 'danger');
         setTimeout(() => { window.location.href = '/login'; }, 3000);
@@ -191,11 +206,11 @@ export const loadUserItems = async (type) => {
             const itemDisplayName = car.getFullName();
             deleteVehicle(vehicleId, itemDisplayName, () => loadUserItems(type));
         });
-    } else if (type === 'journeys') {
+    } else if (type === 'journeys' || type === 'history') {
         endpoint = `${API_BASE_URL}/api/carpoolings/list-by-user`;
-        emptyMessage = MESSAGES.EMPTY_JOURNEYS;
+        emptyMessage = type === 'journeys' ? MESSAGES.EMPTY_JOURNEYS : MESSAGES.EMPTY_HISTORY;
         ItemClass = Carpooling;
-        frenchType = 'voyages';
+        frenchType = type === 'journeys' ? 'voyages' : 'historique';
         cardCreationMethod = (carpooling) => carpooling.toJourneyCardElement(currentUserId);
     } else {
         hideMessage(loadingMessageDisplay);
@@ -211,53 +226,52 @@ export const loadUserItems = async (type) => {
             let itemsDisplayedCount = 0;
             itemsData.forEach(data => {
                 const item = new ItemClass(data, currentUserId);
+                let shouldDisplay = false;
 
-                // Carpooling filtering logic
-                if (type === 'journeys') {
-                    // Don't display if the carpooling is not 'open'
-                    if (item.getStatus() !== 'open') return;
+                const isUserDriver = item.driver.id === currentUserId;
+                const userParticipation = data.carpoolingUsers.find(cu => cu.user.id === currentUserId);
+                const hasActiveParticipation = userParticipation && !userParticipation.isCancelled;
+                const hasCancelledParticipation = userParticipation && userParticipation.isCancelled;
 
-                    // Filter based on the *latest* user participation status
-                    const userParticipations = data.carpoolingUsers.filter(cu => cu.user.id === currentUserId);
-                    let isCurrentlyParticipating = false;
-
-                    // Check if ANY of the user's participations for this carpooling is NOT cancelled.
-                    // This handles cases where a user cancels and then re-registers.
-                    if (userParticipations.length > 0) {
-                        isCurrentlyParticipating = userParticipations.some(cu => !cu.isCancelled);
+                // Filtering logic based on item type
+                if (type === 'vehicles') {
+                    shouldDisplay = true;
+                } else if (type === 'journeys') {
+                    // Display open carpoolings where the user is the driver or an active passenger
+                    if (item.getStatus() === 'open' && (isUserDriver || hasActiveParticipation)) {
+                        shouldDisplay = true;
                     }
-
-                    if (!isCurrentlyParticipating) return; // Don't display if no active participation found
-
-                    // Don't display if departure date has passed
-                    const departureDateTime = new Date(`${item.departureDate}T${item.departureTime}`);
-                    if (departureDateTime < new Date()) return;
+                } else if (type === 'history') {
+                    // Display carpoolings that are closed, canceled, or where the user's participation was canceled
+                    if (item.getStatus() === 'closed' || item.getStatus() === 'canceled' || hasCancelledParticipation) {
+                        shouldDisplay = true;
+                    }
                 }
 
-                const itemCardElement = cardCreationMethod(item);
+                if (shouldDisplay) {
+                    const itemCardElement = cardCreationMethod(item);
+                    if (itemCardElement) {
+                        itemsListContainer.appendChild(itemCardElement);
+                        itemsDisplayedCount++;
 
-                if (itemCardElement) {
-                    itemsListContainer.appendChild(itemCardElement);
-                    itemsDisplayedCount++;
+                        const actionButton = itemCardElement.querySelector('.action-button');
+                        if (actionButton) {
+                            actionButton.addEventListener('click', (event) => {
+                                event.preventDefault();
+                                const itemId = actionButton.dataset.id;
+                                const actionType = actionButton.dataset.actionType;
 
-                    const actionButton = itemCardElement.querySelector('.action-button');
-                    if (actionButton) {
-                        actionButton.addEventListener('click', (event) => {
-                            event.preventDefault();
-                            const itemId = actionButton.dataset.id;
-                            const actionType = actionButton.dataset.actionType;
-
-                            let itemDisplayName = '';
-                            if (type === 'vehicles') {
-                                itemDisplayName = `le véhicule "${item.brand.name} ${item.model}"`;
-                                deleteVehicle(itemId, itemDisplayName, () => loadUserItems(type));
-                            } else if (type === 'journeys') {
-                                const formattedDepartureDate = new Date(item.departureDate).toLocaleDateString('fr-FR');
-                                const formattedDepartureTime = item.departureTime.substring(0, 5);
-                                itemDisplayName = `${formattedDepartureDate} de ${item.departurePlace} vers ${item.arrivalPlace}`;
-                                handleJourneyAction(itemId, actionType, itemDisplayName, () => loadUserItems(type));
-                            }
-                        });
+                                let itemDisplayName = '';
+                                if (type === 'vehicles') {
+                                    itemDisplayName = `le véhicule "${item.brand.name} ${item.model}"`;
+                                    deleteVehicle(itemId, itemDisplayName, () => loadUserItems(type));
+                                } else if (type === 'journeys') {
+                                    const formattedDepartureDate = new Date(item.departureDate).toLocaleDateString('fr-FR');
+                                    itemDisplayName = `${formattedDepartureDate} de ${item.departurePlace} vers ${item.arrivalPlace}`;
+                                    handleJourneyAction(itemId, actionType, itemDisplayName, () => loadUserItems(type));
+                                }
+                            });
+                        }
                     }
                 }
             });
@@ -281,6 +295,10 @@ export const loadUserItems = async (type) => {
         }
     }
 };
+
+// =========================================================================
+// V. Event Listeners
+// =========================================================================
 
 // Back button listener
 if (backButton) {

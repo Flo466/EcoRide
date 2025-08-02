@@ -1,4 +1,3 @@
-
 import { fetchApi } from '../api/fetch.js';
 import { API_BASE_URL } from '../config.js';
 
@@ -36,6 +35,7 @@ const enterJourneyFormBtn = document.getElementById('enterJourneyFormBtn');
 const enterVehicleFormBtn = document.getElementById('enterVehicleFormBtn');
 const myVehiclesLink = document.querySelector('ul.list-group-flush > li:nth-child(2)');
 const myJourneysLink = document.querySelector('ul.list-group-flush > li:nth-child(1)');
+const myHistoryLink = document.querySelector('ul.list-group-flush > li:nth-child(3)');
 
 // Global variable to store the previous object URL for avatar, to revoke it and avoid memory leaks.
 let currentAvatarObjectURL = null;
@@ -309,6 +309,12 @@ if (myJourneysLink) {
     myJourneysLink.addEventListener('click', (event) => {
         event.preventDefault();
         window.location.href = '/my-journeys';
+    });
+}
+if (myHistoryLink) {
+    myHistoryLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.location.href = '/my-history';
     });
 }
 

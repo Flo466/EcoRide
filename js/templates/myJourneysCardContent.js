@@ -30,6 +30,10 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
     console.log('Carpooling object received in createJourneyCardElement:', carpooling);
     console.log('Value of isCurrentUserDriver:', carpooling.isCurrentUserDriver);
 
+    // Check Url '/my-history'
+    const isHistoryView = window.location.pathname.includes('my-history');
+    console.log('Is history view based on URL:', isHistoryView);
+
     // Create the main wrapper for the card, ensuring proper layout.
     const wrapper = document.createElement('div');
     wrapper.className = 'col-12 col-md-6 mb-4 d-flex justify-content-center';
@@ -73,6 +77,9 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
         `;
     }
 
+    // Add d-none if card is in my history
+    const buttonContainerClass = isHistoryView ? 'd-none' : '';
+
     // Set the inner HTML of the card using a template literal for easy content insertion.
     // This includes formatted dates/times, driver/passenger indicator, and action buttons.
     card.innerHTML = `
@@ -94,7 +101,7 @@ export function createJourneyCardElement(carpooling, formatDateToFrench, formatT
                     </div>
                 </div>
             </div>
-            <div class="d-flex justify-content-center mt-2 mb-3">
+            <div class="d-flex justify-content-center mt-2 mb-3 ${buttonContainerClass}">
                 ${actionButtonHTML}
             </div>
         </div>
