@@ -30,7 +30,6 @@ export class Carpooling {
 
     this.driver = null;
     this.passengers = [];
-    // this.availableSeats = this.seatCount; // Cette ligne est redondante ou potentiellement source d'erreur avec le calcul plus bas.
 
     this.isCurrentUserDriver = false;
 
