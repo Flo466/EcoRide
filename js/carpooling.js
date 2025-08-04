@@ -9,7 +9,6 @@ import { Carpooling } from './models/Carpooling.js';
 // I. Constants and DOM Elements
 // =============================================================================
 
-// Messages for the banner and user interactions
 const MESSAGES = {
     WARN_BANNER_PLACEHOLDER_MISSING: 'Le conteneur #carpooling-results n\'a pas été trouvé. La bannière est insérée en haut du corps.',
     ERROR_LOAD_CITIES: '<strong>Erreur :</strong> Impossible de charger la liste des villes pour l\'autocomplétion.',
@@ -19,14 +18,14 @@ const MESSAGES = {
     ERROR_SEARCH_FAILED: '<strong>Désolé, une erreur est survenue lors de la recherche des covoiturages.</strong> Veuillez réessayer plus tard.',
 };
 
-// Retrieving DOM elements
 const form = document.querySelector('.search-form');
 const departurePlaceInput = document.getElementById('departurePlace');
 const arrivalPlaceInput = document.getElementById('arrivalPlace');
 const departureDateInput = document.getElementById('departureDate');
 const carpoolingResultsContainer = document.getElementById('carpooling-results');
+const filterButton = document.querySelector('[data-bs-target="#filterModal"]');
+const filterModalElement = document.getElementById('filterModal');
 
-// Creating the message/loading banner
 const mainMessageBanner = document.createElement('div');
 mainMessageBanner.id = 'main-message-banner';
 mainMessageBanner.className = 'alert text-center';
@@ -37,13 +36,6 @@ mainMessageBanner.style.display = 'none';
 // II. Utility and Initialization Functions
 // =============================================================================
 
-/**
- * Updates the content and style of the message banner.
- * @param {string} message - The message to display.
- * @param {'info'|'success'|'warning'|'danger'} type - The alert type (bootstrap).
- * @param {boolean} isVisible - Indicates if the banner should be visible.
- * @param {boolean} autoHide - Indicates if the banner should disappear after 3 seconds (default is false for this page).
- */
 const updateBanner = (message, type = 'info', isVisible = true, autoHide = false) => {
     mainMessageBanner.innerHTML = message;
     mainMessageBanner.className = `alert alert-${type} text-center mt-3`;
@@ -56,9 +48,6 @@ const updateBanner = (message, type = 'info', isVisible = true, autoHide = false
     }
 };
 
-/**
- * Inserts the banner just before the results container, or as a fallback, prepends it to the body.
- */
 const initializeMessageBanner = () => {
     if (carpoolingResultsContainer && carpoolingResultsContainer.parentNode) {
         carpoolingResultsContainer.parentNode.insertBefore(mainMessageBanner, carpoolingResultsContainer);
@@ -68,17 +57,13 @@ const initializeMessageBanner = () => {
     }
 };
 
-/**
- * Displays carpooling results in the designated container.
- * @param {Array<Object>} data - An array of carpooling data objects.
- */
 function displayCarpoolingResults(data) {
     if (!carpoolingResultsContainer) {
         console.error('Results container not found');
         return;
     }
 
-    carpoolingResultsContainer.innerHTML = ''; // Clear previous results
+    carpoolingResultsContainer.innerHTML = '';
 
     if (data && data.length > 0) {
         const filteredData = data.filter(itemData => {
@@ -93,20 +78,14 @@ function displayCarpoolingResults(data) {
                 carpoolingResultsContainer.appendChild(cardElement);
             });
         } else {
-            // If after filtering, no results are left, display the "no results" message
             updateBanner(MESSAGES.INFO_NO_RESULTS, 'info', true);
         }
     } else {
-        // No results from API, display the "no results" message
         updateBanner(MESSAGES.INFO_NO_RESULTS, 'info', true);
     }
 }
 
 
-/**
- * Fetches the list of cities for autocomplete and sets it up.
- * @returns {Array<Object>} - The sorted array of cities.
- */
 const getAndSetupCitiesForAutocomplete = async () => {
     let cities = [];
     try {
@@ -129,14 +108,7 @@ const getAndSetupCitiesForAutocomplete = async () => {
 // III. Search Logic
 // =============================================================================
 
-/**
- * Executes a carpooling search based on provided parameters.
- * @param {string} depart - Departure place.
- * @param {string} arrivee - Arrival place.
- * @param {string} date - Departure date.
- */
 async function executeSearch(depart, arrivee, date) {
-    // Display loading banner
     updateBanner(MESSAGES.INFO_LOADING, 'info', true);
     if (carpoolingResultsContainer) {
         carpoolingResultsContainer.innerHTML = '';
@@ -156,12 +128,11 @@ async function executeSearch(depart, arrivee, date) {
 
     try {
         const result = await fetchApi(apiUrl);
-        displayCarpoolingResults(result); // Call the integrated function
+        displayCarpoolingResults(result);
         updateBanner('', 'info', false);
 
-        // Update URL in browser history without reloading the page
         const currentUrlParams = new URLSearchParams(window.location.search);
-        currentUrlParams.set('page', 'carpooling'); // This might be redundant if the URL path is already /carpooling
+        currentUrlParams.set('page', 'carpooling');
         if (depart) currentUrlParams.set('departurePlace', depart); else currentUrlParams.delete('departurePlace');
         if (arrivee) currentUrlParams.set('arrivalPlace', arrivee); else currentUrlParams.delete('arrivalPlace');
         if (date) currentUrlParams.set('departureDate', date); else currentUrlParams.delete('departureDate');
@@ -181,13 +152,9 @@ async function executeSearch(depart, arrivee, date) {
 // =============================================================================
 
 (async () => {
-    // Initial banner setup
     initializeMessageBanner();
-
-    // Load cities and setup autocomplete
     await getAndSetupCitiesForAutocomplete();
 
-    // Sanitize values from URL parameters and pre-fill form fields
     const paramsFromUrl = new URLSearchParams(window.location.search);
     const initialDeparturePlace = sanitizeInput(paramsFromUrl.get('departurePlace'));
     const initialArrivalPlace = sanitizeInput(paramsFromUrl.get('arrivalPlace'));
@@ -197,17 +164,14 @@ async function executeSearch(depart, arrivee, date) {
     if (arrivalPlaceInput && initialArrivalPlace) arrivalPlaceInput.value = initialArrivalPlace;
     if (departureDateInput && initialDepartureDate) departureDateInput.value = initialDepartureDate;
 
-    // Execute initial search if parameters are present in the URL
     if (initialDeparturePlace || initialArrivalPlace || initialDepartureDate) {
         await executeSearch(initialDeparturePlace, initialArrivalPlace, initialDepartureDate);
     }
 
-    // Add event listener for form submission
     if (form) {
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            // Sanitize form inputs
             const newDeparturePlace = sanitizeInput(departurePlaceInput.value);
             const newArrivalPlace = sanitizeInput(arrivalPlaceInput.value);
             const newDepartureDate = sanitizeInput(departureDateInput.value);
@@ -216,6 +180,22 @@ async function executeSearch(depart, arrivee, date) {
         });
     } else {
         console.error("Search form not found. Script cannot attach event listener.");
-        // Consider adding a user-facing message if this is a critical error
+    }
+
+    // Logique pour afficher et masquer la modale
+    if (filterButton && filterModalElement) {
+        const filterModal = new bootstrap.Modal(filterModalElement);
+
+        filterButton.addEventListener('click', () => {
+            filterModal.show();
+        });
+
+        // Ajoute un écouteur d'événement sur le bouton de fermeture de la modale
+        const closeButton = filterModalElement.querySelector('.btn-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                filterModal.hide();
+            });
+        }
     }
 })();
