@@ -3,10 +3,6 @@ import { API_BASE_URL } from '../config.js';
 import Car from '../models/Car.js';
 import { Carpooling } from '../models/Carpooling.js';
 
-// =========================================================================
-// I. User-facing messages
-// =========================================================================
-
 const MESSAGES = {
     TOKEN_MISSING_GENERIC: "Jeton utilisateur manquant. Veuillez vous reconnecter.",
     UNKNOWN_ITEM_TYPE_DELETE: "Erreur : Type d'élément inconnu pour la suppression.",
@@ -32,16 +28,11 @@ const MESSAGES = {
     ACTION_ERROR_GENERIC: (action, message) => `Impossible d'effectuer l'action "${action}" : ${message}`,
 };
 
-// =========================================================================
-// II. DOM elements & Helpers
-// =========================================================================
-
 const itemsListContainer = document.querySelector('.items-list-container');
 const messageDisplay = document.getElementById('messageDisplay');
 const loadingMessageDisplay = document.getElementById('loadingMessageDisplay');
 const backButton = document.getElementById('back-button');
 
-/** Displays a temporary message. */
 const displayMessage = (message, type, targetDisplay = messageDisplay) => {
     if (!targetDisplay) return;
     targetDisplay.classList.remove('alert-success', 'alert-danger', 'alert-warning', 'alert-info', 'd-none');
@@ -77,7 +68,6 @@ const displayMessage = (message, type, targetDisplay = messageDisplay) => {
     }
 };
 
-/** Hides a message. */
 const hideMessage = (targetDisplay) => {
     if (targetDisplay) {
         targetDisplay.classList.add('d-none');
@@ -85,11 +75,6 @@ const hideMessage = (targetDisplay) => {
     }
 };
 
-// =========================================================================
-// III. User Actions (Delete, Cancel, Leave)
-// =========================================================================
-
-/** Handles carpooling actions (cancel/leave). */
 const handleJourneyAction = async (journeyId, actionType, journeyDisplayName, reloadFunction) => {
     const userToken = localStorage.getItem('userToken');
     if (!userToken) {
@@ -134,7 +119,6 @@ const handleJourneyAction = async (journeyId, actionType, journeyDisplayName, re
     }
 };
 
-/** Deletes a vehicle. */
 const deleteVehicle = async (itemId, itemDisplayName, reloadFunction) => {
     const userToken = localStorage.getItem('userToken');
     if (!userToken) {
@@ -164,11 +148,6 @@ const deleteVehicle = async (itemId, itemDisplayName, reloadFunction) => {
     }
 };
 
-// =========================================================================
-// IV. Main logic for loading items
-// =========================================================================
-
-/** Loads and displays user's items (vehicles, journeys or history). */
 export const loadUserItems = async (type) => {
     if (!itemsListContainer) return;
 
@@ -228,21 +207,18 @@ export const loadUserItems = async (type) => {
                 const item = new ItemClass(data, currentUserId);
                 let shouldDisplay = false;
 
-                const isUserDriver = item.driver.id === currentUserId;
-                const userParticipation = data.carpoolingUsers.find(cu => cu.user.id === currentUserId);
+                const isUserDriver = item.driver?.id === currentUserId;
+                const userParticipation = data.carpoolingUsers?.find(cu => cu.user.id === currentUserId);
                 const hasActiveParticipation = userParticipation && !userParticipation.isCancelled;
                 const hasCancelledParticipation = userParticipation && userParticipation.isCancelled;
 
-                // Filtering logic based on item type
                 if (type === 'vehicles') {
                     shouldDisplay = true;
                 } else if (type === 'journeys') {
-                    // Display open carpoolings where the user is the driver or an active passenger
                     if (item.getStatus() === 'open' && (isUserDriver || hasActiveParticipation)) {
                         shouldDisplay = true;
                     }
                 } else if (type === 'history') {
-                    // Display carpoolings that are closed, canceled, or where the user's participation was canceled
                     if (item.getStatus() === 'closed' || item.getStatus() === 'canceled' || hasCancelledParticipation) {
                         shouldDisplay = true;
                     }
@@ -263,7 +239,7 @@ export const loadUserItems = async (type) => {
 
                                 let itemDisplayName = '';
                                 if (type === 'vehicles') {
-                                    itemDisplayName = `le véhicule "${item.brand.name} ${item.model}"`;
+                                    itemDisplayName = `le véhicule "${item.brand?.name} ${item.model}"`;
                                     deleteVehicle(itemId, itemDisplayName, () => loadUserItems(type));
                                 } else if (type === 'journeys') {
                                     const formattedDepartureDate = new Date(item.departureDate).toLocaleDateString('fr-FR');
@@ -296,11 +272,6 @@ export const loadUserItems = async (type) => {
     }
 };
 
-// =========================================================================
-// V. Event Listeners
-// =========================================================================
-
-// Back button listener
 if (backButton) {
     backButton.addEventListener('click', (event) => {
         event.preventDefault();
