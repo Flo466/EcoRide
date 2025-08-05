@@ -25,12 +25,17 @@ const departureDateInput = document.getElementById('departureDate');
 const carpoolingResultsContainer = document.getElementById('carpooling-results');
 const filterButton = document.querySelector('[data-bs-target="#filterModal"]');
 const filterModalElement = document.getElementById('filterModal');
+const applyFilterBtn = document.querySelector('#filterModal .btn-primary');
+const resetFilterBtn = document.getElementById('resetFilterBtn');
+
 
 const mainMessageBanner = document.createElement('div');
 mainMessageBanner.id = 'main-message-banner';
 mainMessageBanner.className = 'alert text-center';
 mainMessageBanner.setAttribute('role', 'alert');
 mainMessageBanner.style.display = 'none';
+
+let allCarpoolings = [];
 
 // =============================================================================
 // II. Utility and Initialization Functions
@@ -64,22 +69,14 @@ function displayCarpoolingResults(data) {
     }
 
     carpoolingResultsContainer.innerHTML = '';
+    updateBanner('', 'info', false);
 
     if (data && data.length > 0) {
-        const filteredData = data.filter(itemData => {
+        data.forEach(itemData => {
             const carpooling = new Carpooling(itemData);
-            return carpooling.getStatus() === 'open';
+            const cardElement = carpooling.toCardElement();
+            carpoolingResultsContainer.appendChild(cardElement);
         });
-
-        if (filteredData.length > 0) {
-            filteredData.forEach(itemData => {
-                const carpooling = new Carpooling(itemData);
-                const cardElement = carpooling.toCardElement();
-                carpoolingResultsContainer.appendChild(cardElement);
-            });
-        } else {
-            updateBanner(MESSAGES.INFO_NO_RESULTS, 'info', true);
-        }
     } else {
         updateBanner(MESSAGES.INFO_NO_RESULTS, 'info', true);
     }
@@ -105,7 +102,33 @@ const getAndSetupCitiesForAutocomplete = async () => {
 };
 
 // =============================================================================
-// III. Search Logic
+// III. Filtering Logic
+// =============================================================================
+
+const applyFilters = (carpoolingsToFilter) => {
+    const filters = {
+        isElectricCarChecked: document.getElementById('electricCarFilter').checked,
+        maxPrice: parseFloat(document.getElementById('maxPriceFilter').value) || Infinity,
+        maxDuration: parseFloat(document.getElementById('maxDurationFilter').value) || Infinity,
+        minRating: parseFloat(document.getElementById('minRatingFilter').value) || 0,
+    };
+
+    return carpoolingsToFilter.filter(carpoolingData => {
+        const carpooling = new Carpooling(carpoolingData);
+        return carpooling.passesFilters(filters);
+    });
+};
+
+const resetFilters = () => {
+    document.getElementById('electricCarFilter').checked = false;
+    document.getElementById('maxPriceFilter').value = '';
+    document.getElementById('maxDurationFilter').value = '';
+    document.getElementById('minRatingFilter').value = '0';
+};
+
+
+// =============================================================================
+// IV. Search Logic
 // =============================================================================
 
 async function executeSearch(depart, arrivee, date) {
@@ -128,7 +151,11 @@ async function executeSearch(depart, arrivee, date) {
 
     try {
         const result = await fetchApi(apiUrl);
-        displayCarpoolingResults(result);
+        allCarpoolings = result.filter(itemData => new Carpooling(itemData).getStatus() === 'open');
+
+        const filteredCarpoolings = applyFilters(allCarpoolings);
+        displayCarpoolingResults(filteredCarpoolings);
+
         updateBanner('', 'info', false);
 
         const currentUrlParams = new URLSearchParams(window.location.search);
@@ -148,7 +175,7 @@ async function executeSearch(depart, arrivee, date) {
 }
 
 // =============================================================================
-// IV. Initialization and Event Listeners
+// V. Initialization and Event Listeners
 // =============================================================================
 
 (async () => {
@@ -182,20 +209,22 @@ async function executeSearch(depart, arrivee, date) {
         console.error("Search form not found. Script cannot attach event listener.");
     }
 
-    // Logique pour afficher et masquer la modale
-    if (filterButton && filterModalElement) {
-        const filterModal = new bootstrap.Modal(filterModalElement);
-
-        filterButton.addEventListener('click', () => {
-            filterModal.show();
-        });
-
-        // Ajoute un écouteur d'événement sur le bouton de fermeture de la modale
-        const closeButton = filterModalElement.querySelector('.btn-close');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', () => {
+            const filteredCarpoolings = applyFilters(allCarpoolings);
+            displayCarpoolingResults(filteredCarpoolings);
+            if (filterModalElement) {
+                const filterModal = bootstrap.Modal.getInstance(filterModalElement) || new bootstrap.Modal(filterModalElement);
                 filterModal.hide();
-            });
-        }
+            }
+        });
     }
+
+    if (resetFilterBtn) {
+        resetFilterBtn.addEventListener('click', () => {
+            resetFilters();
+            displayCarpoolingResults(allCarpoolings);
+        });
+    }
+
 })();

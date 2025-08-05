@@ -24,6 +24,7 @@ export class Carpooling {
     this.seatCount = data.seatCount;
     this.pricePerPerson = data.pricePerPerson;
     this.isEco = data.isEco;
+    this.duration = data.duration;
 
     this.car = data.car || null;
     this.status = data.status;
@@ -50,7 +51,7 @@ export class Carpooling {
 
     } else {
       this.passengers = [];
-      this.availableSeats = this.seatCount; // All seats are available if no carpoolingUsers
+      this.availableSeats = this.seatCount;
     }
   }
 
@@ -76,6 +77,21 @@ export class Carpooling {
    */
   getDepartureTime() {
     return this.departureTime;
+  }
+
+  /**
+   * Checks if the carpooling meets a specific filter.
+   * @param {object} filters - The filter criteria from the UI.
+   * @returns {boolean} - True if the carpooling passes all filters, false otherwise.
+   */
+  passesFilters(filters) {
+    const isElectricMatch = !filters.isElectricCarChecked || this.car?.energy === 'Électrique';
+    const isPriceMatch = this.pricePerPerson <= filters.maxPrice;
+    const isDurationMatch = (this.duration ?? Infinity) <= filters.maxDuration;
+    const driverRating = this.driver?.averageRating || 0;
+    const isRatingMatch = driverRating >= filters.minRating;
+
+    return isElectricMatch && isPriceMatch && isDurationMatch && isRatingMatch;
   }
 
   /**
