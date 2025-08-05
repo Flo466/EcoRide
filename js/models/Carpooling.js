@@ -24,7 +24,28 @@ export class Carpooling {
     this.seatCount = data.seatCount;
     this.pricePerPerson = data.pricePerPerson;
     this.isEco = data.isEco;
-    this.duration = data.duration;
+
+    if (data.duration) {
+      this.duration = data.duration;
+    } else {
+      const departureDatePart = data.departureDate.split('T')[0];
+      const departureTimePart = data.departureTime.split('T')[1];
+      const arrivalDatePart = data.arrivalDate.split('T')[0];
+      const arrivalTimePart = data.arrivalTime.split('T')[1];
+
+      const departureDateTimeString = `${departureDatePart}T${departureTimePart}`;
+      const arrivalDateTimeString = `${arrivalDatePart}T${arrivalTimePart}`;
+
+      const departureDateTime = new Date(departureDateTimeString);
+      const arrivalDateTime = new Date(arrivalDateTimeString);
+
+      if (!isNaN(departureDateTime) && !isNaN(arrivalDateTime)) {
+        const diffInMilliseconds = arrivalDateTime - departureDateTime;
+        this.duration = diffInMilliseconds / (1000 * 60 * 60);
+      } else {
+        this.duration = Infinity;
+      }
+    }
 
     this.car = data.car || null;
     this.status = data.status;
