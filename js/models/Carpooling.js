@@ -25,12 +25,33 @@ export class Carpooling {
     this.pricePerPerson = data.pricePerPerson;
     this.isEco = data.isEco;
 
+    if (data.duration) {
+      this.duration = data.duration;
+    } else {
+      const departureDatePart = data.departureDate.split('T')[0];
+      const departureTimePart = data.departureTime.split('T')[1];
+      const arrivalDatePart = data.arrivalDate.split('T')[0];
+      const arrivalTimePart = data.arrivalTime.split('T')[1];
+
+      const departureDateTimeString = `${departureDatePart}T${departureTimePart}`;
+      const arrivalDateTimeString = `${arrivalDatePart}T${arrivalTimePart}`;
+
+      const departureDateTime = new Date(departureDateTimeString);
+      const arrivalDateTime = new Date(arrivalDateTimeString);
+
+      if (!isNaN(departureDateTime) && !isNaN(arrivalDateTime)) {
+        const diffInMilliseconds = arrivalDateTime - departureDateTime;
+        this.duration = diffInMilliseconds / (1000 * 60 * 60);
+      } else {
+        this.duration = Infinity;
+      }
+    }
+
     this.car = data.car || null;
     this.status = data.status;
 
     this.driver = null;
     this.passengers = [];
-    // this.availableSeats = this.seatCount; // Cette ligne est redondante ou potentiellement source d'erreur avec le calcul plus bas.
 
     this.isCurrentUserDriver = false;
 
@@ -51,7 +72,7 @@ export class Carpooling {
 
     } else {
       this.passengers = [];
-      this.availableSeats = this.seatCount; // All seats are available if no carpoolingUsers
+      this.availableSeats = this.seatCount;
     }
   }
 
@@ -77,6 +98,21 @@ export class Carpooling {
    */
   getDepartureTime() {
     return this.departureTime;
+  }
+
+  /**
+   * Checks if the carpooling meets a specific filter.
+   * @param {object} filters - The filter criteria from the UI.
+   * @returns {boolean} - True if the carpooling passes all filters, false otherwise.
+   */
+  passesFilters(filters) {
+    const isElectricMatch = !filters.isElectricCarChecked || this.car?.energy === 'Électrique';
+    const isPriceMatch = this.pricePerPerson <= filters.maxPrice;
+    const isDurationMatch = (this.duration ?? Infinity) <= filters.maxDuration;
+    const driverRating = this.driver?.averageRating || 0;
+    const isRatingMatch = driverRating >= filters.minRating;
+
+    return isElectricMatch && isPriceMatch && isDurationMatch && isRatingMatch;
   }
 
   /**

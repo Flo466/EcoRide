@@ -1,17 +1,18 @@
 <h1 class="search-h1">Où souhaitez-vous aller ?</h1>
+
 <div class="container">
-    <div class="container">
+    <div class="container row">
         <div id="carpooling-container">
             <div class="row justify-content-center">
                 <div class="col-9 col-md-7 col-lg-10 col-xl-12">
-                    <form class="search-form shadow-lg bg-white overflow-hidden">
+                    <form class="search-form shadow bg-white overflow-hidden">
                         <div class="d-flex flex-column flex-lg-row align-items-stretch w-100">
                             <input type="text" class="form-control text-center border-switch b-s-t" id="departurePlace"
                                 placeholder="Départ">
-                            <div id="departureSuggestions"></div> <!-- Suggestions container -->
+                            <div id="departureSuggestions"></div>
                             <input type="text" class="form-control text-center border-switch" id="arrivalPlace"
                                 placeholder="Destination">
-                            <div id="arrivalSuggestions"></div> <!-- Suggestions container -->
+                            <div id="arrivalSuggestions"></div>
                             <input type="date" class="form-control text-center border-switch border-0"
                                 id="departureDate">
                             <button type="submit" class="btn text-white fw-semibold w-100 w-lg-auto btn-search">
@@ -19,17 +20,76 @@
                             </button>
                         </div>
                     </form>
-                    <div id="form-messages" class="mt-1 mb-1 text-center "></div>
+                    <div id="form-messages" class="mb-1 text-center "></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div class="text-center mb-4">
+
+<div class="text-center mb-2">
     <a href="../js/cities/maps.html" target="_blank">
         Voir la carte des villes désservies (promis, on élargira à toute la France d'ici peu !)
     </a>
 </div>
+
+<div class="text-center sticky-top py-2" style="z-index: 1020;">
+    <i class="bi bi-filter-circle text-primary fs-2" role="button" data-bs-toggle="modal" data-bs-target="#filterModal"
+        style="cursor: pointer;"></i>
+</div>
+
 <div id="carpooling-results" class="container-fluid px-2 px-sm-4 px-md-5">
-    <!-- CARDS are dynamically displayed here -->
+</div>
+
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="filterModalLabel">Filtres de recherche</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="electricCarFilter">
+                            <label class="form-check-label" for="electricCarFilter">
+                                <i class="bi bi-ev-front text-primary fs-6"></i> Voitures électriques uniquement
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="maxPriceFilter" class="form-label">Prix maximum (€)</label>
+                        <input type="number" class="form-control rounded-pill border-primary" id="maxPriceFilter"
+                            min="0" placeholder="Ex: 5">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="maxDurationFilter" class="form-label">Durée maximum (heures)</label>
+                        <input type="number" class="form-control rounded-pill border-primary" id="maxDurationFilter"
+                            min="0" placeholder="Ex: 3">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="minRatingFilter" class="form-label">Note minimale du conducteur</label>
+                        <select class="form-select rounded-pill border-primary" id="minRatingFilter">
+                            <option selected value="0">Toutes les notes</option>
+                            <option value="1">⭐ 1 et plus</option>
+                            <option value="2">⭐⭐ 2 et plus</option>
+                            <option value="3">⭐⭐⭐ 3 et plus</option>
+                            <option value="4">⭐⭐⭐⭐ 4 et plus</option>
+                            <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 d-flex justify-content-center">
+                <button type="button" class="btn btn-outline-secondary rounded-pill me-2"
+                    id="resetFilterBtn">Réinitialiser</button>
+                <button type="button" class="btn btn-primary rounded-pill text-white"
+                    data-bs-dismiss="modal">Appliquer</button>
+            </div>
+        </div>
+    </div>
 </div>
