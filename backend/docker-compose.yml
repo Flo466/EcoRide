@@ -4,6 +4,7 @@ services:
   ##########################################################################
   ecoride_db:
     image: mysql:8.0
+    container_name: ecoride_db
     env_file:
       - .env
     environment:
@@ -22,6 +23,26 @@ services:
       retries: 5
     networks:
       - symfony
+
+  ##########################################################################
+  #                        DATABASE GUI - PHPMYADMIN                       #
+  ##########################################################################
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: ecoride_pma
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=ecoride_db
+      - PMA_USER=${MYSQL_USER}
+      - PMA_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - symfony
+    depends_on:
+      ecoride_db:
+        condition: service_healthy
+
   ##########################################################################
   #                        BACKEND SERVICE - SYMFONY                       #
   ##########################################################################
@@ -56,7 +77,6 @@ volumes:
   db_data:
   symfony_vendor_cache:
   symfony_var_cache:
-
 
 networks:
   symfony:
