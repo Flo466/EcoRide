@@ -1,0 +1,13 @@
+# .dockerignore
+
+.git
+.gitignore
+.docker-compose.env
+docker-compose.yml
+node_modules/
+var/
+vendor/
+.idea/
+.vscode/
+*.log
+*.sqlite

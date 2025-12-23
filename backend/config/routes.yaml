@@ -1,0 +1,9 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+# config/routes.yaml
+test_connection:
+    path: /test-connexion
+    controller: App\Controller\TestController::index

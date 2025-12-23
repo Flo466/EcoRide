@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Carte de France avec Leaflet.js et JSON</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        #mapid {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="mapid"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        var centreFrance = [46.603354, 1.888334];
+        var maCarte = L.map('mapid').setView(centreFrance, 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(maCarte);
+        fetch('cities.json')
+            .then(response => response.json())
+            .then(cities => {
+                cities.forEach(function (citie) {
+                    L.marker([citie.latitude, citie.longitude])
+                        .addTo(maCarte)
+                        .bindPopup(`<b>${citie.nom}</b><br>Code Postal: ${citie.code_postal}`)
+                        .bindTooltip(citie.nom);
+                });
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des villes :', error);
+                alert('Impossible de charger les données des villes. Vérifie que le fichier villes.json existe.');
+            });
+    </script>
+
+</body>
+
+</html>

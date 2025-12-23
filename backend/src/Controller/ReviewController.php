@@ -1,0 +1,254 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Review;
+use App\Entity\User;
+use App\Enum\ReviewStatus;
+use App\Repository\ReviewRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Core\Security;
+use DateTimeImmutable;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+
+#[Route('/api/review', name: 'app_api_review_')]
+final class ReviewController extends AbstractController
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private ReviewRepository $repository,
+        private SerializerInterface $serializer,
+        private Security $security,
+        private NormalizerInterface $normalizer,
+        private UserRepository $userRepository
+    ) {}
+
+    // =========================================================================
+    // I. Review Management Routes
+    // =========================================================================
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Create New Review
+     * /// FUNCTION: Creates a new review.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/', name: 'new', methods: ['POST'])]
+    public function new(Request $request): JsonResponse
+    {
+        $user = $this->security->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        /** @var Review $review */
+        $review = $this->serializer->deserialize($request->getContent(), Review::class, 'json');
+
+        $reviewedUserId = $data['reviewedUserId'] ?? null;
+
+        if (!$reviewedUserId) {
+            return new JsonResponse(['error' => 'Reviewed user ID is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $reviewedUser = $this->userRepository->find($reviewedUserId);
+
+        if (!$reviewedUser) {
+            return new JsonResponse(['error' => 'Reviewed user not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $review->setUser($user);
+        $review->setReviewedUser($reviewedUser);
+
+        $review->setStatus(ReviewStatus::PENDING);
+        $review->setCreatedAt(new DateTimeImmutable());
+
+        $this->em->persist($review);
+        $this->em->flush();
+
+        // Normalize review with 'review:read' and 'user:read' groups
+        $responseData = $this->normalizer->normalize($review, 'json', [
+            'groups' => ['review:read', 'user:read']
+        ]);
+
+        return new JsonResponse($responseData, Response::HTTP_CREATED);
+    }
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Show Review Details
+     * /// FUNCTION: Retrieves a single review by its ID.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(int $id): JsonResponse
+    {
+        $review = $this->repository->find($id);
+
+        if (!$review) {
+            return new JsonResponse(['message' => 'Review not found'], Response::HTTP_NOT_FOUND);
+        }
+        // Normalize review with 'review:read' and 'user:read' groups
+        $responseData = $this->normalizer->normalize($review, 'json', ['groups' => ['review:read', 'user:read']]);
+
+        return new JsonResponse($responseData, Response::HTTP_OK);
+    }
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Get Reviews for Reviewed User
+     * /// FUNCTION: Retrieves approved reviews for a specific reviewed user.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/user/{reviewedUserId}/target', name: 'get_for_reviewed_user', methods: ['GET'])]
+    public function getReviewsForReviewedUser(int $reviewedUserId): JsonResponse
+    {
+        $reviews = $this->repository->findReviewsForReviewedUser($reviewedUserId, ReviewStatus::APPROVED);
+
+        // Normalize reviews with 'review:read' and 'user:read' groups
+        $responseData = $this->normalizer->normalize($reviews, 'json', ['groups' => ['review:read', 'user:read']]);
+
+        return new JsonResponse($responseData, Response::HTTP_OK);
+    }
+
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Edit Review
+     * /// FUNCTION: Updates an existing review. Accessible to the review's author or ADMIN.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    public function edit(int $id, Request $request): JsonResponse
+    {
+        $user = $this->security->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $review = $this->repository->find($id);
+
+        if (!$review) {
+            return new JsonResponse(['message' => 'Review not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($review->getUser()->getId() !== $user->getId() && !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['message' => 'Unauthorized to edit this review'], Response::HTTP_FORBIDDEN);
+        }
+
+        $this->serializer->deserialize(
+            $request->getContent(),
+            Review::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $review]
+        );
+
+        $review->setUpdatedAt(new DateTimeImmutable());
+
+        $this->em->flush();
+
+        // Normalize review with 'review:read' and 'user:read' groups
+        $responseData = $this->normalizer->normalize($review, 'json', ['groups' => ['review:read', 'user:read']]);
+
+        return new JsonResponse($responseData, Response::HTTP_OK);
+    }
+
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Update Review Status
+     * /// FUNCTION: Updates the status of a review. Accessible only to ADMIN role.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/{id}/status', name: 'update_status', methods: ['PATCH'])]
+    public function updateStatus(int $id, Request $request): JsonResponse
+    {
+        $user = $this->security->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $review = $this->repository->find($id);
+
+        if (!$review) {
+            return new JsonResponse(['message' => 'Review not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['message' => 'Unauthorized to update status of this review'], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $statusValue = $data['status'] ?? null;
+
+        if (!$statusValue) {
+            return new JsonResponse(['message' => 'Status is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $statusEnum = ReviewStatus::from($statusValue);
+        } catch (\ValueError $e) {
+            return new JsonResponse(['message' => 'Invalid status'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $review->setStatus($statusEnum);
+        $review->setUpdatedAt(new DateTimeImmutable());
+        $this->em->flush();
+
+        // Normalize review with 'review:read' and 'user:read' groups
+        $responseData = $this->normalizer->normalize($review, 'json', ['groups' => ['review:read', 'user:read']]);
+        return new JsonResponse($responseData, Response::HTTP_OK);
+    }
+
+    /**
+     *
+     * ////////////////////////////////////////////////////////////////////////
+     * /// ROUTE: Delete Review
+     * /// FUNCTION: Deletes a review. Accessible to the review's author or ADMIN.
+     * ////////////////////////////////////////////////////////////////////////
+     *
+     */
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(int $id): JsonResponse
+    {
+        $user = $this->security->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $review = $this->repository->find($id);
+
+        if (!$review) {
+            return new JsonResponse(['message' => 'Review not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($review->getUser()->getId() !== $user->getId() && !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['message' => 'Unauthorized to delete this review'], Response::HTTP_FORBIDDEN);
+        }
+
+        $this->em->remove($review);
+        $this->em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+}
