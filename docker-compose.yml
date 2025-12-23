@@ -6,7 +6,7 @@ services:
     image: mysql:8.0
     container_name: ecoride_db
     env_file:
-      - .env
+      - .env # Path to the .env file inside backend folder
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -44,11 +44,27 @@ services:
         condition: service_healthy
 
   ##########################################################################
+  #                         FRONTEND SERVICE - NGINX                       #
+  ##########################################################################
+  ecoride_frontend:
+    build:
+      context: . # Current root folder
+      dockerfile: Dockerfile
+    container_name: ecoride_frontend
+    ports:
+      - "3000:80" # Access via http://localhost:3000
+    volumes:
+      - .:/usr/share/nginx/html
+      - /usr/share/nginx/html/backend # Prevent serving backend files via Nginx
+    networks:
+      - symfony
+
+  ##########################################################################
   #                        BACKEND SERVICE - SYMFONY                       #
   ##########################################################################
   symfony_backend:
     build:
-      context: .
+      context: ./backend # Path to the backend directory
       dockerfile: Dockerfile
     container_name: symfony_backend
     env_file:
@@ -56,7 +72,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/var/www/html
+      - ./backend:/var/www/html
       - symfony_vendor_cache:/var/www/html/vendor
       - symfony_var_cache:/var/www/html/var
     environment:
