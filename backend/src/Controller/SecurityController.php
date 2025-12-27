@@ -35,27 +35,12 @@ final class SecurityController extends AbstractController
     // I. Authentication Routes
     // =========================================================================
 
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: User Registration
-     * /// FUNCTION: Registers a new user with provided credentials.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
     #[Route('/registration', name: 'registration', methods: ['POST'])]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
-        $user = $this->serializer->deserialize(
-            $request->getContent(),
-            User::class,
-            format: 'json'
-        );
-
+        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
-
         $user->setCreatedAt(new \DateTimeImmutable());
-
         $this->tokenService->setApiToken($user);
         $user->setCredits(20);
 
@@ -71,17 +56,9 @@ final class SecurityController extends AbstractController
             'apiToken' => $user->getApiToken(),
             'credits' => $user->getCredits(),
             'roles' => $user->getRoles()
-        ], status: Response::HTTP_CREATED);
+        ], Response::HTTP_CREATED);
     }
 
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: User Login
-     * /// FUNCTION: Authenticates a user and provides their data including API token.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
     #[Route('/login', name: 'login', methods: ['POST'])]
     public function login(Request $request, UserPasswordHasherInterface $hasher): JsonResponse
     {
@@ -93,13 +70,12 @@ final class SecurityController extends AbstractController
             return new JsonResponse(['message' => 'Email and password required'], Response::HTTP_BAD_REQUEST);
         }
 
-        $user = $this->manager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findOneBy(['email' => $email]);
 
         if (!$user || !$hasher->isPasswordValid($user, $password)) {
             return new JsonResponse(['message' => 'Incorrect credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Force user entity refresh to ensure latest data, especially credits
         $this->manager->refresh($user);
 
         return new JsonResponse([
@@ -116,180 +92,87 @@ final class SecurityController extends AbstractController
     // II. User Account Routes
     // =========================================================================
 
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: Get User Profile
-     * /// FUNCTION: Retrieves the authenticated user's profile information.
-     * ///             Serves as an authentication check.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
     #[Route('/account/me', name: 'me', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
-            return new JsonResponse(['message' => 'Missing credentials or user not authenticated'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['message' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
 
         $this->manager->refresh($user);
 
         $userData = json_decode(
-            $this->serializer->serialize(
-                $user,
-                'json',
-                ['groups' => ['user:read']]
-            ),
+            $this->serializer->serialize($user, 'json', ['groups' => ['user:read']]),
             true
         );
 
-        // Explicitly add credits if not included by serialization groups
-        if (!isset($userData['credits'])) {
-            $userData['credits'] = $user->getCredits();
-        }
-
         $userData['hasAvatar'] = $user->getPhoto() !== null;
-        $userData['isDriver'] = $user->isDriver();
+        $userData['photoUrl'] = $user->getPhoto() ? '/uploads/avatars/' . $user->getPhoto() : null;
 
-        return new JsonResponse(
-            $userData,
-            Response::HTTP_OK
-        );
+        return new JsonResponse($userData, Response::HTTP_OK);
     }
 
     /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: Upload User Avatar
-     * /// FUNCTION: Uploads or updates the authenticated user's avatar (profile picture).
-     * ////////////////////////////////////////////////////////////////////////
-     *
+     * Upload or Update Avatar (Fix: On force la récupération de l'entité)
      */
     #[Route('/account/me/avatar', name: 'upload_avatar', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function uploadAvatar(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
-        $this->logger->info('Starting uploadAvatar method.');
-
-        if (null === $user) {
-            $this->logger->error('uploadAvatar: User not authenticated.');
-            return new JsonResponse(['message' => 'User not authenticated'], JsonResponse::HTTP_UNAUTHORIZED);
+        if (!$user) {
+            return new JsonResponse(['message' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
 
         /** @var UploadedFile $avatarFile */
         $avatarFile = $request->files->get('avatar');
-        $this->logger->info('uploadAvatar: Avatar file retrieved.', ['filename' => $avatarFile ? $avatarFile->getClientOriginalName() : 'N/A']);
 
         if (!$avatarFile) {
-            $this->logger->error('uploadAvatar: No avatar file provided.');
-            return new JsonResponse(['message' => 'No avatar file provided.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => 'No avatar file provided.'], Response::HTTP_BAD_REQUEST);
         }
 
-        // --- 1. File Validation ---
-        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $mimeType = $avatarFile->getMimeType();
-        $this->logger->info('uploadAvatar: File MIME type.', ['mimeType' => $mimeType]);
-
-        if (!in_array($mimeType, $allowedMimeTypes)) {
-            $this->logger->error('uploadAvatar: Unauthorized file type.', ['mimeType' => $mimeType]);
-            return new JsonResponse(['message' => 'Unauthorized file type. Only images (JPEG, PNG, GIF, WebP) are accepted.'], JsonResponse::HTTP_UNSUPPORTED_MEDIA_TYPE);
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array($avatarFile->getMimeType(), $allowedMimeTypes)) {
+            return new JsonResponse(['message' => 'Unauthorized file type.'], Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
         }
 
-        $maxFileSize = 2 * 1024 * 1024; // 2 MB
-        $fileSize = $avatarFile->getSize();
-        $this->logger->info('uploadAvatar: File size.', ['fileSize' => $fileSize]);
+        try {            
+            $newFilename = uniqid().'.'.$avatarFile->guessExtension();
+            $destination = $this->getParameter('kernel.project_dir').'/public/uploads/avatars';
 
-        if ($fileSize > $maxFileSize) {
-            $this->logger->error('uploadAvatar: File is too large.', ['fileSize' => $fileSize, 'maxSize' => $maxFileSize]);
-            return new JsonResponse(['message' => 'The file is too large (max 2MB).'], JsonResponse::HTTP_REQUEST_ENTITY_TOO_LARGE);
-        }
+            // --- FIX CRITIQUE : Récupération d'une instance "managée" par Doctrine ---
+            $userFromDb = $this->userRepository->find($user->getId());
 
-        try {
-            // --- 2. Read binary file content ---
-            $binaryContent = file_get_contents($avatarFile->getPathname());
-            $this->logger->info('uploadAvatar: Binary file content successfully read.');
+            // 1. Suppression de l'ancienne photo physique
+            if ($userFromDb->getPhoto()) {
+                $oldFilePath = $destination.'/'.$userFromDb->getPhoto();
+                if (file_exists($oldFilePath)) {
+                    unlink($oldFilePath);
+                }
+            }
 
-            // --- 3. Store BLOB and MIME type in user entity ---
-            $user->setPhoto($binaryContent);
-            $user->setPhotoMimeType($mimeType);
+            // 2. Déplacement du nouveau fichier
+            $avatarFile->move($destination, $newFilename);
 
-            $this->manager->flush(); // Persist changes to the database
-            $this->logger->info('uploadAvatar: Changes flushed to database.');
+            $userFromDb = $this->userRepository->find($user->getId());
+            $userFromDb->setPhoto($newFilename);
+            $userFromDb->setUpdatedAt(new \DateTimeImmutable());
 
+            $this->manager->persist($userFromDb);
+            $this->manager->flush();
+            
             return new JsonResponse([
                 'message' => 'Profile picture updated successfully.',
-                'hasAvatar' => true
+                'photo' => $newFilename,
+                'photoUrl' => '/uploads/avatars/'.$newFilename 
             ], Response::HTTP_OK);
+
         } catch (\Exception $e) {
-            $this->logger->error('uploadAvatar: Unexpected error during avatar processing.', [
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return new JsonResponse(['message' => 'An internal error occurred while processing your photo.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->logger->error('Avatar Upload Error: ' . $e->getMessage());
+            return new JsonResponse(['message' => 'Error during upload: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: Retrieve User Avatar (BLOB)
-     * /// FUNCTION: Retrieves the authenticated user's avatar as a binary stream.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
-    #[Route('/account/me/avatar-blob', name: 'get_avatar_blob', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
-    public function getAvatarBlob(#[CurrentUser] ?User $user): Response
-    {
-        $this->logger->info('Starting getAvatarBlob method.');
-
-        if (null === $user) {
-            $this->logger->error('getAvatarBlob: User not authenticated.');
-            return new JsonResponse(['message' => 'User not authenticated'], JsonResponse::HTTP_UNAUTHORIZED);
-        }
-
-        // Force user entity refresh to ensure latest data
-        $this->manager->refresh($user);
-
-        $photoContent = $user->getPhoto();
-        $mimeType = $user->getPhotoMimeType();
-        $this->logger->info('getAvatarBlob: Photo content and MIME type retrieved from user.', ['hasPhoto' => $photoContent !== null, 'mimeType' => $mimeType]);
-
-        if (!$photoContent) {
-            $this->logger->error('getAvatarBlob: Avatar not found for this user.');
-            return new JsonResponse(['message' => 'Avatar not found for this user.'], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        // If the BLOB is a stream resource, it must be read
-        if (is_resource($photoContent)) {
-            $photoContent = stream_get_contents($photoContent);
-            $this->logger->info('getAvatarBlob: Photo content read from stream resource.');
-        }
-
-        // Create a response with binary content and correct Content-Type
-        $response = new Response($photoContent);
-        $response->headers->set('Content-Type', $mimeType ?: 'application/octet-stream');
-        // Headers to prevent aggressive browser caching
-        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Expires', '0');
-        $this->logger->info('getAvatarBlob: Avatar response prepared and sent.');
-
-        return $response;
-    }
-
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: Edit User Account
-     * /// FUNCTION: Allows an authenticated user to update their account details.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
     #[Route('/account/edit', name: 'edit', methods: ['PUT'])]
     #[IsGranted('ROLE_USER')]
     public function edit(#[CurrentUser] ?User $user, Request $request): JsonResponse
@@ -298,110 +181,54 @@ final class SecurityController extends AbstractController
             return new JsonResponse(['message' => 'Missing credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $user = $this->serializer->deserialize(
+        // Rechargement pour garantir l'update
+        $userFromDb = $this->userRepository->find($user->getId());
+
+        $this->serializer->deserialize(
             $request->getContent(),
             User::class,
             'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $user]
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $userFromDb]
         );
 
-        $user->setUpdatedAt(new DateTimeImmutable());
-
+        $userFromDb->setUpdatedAt(new DateTimeImmutable());
         $this->manager->flush();
 
-        // Explicitly add credits if not included by serialization groups
-        $serializedUserData = json_decode(
-            $this->serializer->serialize(
-                $user,
-                'json',
-                ['groups' => ['user:read']]
-            ),
+        $userData = json_decode(
+            $this->serializer->serialize($userFromDb, 'json', ['groups' => ['user:read']]),
             true
         );
-        if (!isset($serializedUserData['credits'])) {
-            $serializedUserData['credits'] = $user->getCredits();
-        }
 
-        return new JsonResponse(
-            $serializedUserData,
-            Response::HTTP_OK
-        );
+        return new JsonResponse($userData, Response::HTTP_OK);
     }
 
     // =========================================================================
-    // III. User Data Validation Routes
+    // III. User Data Validation & Driver Status
     // =========================================================================
 
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: Check Username Availability
-     * /// FUNCTION: Checks if a given username is already in use.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
     #[Route('/check-userName', name: 'app_check_userName', methods: ['POST'])]
     public function checkUserName(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $userName = $data['userName'] ?? null;
-
-        if (null === $userName) {
-            return new JsonResponse(['message' => 'Missing user name'], JsonResponse::HTTP_BAD_REQUEST);
-        }
-
         $existingUser = $this->userRepository->findOneBy(['userName' => $userName]);
-
-        if ($existingUser) {
-            return new JsonResponse(['isAvailable' => false]);
-        }
-        return new JsonResponse(['isAvailable' => true]);
+        return new JsonResponse(['isAvailable' => !$existingUser]);
     }
 
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: Check Email Availability
-     * /// FUNCTION: Checks if a given email is already registered.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
     #[Route('/check-email', name: 'app_check_email', methods: ['POST'])]
     public function checkEmail(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $email = $data['email'] ?? null;
-
-        if (null === $email) {
-            return new JsonResponse(['message' => 'Missing email.'], JsonResponse::HTTP_BAD_REQUEST);
-        }
-
         $existingUser = $this->userRepository->findOneBy(['email' => $email]);
-
-        if ($existingUser) {
-            return new JsonResponse(['isAvailable' => false]);
-        }
-        return new JsonResponse(['isAvailable' => true]);
+        return new JsonResponse(['isAvailable' => !$existingUser]);
     }
 
-    // =========================================================================
-    // IV. Driver Status Routes
-    // =========================================================================
-
-    /**
-     *
-     * ////////////////////////////////////////////////////////////////////////
-     * /// ROUTE: Update Driver Status
-     * /// FUNCTION: Updates the driver status (isDriver) of the authenticated user.
-     * ////////////////////////////////////////////////////////////////////////
-     *
-     */
     #[Route('/account/me/driver-status', name: 'update_driver_status', methods: ['PATCH'])]
     #[IsGranted('ROLE_USER')]
     public function updateDriverStatus(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
         if (null === $user) {
-            $this->logger->error('updateDriverStatus: User not authenticated.');
             return new JsonResponse(['message' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -409,16 +236,17 @@ final class SecurityController extends AbstractController
         $isDriver = $data['isDriver'] ?? null;
 
         if (!isset($data['isDriver']) || !is_bool($isDriver)) {
-            $this->logger->error('updateDriverStatus: "isDriver" value is missing or not a boolean.', ['data' => $data]);
-            return new JsonResponse(['error' => '"isDriver" value must be a boolean.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => '"isDriver" must be a boolean.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $user->setDriver($isDriver);
+        $userFromDb = $this->userRepository->find($user->getId());
+        $userFromDb->setDriver($isDriver);
+        $userFromDb->setUpdatedAt(new \DateTimeImmutable());
         $this->manager->flush();
 
-        $message = $isDriver ? 'Driver mode activated.' : 'Driver mode deactivated.';
-        $this->logger->info('updateDriverStatus: Driver status updated.', ['userId' => $user->getId(), 'isDriver' => $isDriver]);
-
-        return new JsonResponse(['message' => $message, 'isDriver' => $user->isDriver()], Response::HTTP_OK);
+        return new JsonResponse([
+            'message' => $isDriver ? 'Driver mode activated.' : 'Driver mode deactivated.',
+            'isDriver' => $userFromDb->isDriver()
+        ], Response::HTTP_OK);
     }
 }

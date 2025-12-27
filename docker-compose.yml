@@ -1,12 +1,12 @@
 services:
   ##########################################################################
-  #                          DATABASE SERVICE - MYSQL                      #
+  #                        DATABASE SERVICE - MYSQL                        #
   ##########################################################################
   ecoride_db:
     image: mysql:8.0
     container_name: ecoride_db
     env_file:
-      - .env # Path to the .env file inside backend folder
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -17,7 +17,7 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -35,8 +35,8 @@ services:
       - "8080:80"
     environment:
       - PMA_HOST=ecoride_db
-      - PMA_USER=${MYSQL_USER}
-      - PMA_PASSWORD=${MYSQL_PASSWORD}
+      - PMA_USER=root
+      - PMA_PASSWORD=${MYSQL_ROOT_PASSWORD}
     networks:
       - symfony
     depends_on:
@@ -48,23 +48,23 @@ services:
   ##########################################################################
   ecoride_frontend:
     build:
-      context: . # Current root folder
+      context: .
       dockerfile: Dockerfile
     container_name: ecoride_frontend
     ports:
-      - "3000:80" # Access via http://localhost:3000
+      - "3000:80"
     volumes:
       - .:/usr/share/nginx/html
-      - /usr/share/nginx/html/backend # Prevent serving backend files via Nginx
+      - /usr/share/nginx/html/backend
     networks:
       - symfony
 
   ##########################################################################
-  #                        BACKEND SERVICE - SYMFONY                       #
+  #                         BACKEND SERVICE - SYMFONY                      #
   ##########################################################################
   symfony_backend:
     build:
-      context: ./backend # Path to the backend directory
+      context: ./backend
       dockerfile: Dockerfile
     container_name: symfony_backend
     env_file:
@@ -75,11 +75,9 @@ services:
       - ./backend:/var/www/html
       - symfony_vendor_cache:/var/www/html/vendor
       - symfony_var_cache:/var/www/html/var
+      - avatars_data:/var/www/html/public/uploads/avatars
     environment:
-      MYSQL_HOST: ecoride_db
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      DATABASE_URL: ${DATABASE_URL}
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
@@ -93,6 +91,7 @@ volumes:
   db_data:
   symfony_vendor_cache:
   symfony_var_cache:
+  avatars_data:
 
 networks:
   symfony:

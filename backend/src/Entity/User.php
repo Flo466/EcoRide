@@ -59,6 +59,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'carpooling:read', 'review:read'])]
     private ?string $photo = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $photoMimeType = null;
+
     #[ORM\Column(length: 50)]
     #[Groups(['user:read', 'carpooling:read', 'review:read'])]
     private ?string $userName = null;
@@ -118,12 +121,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getId(): ?int { return $this->id; }
 
     public function getEmail(): ?string { return $this->email; }
-
-    public function setEmail(string $email): static
-    {
-        $this->email = $email;
-        return $this;
-    }
+    public function setEmail(string $email): static { $this->email = $email; return $this; }
 
     public function getUserIdentifier(): string { return (string) $this->email; }
 
@@ -133,133 +131,56 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
-
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-        return $this;
-    }
+    public function setRoles(array $roles): static { $this->roles = $roles; return $this; }
 
     public function getPassword(): ?string { return $this->password; }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-        return $this;
-    }
+    public function setPassword(string $password): static { $this->password = $password; return $this; }
 
     public function eraseCredentials(): void {}
 
     public function getLastName(): ?string { return $this->lastName; }
-
-    public function setLastName(?string $lastName): static
-    {
-        $this->lastName = $lastName;
-        return $this;
-    }
+    public function setLastName(?string $lastName): static { $this->lastName = $lastName; return $this; }
 
     public function getFirstName(): ?string { return $this->firstName; }
-
-    public function setFirstName(?string $firstName): static
-    {
-        $this->firstName = $firstName;
-        return $this;
-    }
+    public function setFirstName(?string $firstName): static { $this->firstName = $firstName; return $this; }
 
     public function getPhone(): ?string { return $this->phone; }
-
-    public function setPhone(?string $phone): static
-    {
-        $this->phone = $phone;
-        return $this;
-    }
+    public function setPhone(?string $phone): static { $this->phone = $phone; return $this; }
 
     public function getAddress(): ?string { return $this->address; }
-
-    public function setAddress(?string $address): static
-    {
-        $this->address = $address;
-        return $this;
-    }
+    public function setAddress(?string $address): static { $this->address = $address; return $this; }
 
     public function getBirthDate(): ?\DateTime { return $this->birthDate; }
+    public function setBirthDate(?\DateTime $birthDate): static { $this->birthDate = $birthDate; return $this; }
 
-    public function setBirthDate(?\DateTime $birthDate): static
-    {
-        $this->birthDate = $birthDate;
-        return $this;
-    }
+    public function getPhoto(): ?string { return $this->photo; }
+    public function setPhoto(?string $photo): static { $this->photo = $photo; return $this; }
 
-    // --- GETTER / SETTER PHOTO MIS À JOUR ---
-    public function getPhoto(): ?string
-    {
-        return $this->photo;
-    }
-
-    public function setPhoto(?string $photo): static
-    {
-        $this->photo = $photo;
-        return $this;
-    }
+    public function getPhotoMimeType(): ?string { return $this->photoMimeType; }
+    public function setPhotoMimeType(?string $photoMimeType): static { $this->photoMimeType = $photoMimeType; return $this; }
 
     public function getUserName(): ?string { return $this->userName; }
-
-    public function setUserName(string $userName): static
-    {
-        $this->userName = $userName;
-        return $this;
-    }
-
-    public function getUsedCar(): ?Car { return $this->usedCar; }
-
-    public function setUsedCar(?Car $usedCar): static
-    {
-        $this->usedCar = $usedCar;
-        return $this;
-    }
+    public function setUserName(string $userName): static { $this->userName = $userName; return $this; }
 
     public function getCredits(): ?int { return $this->credits; }
-
-    public function setCredits(int $credits): static
-    {
-        $this->credits = $credits;
-        return $this;
-    }
+    public function setCredits(int $credits): static { $this->credits = $credits; return $this; }
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
     public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
-
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-        return $this;
-    }
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
 
     public function getApiToken(): ?string { return $this->apiToken; }
-
-    public function setApiToken(string $apiToken): static
-    {
-        $this->apiToken = $apiToken;
-        return $this;
-    }
+    public function setApiToken(string $apiToken): static { $this->apiToken = $apiToken; return $this; }
 
     public function isDriver(): ?bool { return $this->isDriver; }
+    public function setDriver(bool $isDriver): static { $this->isDriver = $isDriver; return $this; }
 
-    public function setDriver(bool $isDriver): static
-    {
-        $this->isDriver = $isDriver;
-        return $this;
-    }
+    public function getUsedCar(): ?Car { return $this->usedCar; }
+    public function setUsedCar(?Car $usedCar): static { $this->usedCar = $usedCar; return $this; }
 
     public function getReviews(): Collection { return $this->reviews; }
-
     public function addReview(Review $review): static
     {
         if (!$this->reviews->contains($review)) {
@@ -268,19 +189,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
-
     public function removeReview(Review $review): static
     {
-        if ($this->reviews->removeElement($review)) {
-            if ($review->getUser() === $this) {
-                $review->setUser(null);
-            }
+        if ($this->reviews->removeElement($review) && $review->getUser() === $this) {
+            $review->setUser(null);
         }
         return $this;
     }
 
     public function getReceivedReviews(): Collection { return $this->receivedReviews; }
-
     public function addReceivedReview(Review $review): static
     {
         if (!$this->receivedReviews->contains($review)) {
@@ -289,19 +206,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
-
     public function removeReceivedReview(Review $review): static
     {
-        if ($this->receivedReviews->removeElement($review)) {
-            if ($review->getReviewedUser() === $this) {
-                $review->setReviewedUser(null);
-            }
+        if ($this->receivedReviews->removeElement($review) && $review->getReviewedUser() === $this) {
+            $review->setReviewedUser(null);
         }
         return $this;
     }
 
     public function getCars(): Collection { return $this->cars; }
-
     public function addCar(Car $car): static
     {
         if (!$this->cars->contains($car)) {
@@ -310,51 +223,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
-
     public function removeCar(Car $car): static
     {
-        if ($this->cars->removeElement($car)) {
-            if ($car->getUser() === $this) {
-                $car->setUser(null);
-            }
+        if ($this->cars->removeElement($car) && $car->getUser() === $this) {
+            $car->setUser(null);
         }
         return $this;
     }
 
     public function getCarpoolingUsers(): Collection { return $this->carpoolingUsers; }
 
-    public function addCarpoolingUser(CarpoolingUser $carpoolingUser): static
-    {
-        if (!$this->carpoolingUsers->contains($carpoolingUser)) {
-            $this->carpoolingUsers->add($carpoolingUser);
-            $carpoolingUser->setUser($this);
-        }
-        return $this;
-    }
-
-    public function removeCarpoolingUser(CarpoolingUser $carpoolingUser): static
-    {
-        if ($this->carpoolingUsers->removeElement($carpoolingUser)) {
-            if ($carpoolingUser->getUser() === $this) {
-                $carpoolingUser->setUser(null);
-            }
-        }
-        return $this;
-    }
-
     public function getAverageRating(): ?float
     {
-        $approvedReviews = $this->receivedReviews->filter(function (Review $review) {
-            return $review->getStatus() === \App\Enum\ReviewStatus::APPROVED;
-        });
+        $approvedReviews = $this->receivedReviews->filter(fn(Review $review) => $review->getStatus() === ReviewStatus::APPROVED);
 
         if ($approvedReviews->isEmpty()) {
             return null;
         }
 
-        $totalRating = array_sum(
-            $approvedReviews->map(fn(Review $review) => $review->getRatting())->toArray()
-        );
+        $totalRating = array_sum($approvedReviews->map(fn(Review $review) => $review->getRating())->toArray());
 
         return round($totalRating / $approvedReviews->count(), 1);
     }
