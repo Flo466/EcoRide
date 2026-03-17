@@ -18,3 +18,8 @@
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+
+###> Custom Uploads ###
+/public/uploads/avatars/*
+!/public/uploads/avatars/.gitkeep
+###< Custom Uploads ###
