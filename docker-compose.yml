@@ -33,7 +33,7 @@ services:
     container_name: ecoride_pma
     restart: always
     ports:
-      - "8080:80"
+      - "8085:80"
     environment:
       - PMA_HOST=ecoride_db
       - PMA_USER=root
