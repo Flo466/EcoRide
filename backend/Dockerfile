@@ -1,6 +1,7 @@
+# Use PHP 8.3 FPM for better performance in production
 FROM php:8.3-fpm
 
-# Installation des dépendances système et du client MySQL
+# Install system dependencies and MySQL client for database interactions
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -9,17 +10,20 @@ RUN apt-get update && apt-get install -y \
     git \
     libicu-dev \
     default-mysql-client && \
+    # Configure and install PHP extensions (GD for images, PDO for DB, INTL for Symfony)
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install gd pdo pdo_mysql intl && \
+    # Clean up apt cache to reduce image size
     rm -rf /var/lib/apt/lists/*
 
-# Installation de Composer
+# Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Dossier de travail
+# Set the working directory inside the container
 WORKDIR /var/www/html
 
-EXPOSE 8000
+# Expose port 9000 for FastCGI communication
+EXPOSE 9000
 
-# Commande par défaut : on lance le serveur interne de PHP
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+# Start the PHP-FPM daemon
+CMD ["php-fpm"]
