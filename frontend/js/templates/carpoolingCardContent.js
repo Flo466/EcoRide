@@ -3,6 +3,7 @@
 // =============================================================================
 
 const DEFAULT_PROFILE_IMAGE = 'assets/images/profil.jpg';
+const UPLOADS_BASE_PATH = '/uploads/';
 
 const MESSAGES = {
     FALLBACK_DRIVER_NAME: 'Conducteur',
@@ -25,6 +26,20 @@ export function createCarpoolCardElement(data, formatDateToFrench, formatTime) {
     const arrTimeFormatted = formatTime(data.arrivalTime) || '';
     const depPlaceFormatted = data.departurePlace || '';
     const arrPlaceFormatted = data.arrivalPlace || '';
+
+    // --- LOGIQUE PHOTO MISE À JOUR ---
+    let driverPhoto = DEFAULT_PROFILE_IMAGE;
+    const rawPhoto = data.driver?.photoBase64 || data.driver?.photo;
+
+    if (rawPhoto) {
+        // Si c'est déjà une URL complète ou du base64 pur, on garde. 
+        // Sinon (cas de JohnD), on ajoute le préfixe /uploads/
+        driverPhoto = (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:image'))
+            ? rawPhoto
+            : UPLOADS_BASE_PATH + rawPhoto;
+    }
+
+    const driverName = data.driver?.userName || MESSAGES.FALLBACK_DRIVER_NAME;
 
     let ratingHtml = '';
     if (data.driver && typeof data.driver.averageRating === 'number' && data.driver.averageRating !== null) {
@@ -65,10 +80,14 @@ export function createCarpoolCardElement(data, formatDateToFrench, formatTime) {
         </div>
 
         <div class="driver-section d-flex align-items-center">
-            <img class="driver-img" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || MESSAGES.FALLBACK_DRIVER_NAME}">
+            <img class="driver-img" 
+                 src="${driverPhoto}" 
+                 alt="${driverName}"
+                 onerror="this.src='${DEFAULT_PROFILE_IMAGE}'">
             <div class="driver-name-rating d-flex flex-column flex-md-row align-items-baseline ms-2">
-                <p class="mb-2 fs-6 lh-1">${data.driver.userName || MESSAGES.FALLBACK_DRIVER_NAME}</p>
-                <p class="mb-0 fs-6 lh-1 ms-md-2">${ratingHtml}</p> </div>
+                <p class="mb-2 fs-6 lh-1">${driverName}</p>
+                <p class="mb-0 fs-6 lh-1 ms-md-2">${ratingHtml}</p> 
+            </div>
         </div>
     </div>
     `;

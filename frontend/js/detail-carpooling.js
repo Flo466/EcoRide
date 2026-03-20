@@ -2,7 +2,7 @@
 // I. Imports and Constants
 // =============================================================================
 
-import { fetchApi } from './api/fetch.js';
+import { fetchApi } from './api/fetch.js?v=1';
 import { API_BASE_URL } from './config.js';
 import { Carpooling } from './models/Carpooling.js';
 import { Review } from './models/Review.js';

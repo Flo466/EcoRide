@@ -1,7 +1,6 @@
 
 import { fetchApi } from '../api/fetch.js';
 import { sanitizeInput } from '../utils/sanitizer.js';
-import { API_BASE_URL } from '../config.js';
 
 // =============================================================================
 // I. Constants and DOM Elements
@@ -135,7 +134,7 @@ const checkUserName = debounce(async (userName) => {
     userNameStatus.style.color = 'orange';
 
     try {
-        const result = await fetchApi(`${API_BASE_URL}/api/check-userName`, 'POST', { userName: sanitizedUserName });
+        const result = await fetchApi('/api/check-userName', 'POST', { userName: sanitizedUserName });
 
         if (result && typeof result.isAvailable !== 'undefined') {
             if (result.isAvailable) {
@@ -174,7 +173,7 @@ const checkEmailLive = debounce(async (email) => {
     emailStatus.style.color = 'orange';
 
     try {
-        const result = await fetchApi(`${API_BASE_URL}/api/check-email`, 'POST', { email: sanitizedEmail });
+        const result = await fetchApi('/api/check-email', 'POST', { email: sanitizedEmail });
 
         if (result && typeof result.isAvailable !== 'undefined') {
             if (result.isAvailable) {
@@ -245,7 +244,7 @@ const checkEmailLive = debounce(async (email) => {
 
         try {
             // Send registration request to the API.
-            const result = await fetchApi(`${API_BASE_URL}/api/registration`, 'POST', userData);
+            const result = await fetchApi('/api/registration', 'POST', userData);
 
             displayMessage(apiMessageContainer, MESSAGES.REGISTRATION_SUCCESS, true);
             form.reset(); // Clear form fields

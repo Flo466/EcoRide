@@ -1,4 +1,4 @@
-import { fetchApi } from './api/fetch.js';
+import { fetchApi } from './api/fetch.js?v=1';
 import { API_BASE_URL } from './config.js';
 import { sanitizeInput } from '../js/utils/sanitizer.js';
 import { setupAutocomplete } from './utils/autocomplete.js';
@@ -183,9 +183,14 @@ async function executeSearch(depart, arrivee, date) {
     await getAndSetupCitiesForAutocomplete();
 
     const paramsFromUrl = new URLSearchParams(window.location.search);
-    const initialDeparturePlace = sanitizeInput(paramsFromUrl.get('departurePlace'));
+
+    let initialDeparturePlace = sanitizeInput(paramsFromUrl.get('departurePlace'));
     const initialArrivalPlace = sanitizeInput(paramsFromUrl.get('arrivalPlace'));
     const initialDepartureDate = sanitizeInput(paramsFromUrl.get('departureDate'));
+
+    if (!initialDeparturePlace) {
+        initialDeparturePlace = 'Paris';
+    }
 
     if (departurePlaceInput && initialDeparturePlace) departurePlaceInput.value = initialDeparturePlace;
     if (arrivalPlaceInput && initialArrivalPlace) arrivalPlaceInput.value = initialArrivalPlace;

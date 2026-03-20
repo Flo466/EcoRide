@@ -1,6 +1,0 @@
-node_modules
-backend
-.git
-.env
-docker-compose.yml
-Dockerfile

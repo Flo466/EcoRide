@@ -1,11 +1,9 @@
 services:
-  ##########################################################################
-  # DATABASE SERVICE - MYSQL
-  ##########################################################################
+  # --- BASE DE DONNÉES (ISOLÉE) ---
   ecoride_db:
     image: mysql:8.0
     container_name: ecoride_db
-    restart: always # Ensures DB restarts on server reboot
+    restart: always
     env_file:
       - .env
     environment:
@@ -14,58 +12,28 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+      - ecoride_db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - symfony
+      - ecoride_backend_net # Uniquement accès au backend
 
-  ##########################################################################
-  # DATABASE GUI - PHPMYADMIN
-  ##########################################################################
-  phpmyadmin:
-    image: phpmyadmin
-    container_name: ecoride_pma
-    restart: always
-    ports:
-      - "8085:80"
-    environment:
-      - PMA_HOST=ecoride_db
-      - PMA_USER=root
-      - PMA_PASSWORD=${MYSQL_ROOT_PASSWORD}
-    networks:
-      - symfony
-    depends_on:
-      ecoride_db:
-        condition: service_healthy
+  # --- PHPMYADMIN (PROTÉGÉ) ---
+  #ecoride_pma:
+  #  image: phpmyadmin:latest
+  #  container_name: ecoride_pma
+  #  restart: always
+    # PORTS SUPPRIMÉS : Ne pas exposer sur le web en direct !
+  #  environment:
+  #    PMA_HOST: ecoride_db
+  #    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  # networks:
+  #    - ecoride_backend_net
 
-  ##########################################################################
-  # FRONTEND SERVICE - NGINX (Act as Reverse Proxy)
-  ##########################################################################
-  ecoride_frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ecoride_frontend
-    restart: always
-    ports:
-      - "80:80" # Exposed to the internet (or Cloudflare)
-    volumes:
-      # Map the shared avatar volume so Nginx can serve images directly
-      - avatars_data:/var/www/html/public/uploads/avatars:ro
-    networks:
-      - symfony
-    depends_on:
-      - symfony_backend
-
-  ##########################################################################
-  # BACKEND SERVICE - SYMFONY (PHP-FPM)
-  ##########################################################################
+  # --- BACKEND (SYMFONY) ---
   symfony_backend:
     build:
       context: ./backend
@@ -74,29 +42,46 @@ services:
     restart: always
     env_file:
       - .env
-    # No ports exposed here! Nginx talks to FPM via the internal network on port 9000
     volumes:
       - ./backend:/var/www/html
-      - symfony_vendor_cache:/var/www/html/vendor
-      - symfony_var_cache:/var/www/html/var
-      # Shared volume for profile pictures
-      - avatars_data:/var/www/html/public/uploads/avatars
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      APP_ENV: ${APP_ENV}
-      APP_SECRET: ${APP_SECRET}
-      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
-    depends_on:
-      ecoride_db:
-        condition: service_healthy
+      - ecoride_symfony_vendor_cache:/var/www/html/vendor
+      - ecoride_symfony_var_cache:/var/www/html/var
+      - ./frontend/uploads:/var/www/html/public/uploads
     networks:
-      - symfony
+      - ecoride_backend_net # Parle à la DB
+      - ecoride_frontend_net # Parle au Nginx
 
-volumes:
-  db_data:
-  symfony_vendor_cache:
-  symfony_var_cache:
-  avatars_data: # Crucial for persisting user-uploaded photos
+  # --- FRONTEND (NGINX + CLOUDFLARE READY) ---
+  ecoride_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecoride_frontend
+    restart: always
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend:/usr/share/nginx/html
+      - ./frontend/uploads:/usr/share/nginx/html/uploads:ro
+    depends_on:
+      - symfony_backend
+    networks:
+      - ecoride_frontend_net
+      # - web_proxy # Décommente ceci si tu as un réseau pour ton Proxy (NPM/Traefik)
 
 networks:
-  symfony:
+  # Réseau ultra-privé : Aucune sortie internet possible pour la DB
+  ecoride_backend_net:
+    driver: bridge
+    internal: true 
+  
+  # Réseau pour la communication web
+  ecoride_frontend_net:
+    driver: bridge
+
+volumes:
+  ecoride_db_data:
+  ecoride_avatars_data:
+  ecoride_symfony_vendor_cache:
+  ecoride_symfony_var_cache:

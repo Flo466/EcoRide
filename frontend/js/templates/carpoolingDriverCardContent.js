@@ -3,6 +3,7 @@
 // =============================================================================
 
 const DEFAULT_PROFILE_IMAGE = 'assets/images/profil.jpg';
+const UPLOADS_BASE_PATH = '/uploads/'; // Chemin vers ton volume Docker
 const FALLBACK_DRIVER_NAME = 'Conducteur';
 
 const MESSAGES = {
@@ -18,16 +19,10 @@ const MESSAGES = {
 
 /**
  * Creates and returns a DOM element representing the carpooling driver's card.
- * This card displays information about the driver and their vehicle.
- *
- * @param {object} data - The carpooling data object, containing driver and car details.
- * @returns {HTMLElement|null} The wrapper div containing the driver card, or null if no driver data.
  */
 export function createCarpoolDriverCardElement(data) {
-    // Return null if driver data is missing.
-    if (!data.driver) {
-        return null;
-    }
+    // Sécurité de base : si data est null, on évite le crash
+    if (!data) return null;
 
     // Create the main wrapper for the driver card.
     const wrapper = document.createElement('div');
@@ -37,26 +32,46 @@ export function createCarpoolDriverCardElement(data) {
     const driverCard = document.createElement('div');
     driverCard.className = 'detail-card card shadow w-100 animate-fade-in-up';
 
-    // Extract car details, providing default values if not available.
-    const carBrandLabel = data.car && data.car.brand ? data.car.brand.label : MESSAGES.CAR_BRAND_NOT_SPECIFIED;
-    const carModel = data.car ? data.car.model : '';
-    const carEnergy = data.car ? data.car.energy : '';
+    // 1. Sécurisation des détails du véhicule (Utilisation de ?. et ??)
+    const carBrandLabel = data.car?.brand?.label ?? MESSAGES.CAR_BRAND_NOT_SPECIFIED;
+    const carModel = data.car?.model ?? '';
+    const carEnergy = data.car?.energy ?? '';
 
+    // 2. Sécurisation du rating (Utilisation de ?. pour le driver)
     let ratingHtml = '';
-    if (data.driver && typeof data.driver.averageRating === 'number' && data.driver.averageRating !== null) {
-        ratingHtml = `<span class="fs-6">${data.driver.averageRating}</span> <i class="bi bi-star-fill text-warning"></i>`;
+    const avgRating = data.driver?.averageRating;
+    if (typeof avgRating === 'number' && avgRating !== null) {
+        ratingHtml = `<span class="fs-6">${avgRating}</span> <i class="bi bi-star-fill text-warning"></i>`;
     } else {
         ratingHtml = `<span class="fs-6 text-muted">${MESSAGES.NO_RATING}</span>`;
     }
+
+    // 3. Sécurisation des infos conducteur (Fix pour le chemin d'image)
+    let driverPhoto = DEFAULT_PROFILE_IMAGE;
+    // On check photoBase64 ou photo selon ce que ton API renvoie
+    const rawPhoto = data.driver?.photoBase64 || data.driver?.photo;
+
+    if (rawPhoto) {
+        // Si c'veut dire que c'est un chemin (ex: avatars/man.jpg), on ajoute /uploads/
+        // Si ça commence par http ou data:, on laisse tel quel.
+        driverPhoto = (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:image'))
+            ? rawPhoto
+            : UPLOADS_BASE_PATH + rawPhoto;
+    }
+
+    const driverName = data.driver?.userName || FALLBACK_DRIVER_NAME;
 
     // Set the inner HTML of the driver card using a template literal.
     driverCard.innerHTML = `
         <div class="card-body pb-0">
             <h2 class="mb-3 text-start user-card-title">${MESSAGES.JOURNEY_PROPOSED_BY}</h2>
             <div class="d-flex align-items-center mb-3 driver-info-row">
-                <img class="driver-img-detail" src="${data.driver.photoBase64 || DEFAULT_PROFILE_IMAGE}" alt="${data.driver.userName || FALLBACK_DRIVER_NAME}">
+                <img class="driver-img-detail" 
+                     src="${driverPhoto}" 
+                     alt="${driverName}"
+                     onerror="this.src='${DEFAULT_PROFILE_IMAGE}'">
                 <div class="driver-name-rating">
-                    <p class="mb-0 fs-5">${data.driver.userName}</p>
+                    <p class="mb-0 fs-5">${driverName}</p>
                     <p class="mb-0 driver-rating">${ratingHtml} </p>
                 </div>
             </div>
@@ -70,7 +85,6 @@ export function createCarpoolDriverCardElement(data) {
         </div>
     `;
 
-    // Append the created driver card to the wrapper and return it.
     wrapper.appendChild(driverCard);
     return wrapper;
 }

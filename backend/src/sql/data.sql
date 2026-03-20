@@ -1,6 +1,9 @@
 -- Use the ecoride database
 USE `ecoride`;
 
+SET NAMES 'utf8mb4';
+SET CHARACTER SET utf8mb4;
+
 -- Temporarily disable foreign key checks for data insertion
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -60,8 +63,7 @@ INSERT INTO `user` (
 ('james.anderson@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Anderson', 'James', '0700000017', '177 Garden Path, Sligo', '1982-07-29 00:00:00', NULL, 'JamesA', 20, NOW(), NULL, 'Tkn_jamesanderson_klm890nop1234567', FALSE, NULL),
 ('ava.thomas@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Thomas', 'Ava', '0700000018', '188 Bridge Street, Ennis', '1996-10-05 00:00:00', NULL, 'AvaT', 20, NOW(), NULL, 'Tkn_avathomas_qrs789tuv01234567', FALSE, NULL),
 ('logan.jackson@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Jackson', 'Logan', '0700000019', '199 Old Road, Tralee', '1987-12-14 00:00:00', NULL, 'LoganJ', 20, NOW(), NULL, 'Tkn_loganjackson_wxy678zab9012345', FALSE, NULL),
-('sophie.harris@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Harris', 'Sophie', '0700000020', '200 New Street, Athlone', '1995-03-28 00:00:00', NULL, 'SophieH', 20, NOW(), NULL, 'Tkn_sophieharris_cde345fgh6789012', FALSE, NULL),
-('test@test.com', '["ROLE_USER"]', '$2y$13$/ewjqhF8tGwz7sByjOwqoeBAzc5mIMPpzO8qeBr0IyBowd5OWEFNq', 'Testeur', 'Compte', '0700000020', '200 test Street, Test City', '1995-03-28 00:00:00', NULL, 'Test', 20, NOW(), NULL, 'Tkn_testeur_cde345fgh6789012', FALSE, NULL);
+('sophie.harris@example.com', '["ROLE_USER"]', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.h7x/h1C/.', 'Harris', 'Sophie', '0700000020', '200 New Street, Athlone', '1995-03-28 00:00:00', NULL, 'SophieH', 20, NOW(), NULL, 'Tkn_sophieharris_cde345fgh6789012', FALSE, NULL);
 --
 -- Insert 10 vehicles
 --

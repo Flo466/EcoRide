@@ -83,7 +83,7 @@ const loadUserProfile = async () => {
         if (profileAvatarPlaceholder) {
             if (user.photo) {
                 // On utilise l'URL directe du dossier public/uploads/avatars de Symfony
-                const avatarUrl = `${API_BASE_URL}/uploads/avatars/${user.photo}?t=${Date.now()}`;
+                const avatarUrl = `${API_BASE_URL}/uploads/${user.photo}?t=${Date.now()}`;
                 profileAvatarPlaceholder.innerHTML = `<img src="${avatarUrl}" alt="Avatar" class="profile-avatar">`;
             } else {
                 profileAvatarPlaceholder.innerHTML = `<i class="bi bi-person-circle fs-1"></i>`;
@@ -146,7 +146,7 @@ if (avatarInput) {
                 profileAvatarPlaceholder.innerHTML = `<img src="${event.target.result}" alt="Preview" class="profile-avatar-preview">`;
             };
             reader.readAsDataURL(file);
-            
+
             await uploadAvatar(file);
         }
     });
