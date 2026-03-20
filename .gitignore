@@ -1,1 +1,14 @@
-node_modules
+# --- SÉCURITÉ (Les secrets) ---
+.env
+.env.local
+
+# --- DOCKER & SYSTÈME ---
+.vscode/
+node_modules/
+*.log
+
+# --- SÉCURITÉ BACKEND (Pour être sûr) ---
+backend/.env
+backend/.env.local
+backend/.env.local.php
+backend/.env.auth.php
