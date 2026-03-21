@@ -8,9 +8,6 @@ This repository contains the source code and infrastructure configuration for th
 The application is currently deployed and maintained on a personal infrastructure.  
 👉 **[Access the Live Application](https://www.ecoride-pro.uk/)**
 
-=======
->>>>>>> development
----
 
 ## 🛠️ Infrastructure & DevOps Focus
 The core value of this repository lies in the deployment architecture designed to ensure service security and availability.
