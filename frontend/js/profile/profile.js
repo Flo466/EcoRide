@@ -39,7 +39,9 @@ const displayMessage = (message, type, targetDisplay = messageDisplay) => {
 };
 
 const updateDriverButtonsVisibility = (isDriver) => {
-    const btns = [document.getElementById('enterJourneyFormBtn'), document.getElementById('enterVehicleFormBtn')];
+    const enterJourneyFormBtn = document.getElementById('enterJourneyFormBtn');
+    const enterVehicleFormBtn = document.getElementById('enterVehicleFormBtn');
+    const btns = [enterJourneyFormBtn, enterVehicleFormBtn];
     btns.forEach(btn => btn && btn.classList.toggle('d-none', !isDriver));
 };
 
@@ -63,7 +65,7 @@ const updateDriverStatus = async (isDriverStatus) => {
 };
 
 /**
- * Charge le profil utilisateur (Fichiers statiques)
+ * Charge le profil utilisateur
  */
 const loadUserProfile = async () => {
     const token = localStorage.getItem('userToken');
@@ -75,14 +77,11 @@ const loadUserProfile = async () => {
     try {
         const user = await fetchApi(`${API_BASE_URL}/api/account/me`, 'GET', null, { 'X-AUTH-TOKEN': token });
 
-        // Affichage texte
         if (userNameDisplay) userNameDisplay.textContent = user.userName || MESSAGES.DEFAULT_USERNAME;
         if (userCreditsDisplay) userCreditsDisplay.textContent = user.credits ?? MESSAGES.DEFAULT_CREDITS;
 
-        // Affichage Photo (Logique statique)
         if (profileAvatarPlaceholder) {
             if (user.photo) {
-                // On utilise l'URL directe du dossier public/uploads/avatars de Symfony
                 const avatarUrl = `${API_BASE_URL}/uploads/${user.photo}?t=${Date.now()}`;
                 profileAvatarPlaceholder.innerHTML = `<img src="${avatarUrl}" alt="Avatar" class="profile-avatar">`;
             } else {
@@ -90,7 +89,6 @@ const loadUserProfile = async () => {
             }
         }
 
-        // Switch chauffeur
         if (driverSwitch) {
             driverSwitch.checked = !!user.isDriver;
             updateDriverButtonsVisibility(!!user.isDriver);
@@ -110,7 +108,6 @@ const uploadAvatar = async (file) => {
     formData.append('avatar', file);
 
     try {
-        // Note: On utilise fetch en direct ici car FormData ne doit pas être stringifié en JSON
         const response = await fetch(`${API_BASE_URL}/api/account/me/avatar`, {
             method: 'POST',
             headers: { 'X-AUTH-TOKEN': token },
@@ -123,7 +120,7 @@ const uploadAvatar = async (file) => {
         }
 
         displayMessage(MESSAGES.UPLOAD_SUCCESS, 'success');
-        await loadUserProfile(); // Recharge l'image proprement
+        await loadUserProfile();
     } catch (error) {
         console.error("Erreur Upload:", error);
         displayMessage(MESSAGES.UPLOAD_ERROR_GENERIC(error.message), 'danger');
@@ -131,30 +128,45 @@ const uploadAvatar = async (file) => {
 };
 
 // =============================================================================
-// IV. Listeners
+// IV. Listeners (Uniquement Photo de profil et Éléments de Formulaires)
 // =============================================================================
 
-if (addPhotoBtn) addPhotoBtn.addEventListener('click', () => avatarInput.click());
+document.addEventListener('click', (e) => {
+    const addPhotoBtnClick = e.target.closest('#addPhotoBtn');
+    
+    // Déclenchement du clic sur l'input file masqué
+    if (addPhotoBtnClick) {
+        e.preventDefault();
+        const input = document.getElementById('avatarInput');
+        if (input) input.click();
+    }
+});
 
-if (avatarInput) {
-    avatarInput.addEventListener('change', async (e) => {
+document.addEventListener('change', (e) => {
+    // Gestion du switch Chauffeur
+    if (e.target && e.target.id === 'driverSwitch') {
+        updateDriverStatus(e.target.checked);
+    }
+    
+    // Traitement du fichier image uploadé
+    if (e.target && e.target.id === 'avatarInput') {
         const file = e.target.files[0];
         if (file) {
-            // Preview locale immédiate
             const reader = new FileReader();
             reader.onload = (event) => {
-                profileAvatarPlaceholder.innerHTML = `<img src="${event.target.result}" alt="Preview" class="profile-avatar-preview">`;
+                const placeholder = document.querySelector('.profile-avatar-placeholder');
+                if (placeholder) {
+                    placeholder.innerHTML = `<img src="${event.target.result}" alt="Preview" class="profile-avatar-preview">`;
+                }
             };
             reader.readAsDataURL(file);
-
-            await uploadAvatar(file);
+            uploadAvatar(file);
         }
-    });
-}
+    }
+});
 
-if (driverSwitch) {
-    driverSwitch.addEventListener('change', (e) => updateDriverStatus(e.target.checked));
-}
+// =============================================================================
+// V. Initialisation
+// =============================================================================
 
-// Lancement au chargement de la page
 loadUserProfile();
